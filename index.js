@@ -75,6 +75,7 @@ client.on("guildMemberAdd", (member) => {
 });
 
 client.on("messageCreate", (message) => {
+  // Finds the required channels in Guild.
   const commandsChannel = message.guild.channels.cache.find(
     (channel) => channel.name === "commands"
   );
@@ -82,6 +83,9 @@ client.on("messageCreate", (message) => {
   const alertChannel = message.guild.channels.cache.find(
     (channel) => channel.name === "sass-alert-channel"
   );
+
+  // Extracts the first word of message to check for commands later.
+  messageFirstWord = message.content.split(" ")[0];
 
   switch (true) {
     // Manages the channel for commands by deleting the messages there.
@@ -95,6 +99,7 @@ client.on("messageCreate", (message) => {
         .catch(console.log("Message deletion."));
       break;
 
+    // Manages the channel for commands by deleting the messages without 🚨 there.
     case message.channel === alertChannel && !message.author.bot:
       if (!message.content.includes("🚨"))
         message.channel
@@ -106,7 +111,8 @@ client.on("messageCreate", (message) => {
           .catch(console.log("Message deletion."));
       break;
 
-    case message.content.split(" ")[0] === "!announcement" &&
+    // When !announcement is used, bot relays the message to announcement channel.
+    case messageFirstWord === "!announcement" &&
       message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
       try {
         message.guild.channels.cache
@@ -117,10 +123,11 @@ client.on("messageCreate", (message) => {
       }
       break;
 
-    case message.content.split(" ")[0] === "!remindme" &&
+    // A basic reminder.
+    case messageFirstWord === "!remindme" &&
       message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
       try {
-        message.channel.send("Remind you what?");
+        message.reply("Remind you what?");
 
         const filter = (m) => {
           return m.author.id === message.author.id;
@@ -128,48 +135,64 @@ client.on("messageCreate", (message) => {
 
         const collector = message.channel.createMessageCollector({
           filter,
-          time: 30000,
+          time: 60000,
           max: 1,
         });
 
         collector.on("collect", (text) => {
-          const remindText = text;
+          const remindText = text.content;
 
-          message.channel.send(
-            "When will this take place? (Ex. 01 Jan 2022 20:20 GMT)"
+          text.reply(
+            "When will this take place? (Ex. 01 Jan 2022 20:20 GMT or UTC+3 etc.)"
           );
 
           const collector = message.channel.createMessageCollector({
             filter,
-            time: 30000,
+            time: 60000,
             max: 1,
           });
 
           collector.on("collect", (when) => {
-            unixTimeZero = Date.parse(when);
+            unixTimeWhen = Date.parse(when.content);
 
-            message.channel.send(
-              "How long before I should remind? (In hours) (Ex. 1)"
+            if (isNaN(unixTimeWhen)) {
+              when.reply("That is not a date. I am cancelling your request.");
+              return console.log("Someone didn't get the date right.");
+            }
+
+            when.reply(
+              "How long before I should remind? (In minutes) (Ex. 20)"
             );
 
             const collector = message.channel.createMessageCollector({
               filter,
-              time: 30000,
+              time: 60000,
               max: 1,
             });
 
-            collector.on("collect", (hoursBefore) => {
-              differenceBetween = unixTimeZero - Date.now();
+            collector.on("collect", (minutesBefore) => {
+              if (!Number.isInteger(parseInt(minutesBefore.content))) {
+                when.reply(
+                  "That is not an integer. I am cancelling your request."
+                );
+                return console.log(
+                  "Someone didn't get the minutes left right."
+                );
+              }
+
+              differenceBetween = unixTimeWhen - Date.now();
+
+              minutesBefore.reply("Got it.");
 
               setTimeout(
                 () =>
-                  message.channel.send(
-                    `${hoursBefore} hours left for ${remindText}`
+                  minutesBefore.reply(
+                    `${minutesBefore.content} minutes left for ${remindText}`
                   ),
-                differenceBetween - hoursBefore * 60 * 60 * 1000
+                differenceBetween - minutesBefore.content * 60 * 1000
               );
               setTimeout(
-                () => message.channel.send(`It's time for ${remindText}`),
+                () => minutesBefore.reply(`It's time for ${remindText}`),
                 differenceBetween
               );
             });
@@ -188,6 +211,10 @@ client.on("messageCreate", (message) => {
 // Commands.
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
+
+  const privateChannel = interaction.guild.channels.cache.find(
+    (channel) => channel.name === "private"
+  );
 
   var replyMessage;
   var projectName;
@@ -247,9 +274,9 @@ client.on("interactionCreate", async (interaction) => {
             interaction.channel.send(`Channel created for ${projectName}!`);
           }
 
-          interaction.guild.channels.cache
-            .find((channel) => channel.name === "private")
-            .send(`${interaction.user.username} joined ${projectName}`);
+          privateChannel.send(
+            `${interaction.user.username} joined ${projectName}`
+          );
         });
 
         collector.on("end", (collected) => {
@@ -282,13 +309,9 @@ client.on("interactionCreate", async (interaction) => {
       );
       await interaction.reply({ content: "Request aquired.", ephemeral: true });
 
-      await interaction.guild.channels.cache.find(
-        (channel) => channel.name === "private"
-      ).send(`${interaction.user.username} wants to be added to ${projectName}.
+      await privateChannel.send(`${interaction.user.username} wants to be added to ${projectName}.
 React 👍 to approve.`);
-      replyMessage = await interaction.guild.channels.cache.find(
-        (channel) => channel.name === "private"
-      ).lastMessage;
+      replyMessage = await privateChannel.lastMessage;
 
       const filter2 = (reaction) => reaction.emoji.name === "👍";
 
