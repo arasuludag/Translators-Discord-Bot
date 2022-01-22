@@ -1,4 +1,5 @@
 require("dotenv").config();
+const data = require("./data.json");
 const { Client, Intents, Permissions, Collection } = require("discord.js");
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { REST } = require("@discordjs/rest");
@@ -31,6 +32,13 @@ const commands = [
         .setName("project_name")
         .setDescription("Name of the project")
         .setRequired(true)
+    ),
+  new SlashCommandBuilder().setName("funfact").setDescription("A funfact."),
+  new SlashCommandBuilder()
+    .setName("available")
+    .setDescription("Any available languages")
+    .addRoleOption((option) =>
+      option.setName("language").setDescription("A language").setRequired(true)
     ),
 ].map((command) => command.toJSON());
 
@@ -211,16 +219,22 @@ client.on("messageCreate", async (message) => {
       }
       break;
 
-    // case messageFirstWord === "!stats" &&
-    // message.member.roles.cache.some(role => role.name === moderatorRole):
-    //   message.reply(`We have ${message.member.guild.memberCount} members, `);
+    case messageFirstWord === "!stats" &&
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
+      var memberCountMessage = ``;
 
-    //   let guild = await message.guild.fetchMembers();
-    //   let roleID = "3933783737379";
-    //   let memberCount = guild.roles.get(roleID).members.size;
-    //   message.channel.send(memberCount + " members have this role!");
+      message.guild.roles.cache.forEach((role) => {
+        memberCountMessage = memberCountMessage.concat(`<@&${role.id}> has ${
+          message.guild.roles.cache
+            .get(role.id)
+            .members.filter((member) => !member.user.bot).size
+        } people.
+`);
+      });
+      message.reply(`We have ${message.member.guild.memberCount} members in total.
+${memberCountMessage}`);
 
-    //   break;
+      break;
 
     case messageFirstWord === "!add" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
@@ -487,6 +501,23 @@ React 👍 to approve.`);
       } catch {
         console.log(replyMessage);
       }
+      break;
+
+    case commandName === "funfact":
+      var randomFact =
+        data.funfacts[Math.floor(Math.random() * data.funfacts.length)];
+
+      interaction.reply(`Fun fact! ${randomFact}`);
+
+      break;
+
+    case commandName === "available":
+      role = interaction.options.getRole("language");
+
+      interaction.reply(
+        `<@${interaction.user.id}> is asking if any <@&${role.id}> linguists are available.`
+      );
+
       break;
 
     default:
