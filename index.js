@@ -36,6 +36,10 @@ const commands = [
 
 const rest = new REST({ version: "9" }).setToken(process.env.CLIENT_TOKEN);
 
+// Role name of a moderator.
+const moderatorRole = process.env.MODROLE;
+const projectsCategory = process.env.PROJECTSCATEGORY;
+
 rest
   .put(
     Routes.applicationGuildCommands(
@@ -74,7 +78,7 @@ client.on("guildMemberAdd", (member) => {
   member.send("Welcome to the server!");
 });
 
-client.on("messageCreate", (message) => {
+client.on("messageCreate", async (message) => {
   // Finds the required channels in Guild.
   const commandsChannel = message.guild.channels.cache.find(
     (channel) => channel.name === "commands"
@@ -82,6 +86,10 @@ client.on("messageCreate", (message) => {
 
   const alertChannel = message.guild.channels.cache.find(
     (channel) => channel.name === "sass-alert-channel"
+  );
+
+  const privateChannel = message.guild.channels.cache.find(
+    (channel) => channel.name === "private"
   );
 
   // Extracts the first word of message to check for commands later.
@@ -113,7 +121,7 @@ client.on("messageCreate", (message) => {
 
     // When !announcement is used, bot relays the message to announcement channel.
     case messageFirstWord === "!announcement" &&
-      message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
       try {
         message.guild.channels.cache
           .find((channel) => channel.name === "announcements")
@@ -125,7 +133,7 @@ client.on("messageCreate", (message) => {
 
     // A basic reminder.
     case messageFirstWord === "!remindme" &&
-      message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
       try {
         message.reply("Remind you what?");
 
@@ -203,6 +211,94 @@ client.on("messageCreate", (message) => {
       }
       break;
 
+    // case messageFirstWord === "!stats" &&
+    // message.member.roles.cache.some(role => role.name === moderatorRole):
+    //   message.reply(`We have ${message.member.guild.memberCount} members, `);
+
+    //   let guild = await message.guild.fetchMembers();
+    //   let roleID = "3933783737379";
+    //   let memberCount = guild.roles.get(roleID).members.size;
+    //   message.channel.send(memberCount + " members have this role!");
+
+    //   break;
+
+    case messageFirstWord === "!add" &&
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
+      try {
+        const mentionedMembersMap = message.mentions.members;
+
+        message.reply("To where?");
+
+        const filter = (m) => {
+          return m.author.id === message.author.id;
+        };
+
+        const collector = message.channel.createMessageCollector({
+          filter,
+          time: 60000,
+          max: 1,
+        });
+
+        collector.on("collect", (channel) => {
+          const discordStyleProjectName = channel.content
+            .replace(/\s+/g, "-")
+            .toLowerCase();
+          if (
+            (foundChannel = message.guild.channels.cache.find(
+              (channel) => channel.name === discordStyleProjectName
+            ))
+          ) {
+            mentionedMembersMap.map((value, key) => {
+              foundChannel.permissionOverwrites.edit(key, {
+                VIEW_CHANNEL: true,
+              });
+
+              message.reply(
+                `Added <@${value.user.id}> to <#${foundChannel.id}> !`
+              );
+
+              privateChannel.send(
+                `<@${value.user.id}> joined <#${foundChannel.id}>`
+              );
+            });
+          } else {
+            message.guild.channels
+              .create(discordStyleProjectName, {
+                type: "GUILD_TEXT",
+                permissionOverwrites: [
+                  {
+                    id: message.guild.id,
+                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                ],
+              })
+              .then((createdChannel) => {
+                message.reply(`Channel created for <#${createdChannel.id}>!`);
+
+                mentionedMembersMap.map((value, key) => {
+                  createdChannel.permissionOverwrites.edit(key, {
+                    VIEW_CHANNEL: true,
+                  });
+
+                  message.reply(
+                    `Added <@${value.user.id}> to <#${createdChannel.id}>!`
+                  );
+
+                  privateChannel.send(
+                    `<@${value.user.id}> joined <#${createdChannel.id}>`
+                  );
+                });
+              });
+          }
+
+          channel.reply("Done.");
+        });
+      } catch {
+        console.log("Problem with !add.");
+      }
+
+      break;
+
     default:
       break;
   }
@@ -236,7 +332,7 @@ client.on("interactionCreate", async (interaction) => {
       try {
         const collector = replyMessage.createReactionCollector({
           filter,
-          time: 30000,
+          time: 100000,
         });
 
         collector.on("collect", (reaction, user) => {
@@ -244,43 +340,56 @@ client.on("interactionCreate", async (interaction) => {
             .replace(/\s+/g, "-")
             .toLowerCase();
           if (
-            interaction.guild.channels.cache.find(
+            (foundChannel = interaction.guild.channels.cache.find(
               (channel) => channel.name === discordStyleProjectName
-            )
+            ))
           ) {
-            interaction.guild.channels.cache
-              .find((channel) => channel.name === discordStyleProjectName)
-              .permissionOverwrites.edit(interaction.user.id, {
-                VIEW_CHANNEL: true,
-              });
+            foundChannel.permissionOverwrites.edit(interaction.user.id, {
+              VIEW_CHANNEL: true,
+            });
 
             interaction.channel.send(
-              `Channel already existed, added ${interaction.user.username} to ${projectName}!`
+              `Channel already existed, added <@${interaction.user.id}> to <#${foundChannel.id}>!`
+            );
+
+            privateChannel.send(
+              `<@${interaction.user.id}> joined <#${foundChannel.id}>.`
             );
           } else {
-            interaction.guild.channels.create(projectName, {
-              type: "GUILD_TEXT",
-              permissionOverwrites: [
-                {
-                  id: interaction.guild.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-                {
-                  id: interaction.user.id,
-                  allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-              ],
-            });
-            interaction.channel.send(`Channel created for ${projectName}!`);
+            interaction.guild.channels
+              .create(projectName, {
+                type: "GUILD_TEXT",
+                permissionOverwrites: [
+                  {
+                    id: interaction.guild.id,
+                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                  {
+                    id: interaction.user.id,
+                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                ],
+              })
+              .then((createdChannel) => {
+                let category = interaction.guild.channels.cache.find(
+                  (c) =>
+                    c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                );
+
+                if (!category)
+                  throw new Error("Category channel does not exist");
+                createdChannel.setParent(category.id);
+
+                interaction.channel.send(
+                  `Channel created for <#${createdChannel.id}> and <@${interaction.user.id}> joined.`
+                );
+
+                privateChannel.send(
+                  `Channel created for <#${createdChannel.id}> and <@${interaction.user.id}> joined.`
+                );
+              })
+              .catch(console.error);
           }
-
-          privateChannel.send(
-            `${interaction.user.username} joined ${projectName}`
-          );
-        });
-
-        collector.on("end", (collected) => {
-          replyMessage.delete();
         });
       } catch {
         console.log("Something wrong with addme!");
@@ -293,11 +402,11 @@ client.on("interactionCreate", async (interaction) => {
       discordStyleProjectName = projectName.replace(/\s+/g, "-").toLowerCase();
 
       if (
-        interaction.guild.channels.cache.find(
+        (foundChannel = interaction.guild.channels.cache.find(
           (channel) => channel.name === discordStyleProjectName
-        )
+        ))
       )
-        interaction.reply(`Yes. There is ${projectName}.`);
+        interaction.reply(`Yes. There is <#${foundChannel.id}>.`);
       else interaction.reply(`I don't even know who ${projectName} is.`);
       break;
 
@@ -309,7 +418,7 @@ client.on("interactionCreate", async (interaction) => {
       );
       await interaction.reply({ content: "Request aquired.", ephemeral: true });
 
-      await privateChannel.send(`${interaction.user.username} wants to be added to ${projectName}.
+      await privateChannel.send(`<@${interaction.user.id}> wants to be added to ${projectName}.
 React 👍 to approve.`);
       replyMessage = await privateChannel.lastMessage;
 
@@ -325,37 +434,54 @@ React 👍 to approve.`);
           discordStyleProjectName = projectName
             .replace(/\s+/g, "-")
             .toLowerCase();
+
           if (
-            interaction.guild.channels.cache.find(
+            (foundProject = interaction.guild.channels.cache.find(
               (channel) => channel.name === discordStyleProjectName
-            )
+            ))
           ) {
-            interaction.guild.channels.cache
-              .find((channel) => channel.name === discordStyleProjectName)
-              .permissionOverwrites.edit(interaction.user.id, {
-                VIEW_CHANNEL: true,
-              });
+            foundProject.permissionOverwrites.edit(interaction.user.id, {
+              VIEW_CHANNEL: true,
+            });
 
             replyMessage.channel.send(
-              `Channel already existed, added ${interaction.user.username} to ${projectName}!`
+              `Channel already existed, added <@${interaction.user.id}> to <#${foundProject.id}>!`
             );
-            interaction.user.send(`You have been added to ${projectName}`);
+            interaction.user.send(
+              `You have been added to <#${foundProject.id}>`
+            );
           } else {
-            interaction.guild.channels.create(projectName, {
-              type: "GUILD_TEXT",
-              permissionOverwrites: [
-                {
-                  id: interaction.guild.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-                {
-                  id: interaction.user.id,
-                  allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-              ],
-            });
-            replyMessage.channel.send(`Channel created for ${projectName}!`);
-            interaction.user.send(`You have been added to ${projectName}`);
+            interaction.guild.channels
+              .create(projectName, {
+                type: "GUILD_TEXT",
+                permissionOverwrites: [
+                  {
+                    id: interaction.guild.id,
+                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                  {
+                    id: interaction.user.id,
+                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                ],
+              })
+              .then((createdChannel) => {
+                let category = interaction.guild.channels.cache.find(
+                  (c) =>
+                    c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                );
+
+                if (!category)
+                  throw new Error("Category channel does not exist");
+                createdChannel.setParent(category.id);
+
+                replyMessage.channel.send(
+                  `Channel created for <#${createdChannel.id}>!`
+                );
+                interaction.user.send(
+                  `You have been added to <#${createdChannel.id}>`
+                );
+              });
           }
         });
       } catch {
