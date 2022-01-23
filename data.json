@@ -4,5 +4,62 @@
       "Turkey is a horrible place.",
       "If you're a buddist and stuck, kill yourself to respawn in a new location.",
       "I don't have any funfacts left to test."
-  ]
+  ],
+
+    "suggestion": {
+      "acquired": ["Suggestion aquired."],
+      "personSuggests": ["<@{{user}}> made a suggestion. {{suggestion}}"]
+    },
+
+    "available": {
+      "asking": ["<@{{user}}> is asking if any <@&{{role}}> linguists are available."]
+    },
+
+    "requestAcquired": ["Request Acquired."],
+
+    "addRequest": ["<@{{user}}> wants to be added to {{projectName}}. React 👍 to approve."],
+
+    "channelExisted": ["Channel already existed, added <@{{user}}> to <#{{project}}>!"],
+
+    "userAddNotify": ["You have been added to <#{{project}}>!"],
+
+    "channelCreated": ["Channel created for <#{{createdChannel}}> and <@{{user}}> added!"],
+
+    "channelCreatedWOAdd": ["Channel created for <#{{createdChannel}}>!"],
+
+    "isThere": {
+      "yes": ["Yes. There is <#{{foundChannel}}>."],
+      "no": ["No."]
+    },
+
+    "addMePrompt": ["Do you confirm that you work on {{projectName}} and want to be added to the channel? React this message with 👍 if YES."],
+
+    "onlyCommands": ["Only for commands!"],
+
+    "onlyAlerts": ["Only for alerts!"],
+
+    "announcement": ["Announcement: {{announcement}}"],
+
+    "reminder": {
+      "remindWhat": ["Remind you what?"],
+      "when": ["When will this take place? (Ex. 01 Jan 2022 20:20 GMT or UTC+3 etc.)"],
+      "notADate": ["That is not a date. I am cancelling your request."],
+      "howLongBefore": ["How long before I should remind? (In minutes) (Ex. 20)"],
+      "notAnInt": ["That is not an integer. I am cancelling your request."],
+      "minutesLeft": ["{{minutesBefore}} minutes left for {{remindText}}"],
+      "itsTime": ["It's time for {{remindText}}"]
+
+    },
+
+    "add": {
+      "where": ["To where?"],
+      "addedPrompt": ["Added <@{{user}}> to <#{{channel}}>!"]
+
+    },
+
+    "requestCompleted": ["Done."],
+
+    "welcomeMessage": "Welcome to the server. 🍻"
+
+    
   }
