@@ -1,19 +1,37 @@
 const i18next = require("i18next");
 const translation = require("./data.json");
+const { embedColor } = require("./config.json");
 
 i18next.init({
-    lng: "en",
-    preload: true,
-    resources: {
-      en: {
-        translation,
-      },
+  lng: "en",
+  preload: true,
+  resources: {
+    en: {
+      translation,
     },
-  });
+  },
+});
 
 module.exports = {
   // Selects a random text from a JSON array.
-  randomText: (path, values) => {
+  randomText: (path, values, title) => {
+    values["returnObjects"] = true;
+
+    return {
+      embeds: [
+        {
+          color: embedColor,
+          title: title,
+          description: i18next.t(path, values)[
+            Math.floor(Math.random() * i18next.t(path, values).length)
+          ],
+        },
+      ],
+    };
+  },
+
+  // Selects a random text from a JSON array.
+  randomEphemeralText: (path, values, title) => {
     values["returnObjects"] = true;
 
     return i18next.t(path, values)[

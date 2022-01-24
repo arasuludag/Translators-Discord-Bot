@@ -5,7 +5,7 @@ const { projectsCategory, notificationChannelName } = require("../config.json");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("requestadd")
-    .setDescription("Request mods to add you to a certain project.")
+    .setDescription("Request mods to add you to a certain project channel.")
     .addStringOption((option) =>
       option
         .setName("project_name")
@@ -18,7 +18,7 @@ module.exports = {
 
     await interaction.user.send(`Wait for approval to access ${projectName}.`);
     await interaction.reply({
-      content: functions.randomText("requestAcquired", {}),
+      content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
     });
 
@@ -30,7 +30,7 @@ module.exports = {
         })
       )
       .then((replyMessage) => {
-        const filter = (reaction) => reaction.emoji.name === "👍";
+        const filter = (reaction) => reaction.emoji.name === "✅";
 
         const collector = replyMessage.createReactionCollector({
           filter,

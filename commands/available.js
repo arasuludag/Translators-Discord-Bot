@@ -4,7 +4,7 @@ const functions = require("../functions.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("available")
-    .setDescription("Any available linguists for a certain language?")
+    .setDescription("Ask if there are any available linguists from a certain language pool.")
     .addRoleOption((option) =>
       option.setName("language").setDescription("A language").setRequired(true)
     ),

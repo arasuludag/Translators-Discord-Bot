@@ -23,8 +23,14 @@ module.exports = {
       })
     );
 
+    interaction.user.send(
+      functions.randomText("suggestion.suggestionRecieved", {
+        suggestion: suggestion,
+      })
+    )
+
     interaction.reply({
-      content: functions.randomText("suggestion.acquired", {}),
+      content: functions.randomEphemeralText("suggestion.acquired", {}),
       ephemeral: true,
     });
   },

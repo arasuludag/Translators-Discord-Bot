@@ -9,6 +9,8 @@ const {
   alertsChannelName,
   commandsChannelName,
   notificationChannelName,
+  announcementsChannelName,
+  embedColor,
 } = require("./config.json");
 const functions = require("./functions.js");
 
@@ -44,7 +46,7 @@ i18next.init({
 // Role name of a moderator.
 const moderatorRole = modRole;
 
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
     activities: [
@@ -66,10 +68,6 @@ client.on("messageCreate", async (message) => {
   // Finds the required channels in Guild.
   const commandsChannel = functions.findChannel(message, commandsChannelName);
   const alertChannel = functions.findChannel(message, alertsChannelName);
-  const privateChannel = functions.findChannel(
-    message,
-    notificationChannelName
-  );
 
   // Extracts the first word of message to check for commands later.
   messageFirstWord = message.content.split(" ")[0];
@@ -101,15 +99,17 @@ client.on("messageCreate", async (message) => {
     // When !announcement is used, bot relays the message to announcement channel.
     case messageFirstWord === "!announcement" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      message.guild.channels.cache
-        .find((channel) => channel.name === "announcements")
-        .send(
-          functions.randomText("announcement", {
-            announcement: message.content.substring(
+      functions.findChannel(message, announcementsChannelName).send({
+        embeds: [
+          {
+            color: embedColor,
+            title: "Announcement",
+            description: message.content.substring(
               message.content.indexOf(" ") + 1
             ),
-          })
-        );
+          },
+        ],
+      });
       break;
 
     // A basic reminder.
@@ -200,7 +200,8 @@ client.on("messageCreate", async (message) => {
             message.guild.roles.cache
               .get(role.id)
               .members.filter((member) => !member.user.bot).size
-          } people.`
+          } people.
+`
         );
       });
       message.reply(`We have ${message.member.guild.memberCount} members in total. 
@@ -209,9 +210,32 @@ ${memberCountMessage}
 
       break;
 
+    // Counts the members in spesified role. Has issues.
+    case messageFirstWord === "!list" &&
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
+      const mentionedRolesMap = message.mentions.roles;
+      mentionedRolesMap.map((values, keys) => {
+        var memberList = "";
+        values.members.map((role) => {
+          memberList = memberList.concat(
+            `${role.user.toString()}
+`
+          );
+        });
+        message.reply(`${values.toString()} has 
+${memberList}`);
+      });
+
+      break;
+
     // Adds several users to a channel.
     case messageFirstWord === "!add" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
+      var privateChannel = functions.findChannel(
+        message,
+        notificationChannelName
+      );
+
       const mentionedMembersMap = message.mentions.members;
 
       // To where?
@@ -307,6 +331,120 @@ ${memberCountMessage}
 
         channel.reply(functions.randomText("requestCompleted", {}));
       });
+
+      break;
+
+    case messageFirstWord === "!isthere" &&
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
+      var projectName = message.content.substring(
+        message.content.indexOf(" ") + 1
+      );
+      var foundChannel = functions.findChannel(
+        message,
+        functions.discordStyleProjectName(projectName)
+      );
+      if (foundChannel)
+        message.reply(
+          functions.randomText("isThere.yes", { foundChannel: foundChannel.id })
+        );
+      else message.reply(functions.randomText("isThere.no", {}));
+      break;
+
+    case messageFirstWord === "!addme" &&
+      message.member.roles.cache.some((role) => role.name === moderatorRole):
+      var privateChannel = functions.findChannel(
+        message,
+        notificationChannelName
+      );
+
+      var projectName = message.content.substring(
+        message.content.indexOf(" ") + 1
+      );
+      if (projectName === "!addme") {
+        await message.reply(functions.randomText("addMePromptEmpty", {}));
+        break;
+      }
+      await message
+        .reply(
+          functions.randomText("addMePrompt", { projectName: projectName })
+        )
+        .then((replyMessage) => {
+          var filter = (reaction, user) => {
+            return (
+              reaction.emoji.name === "👍" && user.id === message.author.id
+            );
+          };
+          var collector = replyMessage.createReactionCollector({
+            filter,
+            time: 100000,
+          });
+
+          collector.on("collect", () => {
+            const foundChannel = functions.findChannel(
+              message,
+              functions.discordStyleProjectName(projectName)
+            );
+            if (foundChannel) {
+              foundChannel.permissionOverwrites.edit(message.author.id, {
+                VIEW_CHANNEL: true,
+              });
+
+              message.channel.send(
+                functions.randomText("channelExisted", {
+                  user: message.author.id,
+                  project: foundChannel.id,
+                })
+              );
+
+              privateChannel.send(
+                functions.randomText("channelExisted", {
+                  user: message.author.id,
+                  project: foundChannel.id,
+                })
+              );
+            } else {
+              message.guild.channels
+                .create(projectName, {
+                  type: "GUILD_TEXT",
+                  permissionOverwrites: [
+                    {
+                      id: message.guild.id,
+                      deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                    },
+                    {
+                      id: message.author.id,
+                      allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                    },
+                  ],
+                })
+                .then((createdChannel) => {
+                  let category = message.guild.channels.cache.find(
+                    (c) =>
+                      c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                  );
+
+                  if (!category)
+                    throw new Error("Category channel does not exist");
+                  createdChannel.setParent(category.id);
+
+                  message.channel.send(
+                    functions.randomText("channelCreated", {
+                      createdChannel: createdChannel.id,
+                      user: message.author.id,
+                    })
+                  );
+
+                  privateChannel.send(
+                    functions.randomText("channelCreated", {
+                      createdChannel: createdChannel.id,
+                      user: message.author.id,
+                    })
+                  );
+                })
+                .catch(console.error);
+            }
+          });
+        });
 
       break;
   }
