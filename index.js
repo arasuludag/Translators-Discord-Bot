@@ -1,11 +1,36 @@
-require("dotenv").config();
+const { readdirSync } = require("fs");
 const translation = require("./data.json");
 const i18next = require("i18next");
 const { Client, Intents, Permissions, Collection } = require("discord.js");
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { REST } = require("@discordjs/rest");
-const { Routes } = require("discord-api-types/v9");
+const {
+  token,
+  modRole,
+  projectsCategory,
+  alertsChannelName,
+  commandsChannelName,
+  notificationChannelName,
+} = require("./config.json");
+const functions = require("./functions.js");
 
+const myIntents = new Intents();
+myIntents.add(
+  Intents.FLAGS.GUILDS,
+  Intents.FLAGS.GUILD_MESSAGES,
+  Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+);
+const client = new Client({ intents: myIntents });
+
+client.commands = new Collection();
+const commandFiles = readdirSync("./commands").filter((file) =>
+  file.endsWith(".js")
+);
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.data.name, command);
+}
+
+// For localization.
 i18next.init({
   lng: "en",
   preload: true,
@@ -16,90 +41,8 @@ i18next.init({
   },
 });
 
-function randomText(path, values) {
-  values["returnObjects"] = true;
-
-  return i18next.t(path, values)[
-    Math.floor(Math.random() * i18next.t(path, values).length)
-  ];
-}
-
-// Getting and turning project name into Discords channel format. Ex. 'Hede Hodo' into 'hede-hodo'
-var projectName;
-const discordStyleProjectName = (project) => {
-  return project.replace(/\s+/g, "-").toLowerCase();
-};
-
-const commands = [
-  new SlashCommandBuilder()
-    .setName("addme")
-    .setDescription("Adds user to a project.")
-    .addStringOption((option) =>
-      option
-        .setName("project_name")
-        .setDescription("Name of the project. Beware of typos.")
-        .setRequired(true)
-    ),
-  new SlashCommandBuilder()
-    .setName("isthere")
-    .setDescription("Is there a project with this name")
-    .addStringOption((option) =>
-      option
-        .setName("project_name")
-        .setDescription("Name of the project")
-        .setRequired(true)
-    ),
-  new SlashCommandBuilder()
-    .setName("requestadd")
-    .setDescription("Request admins to add you to a certain project.")
-    .addStringOption((option) =>
-      option
-        .setName("project_name")
-        .setDescription("Name of the project")
-        .setRequired(true)
-    ),
-  new SlashCommandBuilder().setName("funfact").setDescription("A funfact."),
-  new SlashCommandBuilder()
-    .setName("available")
-    .setDescription("Any available languages")
-    .addRoleOption((option) =>
-      option.setName("language").setDescription("A language").setRequired(true)
-    ),
-  new SlashCommandBuilder()
-    .setName("suggest")
-    .setDescription("Make a suggestion to mods.")
-    .addStringOption((option) =>
-      option
-        .setName("suggestion")
-        .setDescription("Type here.")
-        .setRequired(true)
-    ),
-].map((command) => command.toJSON());
-
-const rest = new REST({ version: "9" }).setToken(process.env.CLIENT_TOKEN);
-
 // Role name of a moderator.
-const moderatorRole = process.env.MODROLE;
-const projectsCategory = process.env.PROJECTSCATEGORY;
-
-rest
-  .put(
-    Routes.applicationGuildCommands(
-      process.env.CLIENT_ID,
-      process.env.GUILD_ID
-    ),
-    { body: commands }
-  )
-  .then(() => console.log("Successfully registered application commands."))
-  .catch(console.error);
-
-const myIntents = new Intents();
-myIntents.add(
-  Intents.FLAGS.GUILDS,
-  Intents.FLAGS.GUILD_MESSAGES,
-  Intents.FLAGS.GUILD_MESSAGE_REACTIONS
-);
-const client = new Client({ intents: myIntents });
+const moderatorRole = modRole;
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -116,21 +59,16 @@ client.on("ready", () => {
 
 // Sends a welcome message to newly joined users.
 client.on("guildMemberAdd", (member) => {
-  member.send(i18next.t("welcomeMessage"));
+  member.send(t("welcomeMessage"));
 });
 
 client.on("messageCreate", async (message) => {
   // Finds the required channels in Guild.
-  const commandsChannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "commands"
-  );
-
-  const alertChannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "sass-alert-channel"
-  );
-
-  const privateChannel = message.guild.channels.cache.find(
-    (channel) => channel.name === "private"
+  const commandsChannel = functions.findChannel(message, commandsChannelName);
+  const alertChannel = functions.findChannel(message, alertsChannelName);
+  const privateChannel = functions.findChannel(
+    message,
+    notificationChannelName
   );
 
   // Extracts the first word of message to check for commands later.
@@ -140,7 +78,7 @@ client.on("messageCreate", async (message) => {
     // Manages the channel for commands by deleting the messages there.
     case message.channel === commandsChannel && !message.author.bot:
       message.channel
-        .send(randomText("onlyCommands", {}))
+        .send(functions.randomText("onlyCommands", {}))
         .then((msg) => {
           message.delete();
           setTimeout(() => msg.delete(), 5000);
@@ -152,7 +90,7 @@ client.on("messageCreate", async (message) => {
     case message.channel === alertChannel && !message.author.bot:
       if (!message.content.includes("🚨"))
         message.channel
-          .send(randomText("onlyAlerts", {}))
+          .send(functions.randomText("onlyAlerts", {}))
           .then((msg) => {
             message.delete();
             setTimeout(() => msg.delete(), 5000);
@@ -163,103 +101,95 @@ client.on("messageCreate", async (message) => {
     // When !announcement is used, bot relays the message to announcement channel.
     case messageFirstWord === "!announcement" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      try {
-        message.guild.channels.cache
-          .find((channel) => channel.name === "announcements")
-          .send(
-            randomText("announcement", {
-              announcement: message.content.substring(
-                message.content.indexOf(" ") + 1
-              ),
-            })
-          );
-      } catch {
-        console.log("Announcements channel probably doesn't exist.");
-      }
+      message.guild.channels.cache
+        .find((channel) => channel.name === "announcements")
+        .send(
+          functions.randomText("announcement", {
+            announcement: message.content.substring(
+              message.content.indexOf(" ") + 1
+            ),
+          })
+        );
       break;
 
     // A basic reminder.
     case messageFirstWord === "!remindme" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      try {
-        message.reply(randomText("reminder.remindWhat", {}));
+      message.reply(functions.randomText("reminder.remindWhat", {}));
 
-        const filter = (m) => {
-          return m.author.id === message.author.id;
-        };
+      var filter = (m) => {
+        return m.author.id === message.author.id;
+      };
 
-        const collector = message.channel.createMessageCollector({
+      var collector = message.channel.createMessageCollector({
+        filter,
+        time: 60000,
+        max: 1,
+      });
+
+      collector.on("collect", (text) => {
+        const remindText = text.content;
+
+        text.reply(functions.randomText("reminder.when", {}));
+
+        var collector = message.channel.createMessageCollector({
           filter,
           time: 60000,
           max: 1,
         });
 
-        collector.on("collect", (text) => {
-          const remindText = text.content;
+        collector.on("collect", (when) => {
+          unixTimeWhen = Date.parse(when.content);
 
-          text.reply(randomText("reminder.when", {}));
+          if (isNaN(unixTimeWhen)) {
+            when.reply(functions.randomText("reminder.notADate", {}));
+            return console.log("Someone didn't get the date right.");
+          }
 
-          const collector = message.channel.createMessageCollector({
+          when.reply(functions.randomText("reminder.howLongBefore", {}));
+
+          var collector = message.channel.createMessageCollector({
             filter,
             time: 60000,
             max: 1,
           });
 
-          collector.on("collect", (when) => {
-            unixTimeWhen = Date.parse(when.content);
-
-            if (isNaN(unixTimeWhen)) {
-              when.reply(randomText("reminder.notADate", {}));
-              return console.log("Someone didn't get the date right.");
+          collector.on("collect", (minutesBefore) => {
+            if (!Number.isInteger(parseInt(minutesBefore.content))) {
+              when.reply(functions.randomText("reminder.notAnInt", {}));
+              return console.log("Someone didn't get the minutes left right.");
             }
 
-            when.reply(randomText("reminder.howLongBefore", {}));
+            differenceBetween = unixTimeWhen - Date.now();
 
-            const collector = message.channel.createMessageCollector({
-              filter,
-              time: 60000,
-              max: 1,
-            });
+            minutesBefore.reply(functions.randomText("requestAcquired", {}));
 
-            collector.on("collect", (minutesBefore) => {
-              if (!Number.isInteger(parseInt(minutesBefore.content))) {
-                when.reply(randomText("reminder.notAnInt", {}));
-                return console.log(
-                  "Someone didn't get the minutes left right."
-                );
-              }
-
-              differenceBetween = unixTimeWhen - Date.now();
-
-              minutesBefore.reply(randomText("requestAcquired", {}));
-
-              setTimeout(
-                () =>
-                  minutesBefore.reply(
-                    randomText("reminder.minutesLeft", {
-                      minutesBefore: minutesBefore.content,
-                      remindText: remindText,
-                    })
-                  ),
-                differenceBetween - minutesBefore.content * 60 * 1000
-              );
-              setTimeout(
-                () =>
-                  minutesBefore.reply(
-                    randomText("reminder.itsTime", {
-                      remindText: remindText,
-                    })
-                  ),
-                differenceBetween
-              );
-            });
+            setTimeout(
+              () =>
+                minutesBefore.reply(
+                  functions.randomText("reminder.minutesLeft", {
+                    minutesBefore: minutesBefore.content,
+                    remindText: remindText,
+                  })
+                ),
+              differenceBetween - minutesBefore.content * 60 * 1000
+            );
+            setTimeout(
+              () =>
+                minutesBefore.reply(
+                  functions.randomText("reminder.itsTime", {
+                    remindText: remindText,
+                  })
+                ),
+              differenceBetween
+            );
           });
         });
-      } catch {
-        console.log("Something went wrong with !remindme.");
-      }
+      });
+
       break;
 
+    // Stats for member count. Has issues.
     case messageFirstWord === "!stats" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
       var memberCountMessage = "";
@@ -279,362 +209,126 @@ ${memberCountMessage}
 
       break;
 
+    // Adds several users to a channel.
     case messageFirstWord === "!add" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      try {
-        const mentionedMembersMap = message.mentions.members;
+      const mentionedMembersMap = message.mentions.members;
 
-        // To where?
-        message.reply(randomText("add.where", {}));
+      // To where?
+      message.reply(functions.randomText("add.where", {}));
 
-        const filter = (m) => {
-          return m.author.id === message.author.id;
-        };
-
-        const collector = message.channel.createMessageCollector({
-          filter,
-          time: 60000,
-          max: 1,
-        });
-
-        collector.on("collect", (channel) => {
-          if (
-            (foundChannel = message.guild.channels.cache.find(
-              (c) => c.name === discordStyleProjectName(channel.content)
-            ))
-          ) {
-            mentionedMembersMap.map((value, key) => {
-              foundChannel.permissionOverwrites.edit(key, {
-                VIEW_CHANNEL: true,
-              });
-
-              message.reply(
-                randomText("add.addedPrompt", {
-                  user: value.user.id,
-                  channel: foundChannel.id,
-                })
-              );
-
-              privateChannel.send(
-                randomText("add.addedPrompt", {
-                  user: value.user.id,
-                  channel: foundChannel.id,
-                })
-              );
-            });
-          } else {
-            message.guild.channels
-              .create(discordStyleProjectName(channel.content), {
-                type: "GUILD_TEXT",
-                permissionOverwrites: [
-                  {
-                    id: message.guild.id,
-                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                  },
-                ],
-              })
-              .then((createdChannel) => {
-                let category = message.guild.channels.cache.find(
-                  (c) =>
-                    c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-                );
-
-                if (!category)
-                  throw new Error("Category channel does not exist");
-                createdChannel.setParent(category.id);
-
-                message.reply(
-                  randomText("channelCreatedWOAdd", {
-                    createdChannel: createdChannel,
-                  })
-                );
-
-                mentionedMembersMap.map((value, key) => {
-                  createdChannel.permissionOverwrites.edit(key, {
-                    VIEW_CHANNEL: true,
-                  });
-
-                  message.reply(
-                    randomText("add.addedPrompt", {
-                      user: value.user.id,
-                      channel: createdChannel.id,
-                    })
-                  );
-
-                  privateChannel.send(
-                    randomText("add.addedPrompt", {
-                      user: value.user.id,
-                      channel: createdChannel.id,
-                    })
-                  );
-                });
-              });
-          }
-
-          channel.reply(randomText("requestCompleted", {}));
-        });
-      } catch {
-        console.log("Problem with !add.");
-      }
-
-      break;
-
-    default:
-      break;
-  }
-});
-
-// Commands.
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
-
-  const privateChannel = interaction.guild.channels.cache.find(
-    (channel) => channel.name === "private"
-  );
-
-  const suggestionChannel = interaction.guild.channels.cache.find(
-    (channel) => channel.name === "suggestion-box"
-  );
-
-  const { commandName } = interaction;
-
-  switch (true) {
-    // Adds a user to the spesified channel. If channel doesn't exist, creates it.
-    case commandName === "addme":
-      projectName = interaction.options.getString("project_name");
-      await interaction.reply(
-        randomText("addMePrompt", { projectName: projectName })
-      );
-      const replyMessage = await interaction.fetchReply();
-
-      const filter = (reaction, user) => {
-        return reaction.emoji.name === "👍" && user.id === interaction.user.id;
+      var filter = (m) => {
+        return m.author.id === message.author.id;
       };
 
-      try {
-        const collector = replyMessage.createReactionCollector({
-          filter,
-          time: 100000,
-        });
+      var collector = message.channel.createMessageCollector({
+        filter,
+        time: 60000,
+        max: 1,
+      });
 
-        collector.on("collect", () => {
-          if (
-            (foundChannel = interaction.guild.channels.cache.find(
-              (channel) => channel.name === discordStyleProjectName(projectName)
-            ))
-          ) {
-            foundChannel.permissionOverwrites.edit(interaction.user.id, {
+      collector.on("collect", (channel) => {
+        if (
+          (foundChannel = message.guild.channels.cache.find(
+            (c) => c.name === functions.discordStyleProjectName(channel.content)
+          ))
+        ) {
+          mentionedMembersMap.map((value, key) => {
+            foundChannel.permissionOverwrites.edit(key, {
               VIEW_CHANNEL: true,
             });
 
-            interaction.channel.send(
-              randomText("channelExisted", {
-                user: interaction.user.id,
-                project: foundChannel.id,
+            message.reply(
+              functions.randomText("add.addedPrompt", {
+                user: value.user.id,
+                channel: foundChannel.id,
               })
             );
 
             privateChannel.send(
-              randomText("channelExisted", {
-                user: interaction.user.id,
-                project: foundChannel.id,
+              functions.randomText("add.addedPrompt", {
+                user: value.user.id,
+                channel: foundChannel.id,
               })
             );
-          } else {
-            interaction.guild.channels
-              .create(projectName, {
-                type: "GUILD_TEXT",
-                permissionOverwrites: [
-                  {
-                    id: interaction.guild.id,
-                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                  },
-                  {
-                    id: interaction.user.id,
-                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                  },
-                ],
-              })
-              .then((createdChannel) => {
-                let category = interaction.guild.channels.cache.find(
-                  (c) =>
-                    c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-                );
+          });
+        } else {
+          message.guild.channels
+            .create(functions.discordStyleProjectName(channel.content), {
+              type: "GUILD_TEXT",
+              permissionOverwrites: [
+                {
+                  id: message.guild.id,
+                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                },
+              ],
+            })
+            .then((createdChannel) => {
+              let category = message.guild.channels.cache.find(
+                (c) => c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+              );
 
-                if (!category)
-                  throw new Error("Category channel does not exist");
-                createdChannel.setParent(category.id);
+              if (!category) throw new Error("Category channel does not exist");
+              createdChannel.setParent(category.id);
 
-                interaction.channel.send(
-                  randomText("channelCreated", {
-                    createdChannel: createdChannel.id,
-                    user: interaction.user.id,
+              message.reply(
+                functions.randomText("channelCreatedWOAdd", {
+                  createdChannel: createdChannel,
+                })
+              );
+
+              privateChannel.send(
+                functions.randomText("channelCreatedWOAdd", {
+                  createdChannel: createdChannel,
+                })
+              );
+
+              mentionedMembersMap.map((value, key) => {
+                createdChannel.permissionOverwrites.edit(key, {
+                  VIEW_CHANNEL: true,
+                });
+
+                message.reply(
+                  functions.randomText("add.addedPrompt", {
+                    user: value.user.id,
+                    channel: createdChannel.id,
                   })
                 );
 
                 privateChannel.send(
-                  randomText("channelCreated", {
-                    createdChannel: createdChannel.id,
-                    user: interaction.user.id,
+                  functions.randomText("add.addedPrompt", {
+                    user: value.user.id,
+                    channel: createdChannel.id,
                   })
                 );
-              })
-              .catch(console.error);
-          }
-        });
-      } catch {
-        console.log("Something wrong with addme!");
-      }
-      break;
+              });
+            });
+        }
 
-    // Is there a channel with this name?
-    case commandName === "isthere":
-      projectName = interaction.options.getString("project_name");
-      if (
-        (foundChannel = interaction.guild.channels.cache.find(
-          (channel) => channel.name === discordStyleProjectName(projectName)
-        ))
-      )
-        interaction.reply(
-          randomText("isThere.yes", { foundChannel: foundChannel.id })
-        );
-      else interaction.reply(randomText("isThere.no", {}));
-      break;
-
-    // User can request to be added to a channel.
-    case commandName === "requestadd":
-      projectName = interaction.options.getString("project_name");
-      await interaction.user.send(
-        `Wait for approval to access ${projectName}.`
-      );
-      await interaction.reply({
-        content: randomText("requestAcquired", {}),
-        ephemeral: true,
+        channel.reply(functions.randomText("requestCompleted", {}));
       });
 
-      await privateChannel
-        .send(
-          randomText("addRequest", {
-            user: interaction.user.id,
-            projectName: projectName,
-          })
-        )
-        .then((replyMessage) => {
-          const filter2 = (reaction) => reaction.emoji.name === "👍";
-
-          try {
-            const collector = replyMessage.createReactionCollector({
-              filter2,
-              time: 300000,
-            });
-
-            collector.on("collect", () => {
-              if (
-                (foundChannel = interaction.guild.channels.cache.find(
-                  (channel) =>
-                    channel.name === discordStyleProjectName(projectName)
-                ))
-              ) {
-                foundChannel.permissionOverwrites.edit(interaction.user.id, {
-                  VIEW_CHANNEL: true,
-                });
-
-                replyMessage.channel.send(
-                  randomText("channelExisted", {
-                    user: interaction.user.id,
-                    project: foundChannel.id,
-                  })
-                );
-                interaction.user.send(
-                  randomText("userAddNotify", {
-                    user: interaction.user.id,
-                    project: foundChannel.id,
-                  })
-                );
-              } else {
-                interaction.guild.channels
-                  .create(projectName, {
-                    type: "GUILD_TEXT",
-                    permissionOverwrites: [
-                      {
-                        id: interaction.guild.id,
-                        deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                      },
-                      {
-                        id: interaction.user.id,
-                        allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                      },
-                    ],
-                  })
-                  .then((createdChannel) => {
-                    let category = interaction.guild.channels.cache.find(
-                      (c) =>
-                        c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-                    );
-
-                    if (!category)
-                      throw new Error("Category channel does not exist");
-                    createdChannel.setParent(category.id);
-
-                    replyMessage.channel.send(
-                      randomText("channelCreated", {
-                        createdChannel: createdChannel.id,
-                        user: interaction.user.id,
-                      })
-                    );
-                    interaction.user.send(
-                      randomText("userAddNotify", {
-                        user: interaction.user.id,
-                        project: createdChannel,
-                      })
-                    );
-                  });
-              }
-            });
-          } catch {
-            console.error;
-          }
-        });
-
-      break;
-
-    case commandName === "funfact":
-      interaction.reply(`Fun fact! ${randomText("funfacts", {})}`);
-
-      break;
-
-    case commandName === "available":
-      role = interaction.options.getRole("language");
-
-      interaction.reply(
-        randomText("available.asking", {
-          user: interaction.user.id,
-          role: role.id,
-        })
-      );
-
-      break;
-
-    case commandName === "suggest":
-      suggestion = interaction.options.getString("suggestion");
-
-      suggestionChannel.send(
-        randomText("suggestion.personSuggests", {
-          user: interaction.user.id,
-          suggestion: suggestion,
-        })
-      );
-
-      interaction.reply({
-        content: randomText("suggestion.acquired", {}),
-        ephemeral: true,
-      });
-
-      break;
-
-    default:
       break;
   }
 });
 
-client.login(process.env.CLIENT_TOKEN); //login bot using token
+// For commands.
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    return interaction.reply({
+      content: "There was an error while executing this command!",
+      ephemeral: true,
+    });
+  }
+});
+
+client.login(token); // Login bot using token.
