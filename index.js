@@ -61,13 +61,24 @@ client.on("ready", async () => {
 
 // Sends a welcome message to newly joined users.
 client.on("guildMemberAdd", (member) => {
-  member.send(t("welcomeMessage"));
+  member.send({
+    embeds: [
+      {
+        color: embedColor,
+        title: "Welcome!",
+        description: i18next.t("welcomeMessage"),
+      },
+    ],
+  });
 });
 
 client.on("messageCreate", async (message) => {
   // Finds the required channels in Guild.
-  const commandsChannel = functions.findChannel(message, commandsChannelName);
-  const alertChannel = functions.findChannel(message, alertsChannelName);
+  const commandsChannel = await functions.findChannel(
+    message,
+    commandsChannelName
+  );
+  const alertChannel = await functions.findChannel(message, alertsChannelName);
 
   // Extracts the first word of message to check for commands later.
   messageFirstWord = message.content.split(" ")[0];
@@ -99,7 +110,7 @@ client.on("messageCreate", async (message) => {
     // When !announcement is used, bot relays the message to announcement channel.
     case messageFirstWord === "!announcement" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      functions.findChannel(message, announcementsChannelName).send({
+      await functions.findChannel(message, announcementsChannelName).send({
         embeds: [
           {
             color: embedColor,
@@ -231,7 +242,7 @@ ${memberList}`);
     // Adds several users to a channel.
     case messageFirstWord === "!add" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      var privateChannel = functions.findChannel(
+      var privateChannel = await functions.findChannel(
         message,
         notificationChannelName
       );
@@ -251,12 +262,12 @@ ${memberList}`);
         max: 1,
       });
 
-      collector.on("collect", (channel) => {
-        if (
-          (foundChannel = message.guild.channels.cache.find(
-            (c) => c.name === functions.discordStyleProjectName(channel.content)
-          ))
-        ) {
+      collector.on("collect", async (channel) => {
+        var foundChannel = await functions.findChannel(
+          message,
+          functions.discordStyleProjectName(channel.content)
+        );
+        if (foundChannel) {
           mentionedMembersMap.map((value, key) => {
             foundChannel.permissionOverwrites.edit(key, {
               VIEW_CHANNEL: true,
@@ -339,7 +350,7 @@ ${memberList}`);
       var projectName = message.content.substring(
         message.content.indexOf(" ") + 1
       );
-      var foundChannel = functions.findChannel(
+      var foundChannel = await functions.findChannel(
         message,
         functions.discordStyleProjectName(projectName)
       );
@@ -352,7 +363,7 @@ ${memberList}`);
 
     case messageFirstWord === "!addme" &&
       message.member.roles.cache.some((role) => role.name === moderatorRole):
-      var privateChannel = functions.findChannel(
+      var privateChannel = await functions.findChannel(
         message,
         notificationChannelName
       );
@@ -379,8 +390,8 @@ ${memberList}`);
             time: 100000,
           });
 
-          collector.on("collect", () => {
-            const foundChannel = functions.findChannel(
+          collector.on("collect", async () => {
+            const foundChannel = await functions.findChannel(
               message,
               functions.discordStyleProjectName(projectName)
             );

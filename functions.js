@@ -15,7 +15,8 @@ i18next.init({
 module.exports = {
   // Selects a random text from a JSON array.
   randomText: (path, values, title) => {
-    values["returnObjects"] = true;
+    values.returnObjects = true;
+    values.interpolation = { escapeValue: false };
 
     return {
       embeds: [
@@ -31,8 +32,9 @@ module.exports = {
   },
 
   // Selects a random text from a JSON array.
-  randomEphemeralText: (path, values, title) => {
-    values["returnObjects"] = true;
+  randomEphemeralText: (path, values) => {
+    values.returnObjects = true;
+    values.interpolation = { escapeValue: false };
 
     return i18next.t(path, values)[
       Math.floor(Math.random() * i18next.t(path, values).length)

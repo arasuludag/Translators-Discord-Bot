@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
 const { projectsCategory, notificationChannelName } = require("../config.json");
+const { Permissions } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,10 +14,17 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    const privateChannel = functions.findChannel(interaction, notificationChannelName);
+    const privateChannel = functions.findChannel(
+      interaction,
+      notificationChannelName
+    );
     const projectName = interaction.options.getString("project_name");
 
-    await interaction.user.send(`Wait for approval to access ${projectName}.`);
+    await interaction.user.send(
+      functions.randomText("waitApproval", {
+        project: projectName,
+      })
+    );
     await interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
@@ -37,8 +45,8 @@ module.exports = {
           time: 300000,
         });
 
-        collector.on("collect", () => {
-          const foundChannel = functions.findChannel(
+        collector.on("collect", async () => {
+          const foundChannel = await functions.findChannel(
             interaction,
             functions.discordStyleProjectName(projectName)
           );
