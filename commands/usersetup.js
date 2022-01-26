@@ -54,7 +54,17 @@ module.exports = {
         });
 
         collector.on("collect", () => {
-          roleName = role.name.charAt(0).toUpperCase() + role.name.slice(1);
+          var roleName;
+          switch (role.name) {
+            case "csp":
+              roleName = "Simplified Chinese";
+              break;
+
+            default:
+              roleName = role.name.charAt(0).toUpperCase() + role.name.slice(1);
+              break;
+          }
+
           interaction.member
             .setNickname(`${nickName} - ${roleName}`)
             .catch(() => {

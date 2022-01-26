@@ -10,6 +10,7 @@ const {
   commandsChannelName,
   notificationChannelName,
   announcementsChannelName,
+  generalChannelName,
   embedColor,
 } = require("./config.json");
 const functions = require("./functions.js");
@@ -65,8 +66,8 @@ client.on("guildMemberAdd", (member) => {
     embeds: [
       {
         color: embedColor,
-        title: "Welcome!",
-        description: i18next.t("welcomeMessage"),
+        title: i18next.t("welcome.title"),
+        description: i18next.t("welcome.message"),
       },
     ],
   });
@@ -79,6 +80,9 @@ client.on("messageCreate", async (message) => {
     commandsChannelName
   );
   const alertChannel = await functions.findChannel(message, alertsChannelName);
+  const isMod = message.member.roles.cache.some(
+    (role) => role.name === moderatorRole
+  );
 
   // Extracts the first word of message to check for commands later.
   messageFirstWord = message.content.split(" ")[0];
@@ -100,8 +104,19 @@ client.on("messageCreate", async (message) => {
       if (!message.content.includes("🚨"))
         message.channel
           .send(functions.randomText("onlyAlerts", {}))
-          .then((msg) => {
+          .then(async (msg) => {
+            const generalChannel = await functions.findChannel(
+              message,
+              generalChannelName
+            );
+            generalChannel.send(
+              functions.randomText("saidInAlertChannel", {
+                user: message.author.id,
+                message: message.content,
+              })
+            );
             message.delete();
+
             setTimeout(() => msg.delete(), 5000);
           })
           .catch(console.error);
@@ -124,8 +139,7 @@ client.on("messageCreate", async (message) => {
       break;
 
     // A basic reminder.
-    case messageFirstWord === "!remindme" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    case messageFirstWord === "!remindme" && isMod:
       message.reply(functions.randomText("reminder.remindWhat", {}));
 
       var filter = (m) => {
@@ -201,8 +215,7 @@ client.on("messageCreate", async (message) => {
       break;
 
     // Stats for member count. Has issues.
-    case messageFirstWord === "!stats" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    case messageFirstWord === "!stats" && isMod:
       var memberCountMessage = "";
 
       message.guild.roles.cache.forEach((role) => {
@@ -222,8 +235,7 @@ ${memberCountMessage}
       break;
 
     // Counts the members in spesified role. Has issues.
-    case messageFirstWord === "!list" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    case messageFirstWord === "!list" && isMod:
       const mentionedRolesMap = message.mentions.roles;
       mentionedRolesMap.map((values, keys) => {
         var memberList = "";
@@ -240,8 +252,7 @@ ${memberList}`);
       break;
 
     // Adds several users to a channel.
-    case messageFirstWord === "!add" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    case messageFirstWord === "!add" && isMod:
       var privateChannel = await functions.findChannel(
         message,
         notificationChannelName
@@ -345,8 +356,8 @@ ${memberList}`);
 
       break;
 
-    case messageFirstWord === "!isthere" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    // Is there a channel with this name?
+    case messageFirstWord === "!isthere" && isMod:
       var projectName = message.content.substring(
         message.content.indexOf(" ") + 1
       );
@@ -361,8 +372,8 @@ ${memberList}`);
       else message.reply(functions.randomText("isThere.no", {}));
       break;
 
-    case messageFirstWord === "!addme" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    // Add me to this channel. "!addme channel-name"
+    case messageFirstWord === "!addme" && isMod:
       var privateChannel = await functions.findChannel(
         message,
         notificationChannelName
