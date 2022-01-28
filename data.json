@@ -1,0 +1,145 @@
+{
+  "suggestion": {
+    "acquired": ["Suggestion aquired."],
+    "personSuggests": ["<@{{user}}> made a suggestion. {{suggestion}}"],
+    "suggestionRecieved": [
+      "We've received the following suggestion you submitted. We are going to get back to you as soon as possible: {{suggestion}}"
+    ]
+  },
+
+  "available": {
+    "asking": [
+      "<@{{user}}> is asking if any <@&{{role}}> linguists are available."
+    ]
+  },
+
+  "requestAcquired": ["Request Acquired."],
+
+  "waitApproval": ["Wait for approval to access {{project}}"],
+
+  "addRequest": [
+    "<@{{user}}> wants to be added to {{projectName}}. React ✅ to approve."
+  ],
+
+  "channelExisted": [
+    "<#{{project}}> channel already existed. <@{{user}}> was added to the channel."
+  ],
+
+  "channelExisted_RA": [
+    "Channel already existed, added <@{{user}}> to <#{{project}}>!\n <@{{approved}}> approved."
+  ],
+
+  "userAddNotify": ["You have been added to <#{{project}}>!"],
+
+  "channelCreated": [
+    "<#{{createdChannel}}> channel was created. <@{{user}}> was added to the channel."
+  ],
+
+  "channelCreated_RA": [
+    "Channel created for <#{{createdChannel}}> and <@{{user}}> added!\n <@{{approved}}> approved."
+  ],
+
+  "requestAddRejected": [
+    "<@{{user}}>'s request rejected for {{channel}}!\n <@{{approved}}> rejected."
+  ],
+
+  "requestAddRejectedDM": [
+    "Your request has been rejected for access to {{channel}}!"
+  ],
+
+  "channelCreatedWOAdd": ["Channel created for <#{{createdChannel}}>!"],
+
+  "isThere": {
+    "yes": ["Yes. There is <#{{foundChannel}}>."],
+    "no": ["No."]
+  },
+
+  "addMePrompt": [
+    "Do you confirm that you work on {{projectName}} and want to be added to the channel? React this message with 👍 if YES."
+  ],
+  "addMePromptEmpty": ["You have failed to enter a project name."],
+
+  "alert": {
+    "message": [
+      "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for their target language:\n \n {{context}}"
+    ]
+  },
+
+  "saidInAlertChannel": [
+    "<@{{user}}> said '{{message}}' in an alert channel."
+  ],
+
+  "reminder": {
+    "remindWhat": ["Remind you what?"],
+    "when": [
+      "When will this take place? (Ex. 01 Jan 2022 20:20 GMT or UTC+3 etc.)"
+    ],
+    "notADate": ["That is not a date. I am cancelling your request."],
+    "howLongBefore": ["How long before I should remind? (In minutes) (Ex. 20)"],
+    "notAnInt": ["That is not an integer. I am cancelling your request."],
+    "minutesLeft": ["{{minutesBefore}} minutes left for {{remindText}}"],
+    "itsTime": ["It's time for {{remindText}}"]
+  },
+
+  "add": {
+    "where": ["To where?"],
+    "addedPrompt": ["Added <@{{user}}> to <#{{channel}}>!"]
+  },
+
+  "requestCompleted": ["Done."],
+
+  "setup": {
+    "request": [
+      "<@{{user}}> claims to have {{nickName}} as their full name and <@&{{role}}> as their target language.\nReact ✅ to approve."
+    ],
+    "accepted": ["<@{{user}}> accepted as {{nickName}} and <@&{{role}}>."],
+    "acceptedDM": ["You are accepted as {{nickName}} and {{role}}."],
+    "waitForApproveDM": ["Wait for approval as {{nickName}} and {{role}}."],
+    "error": [
+      "There's an error. Probably about permissions. Maybe you're the server owner. That's why."
+    ],
+    "rejectedDM": [
+      "<@{{user}}> rejected as {{nickName}} and {{role}}.\nIt seems one of the details you entered is incorrect. Please go back to the reception channel and try /usersetup again."
+    ],
+    "rejected": ["<@{{user}}> rejected as {{nickName}} and <@&{{role}}>."],
+    "afterApproval": "Hello again!\n \nThis is Sassy, your friendly bot. 🤖 \n \nYou now have access to the server! 🥳\n \nPlease feel free to browse; <#{{discord101}}> is a good channel to start from if you're completely new to Discord. If you're already familiar with Discord, maybe we could interest you in the <#{{channelindex}}> channel to see which channel is used for what, or you could check one of our linguists' reading speed manifesto in the <#{{readingspeed}}> channel, and read previous LM-Plint meeting recaps in the <#{{lmmeetingrecaps}}> channel.\n \nAlso, I come with a bunch of commands to help everyone make the best out of the server!\n \nTry /funfact command in the <#{{general}}> channel to learn a random fun fact about the server or its members.\n \nReach out to other subtitlers who speak a certain language for assistance by using the /available command in the <#{{globallinguisticsupport}}> channel and selecting the language you need.\n \nIf you're working on a project and want to collaborate with other people working on the same project, use /requestadd command in #project-channel-request and type in the exact name of the project you're working on to notify the admins, and wait for approval!\n \nAre you curious about what your colleagues think about a certain issue? Go to any relevant channel to your question and use the /poll command to conduct a poll.\n \nSaw a project in SASS and want to alert your colleagues to it? You can use the /alert command in any of the channels and choose whether it was a longform task or a supplemental task, enter however much information you have about the project, and I'll automatically direct your message to the <#{{sassalert}}> or <#{{supplementalalert}}> channel depending on what kind of task it was.\n \nAnd finally, if you have any suggestions about the Discord server, the issues you have in DTT that you'd like the Plint language managers to bring up during the meetings, a language or pool specific question or suggestion that you'd like to ask in your native language, or anything else, you can make suggestions using the /suggest command. As soon as you suggest something, you'll be sent a copy of your suggestion, and your suggestion will only be visible to you, and the admins or your language manager(s).\n \nYou can find all this information and more in the <#{{botcommands}}> channel.\n \nHappy subtitling!"
+  },
+
+  "poll": {
+    "itself": [
+      "<@{{user}}> asks, {{pollText}}. \n 👍 for 'Yes' \n👎 for 'No' \n🤷 for 'Maybe' \n💡 for 'None, I'll share my opinion with you using the /suggest command.' \n \nThe owner should react ✅ after votes are collected."
+    ],
+    "results": [
+      "👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
+    ],
+    "timeLimitClose": [
+      "Time is up, so I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
+    ]
+  },
+
+  "welcome": {
+    "message": "Hello, subtitler! \n \nWelcome to the Plint DTT Discord server. I'm the server's bot, Sassy. 🤖\n \nRight now, you only have access to one channel called <#{{reception}}>. This is a waiting room for newcomers where they can set up their server profile and wait until an admin gives them access to the rest of the server.\n \nAll you have to do to setup your user profile is to go back to the reception channel and type /usersetup. Press space, enter your name when prompted, press tab, select your language from the list, and press enter.\n \nAfter that, you can sit back and relax until an admin responds to your request. Once this happens, your nickname in the server is going to be changed to 'Name - Target Language' automatically. You will receive another message from me letting you know that you can now access the server, and I'm going to provide you with more information about how to use Discord and the server rules.\n \nHappy subtitling!",
+    "title": "Welcome!"
+  },
+
+  "addFunfact": {
+    "empty": ["You didn't write anything."],
+    "added": ["Added {{funfact}}."]
+  },
+
+  "movedToArchive": ["<@{{user}}> moved <#{{channel}}> to archive."],
+  "notMovedToArchive": [
+    "<@{{user}}> rejected <@{{requestedUser}}>'s request to archive <#{{channel}}>"
+  ],
+  "movedToWO_User": ["<#{{channel}}> has been archived."],
+
+  "isThisAlert": ["Is this an alert? 👍 if Yes, 👎 if No."],
+
+  "requestedArchive": [
+    "<@{{user}}> requested <#{{channel}}> to be archived. \n \nReason: {{reason}}"
+  ],
+
+  "deletedMessages": [
+    "<@{{user}}> deleted {{howMany}} messages from <#{{channel}}>."
+  ]
+}

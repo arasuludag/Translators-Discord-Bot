@@ -1,11 +1,24 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const functions = require("../functions.js");
+const { embedColor } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("funfact")
     .setDescription("A funfact."),
   async execute(interaction) {
-    interaction.reply(`Fun fact! ${functions.randomText("funfacts", {})}`);
+    const funfacts = require("../funfacts.json");
+
+    interaction.reply({
+      embeds: [
+        {
+          color: embedColor,
+          title: "Funfact!",
+          description:
+            funfacts.funfacts[
+              Math.floor(Math.random() * funfacts.funfacts.length)
+            ],
+        },
+      ],
+    });
   },
 };

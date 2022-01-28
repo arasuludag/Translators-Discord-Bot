@@ -6,9 +6,11 @@ const {
   token,
   modRole,
   projectsCategory,
-  alertsChannelName,
-  commandsChannelName,
-  notificationChannelName,
+  sassAlertChannelID,
+  suppAlertChannelID,
+  archiveCategory,
+  logsChannelName,
+  receptionChannelID,
   announcementsChannelName,
   generalChannelName,
   embedColor,
@@ -19,7 +21,8 @@ const myIntents = new Intents();
 myIntents.add(
   Intents.FLAGS.GUILDS,
   Intents.FLAGS.GUILD_MESSAGES,
-  Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+  Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+  Intents.FLAGS.GUILD_MEMBERS
 );
 const client = new Client({ intents: myIntents });
 
@@ -67,7 +70,9 @@ client.on("guildMemberAdd", (member) => {
       {
         color: embedColor,
         title: i18next.t("welcome.title"),
-        description: i18next.t("welcome.message"),
+        description: i18next.t("welcome.message", {
+          reception: receptionChannelID,
+        }),
       },
     ],
   });
@@ -75,11 +80,14 @@ client.on("guildMemberAdd", (member) => {
 
 client.on("messageCreate", async (message) => {
   // Finds the required channels in Guild.
-  const commandsChannel = await functions.findChannel(
+  const sassAlertChannel = await functions.findChannelByID(
     message,
-    commandsChannelName
+    sassAlertChannelID
   );
-  const alertChannel = await functions.findChannel(message, alertsChannelName);
+  const suppAlertChannel = await functions.findChannelByID(
+    message,
+    suppAlertChannelID
+  );
   const isMod = message.member.roles.cache.some(
     (role) => role.name === moderatorRole
   );
@@ -88,43 +96,67 @@ client.on("messageCreate", async (message) => {
   messageFirstWord = message.content.split(" ")[0];
 
   switch (true) {
-    // Manages the channel for commands by deleting the messages there.
-    case message.channel === commandsChannel && !message.author.bot:
-      message.channel
-        .send(functions.randomText("onlyCommands", {}))
-        .then((msg) => {
-          message.delete();
-          setTimeout(() => msg.delete(), 5000);
-        })
-        .catch(console.error);
-      break;
+    // Manages the alert channel by asking author if this is what they wanted.
+    case (message.channel === sassAlertChannel ||
+      message.channel === suppAlertChannel) &&
+      !message.author.bot:
+      message
+        .reply(functions.randomText("isThisAlert", {}))
+        .then((replyMessage) => {
+          var reacted = false;
+          replyMessage.react("👍");
+          replyMessage.react("👎");
 
-    // Manages the channel for commands by deleting the messages without 🚨 there.
-    case message.channel === alertChannel && !message.author.bot:
-      if (!message.content.includes("🚨"))
-        message.channel
-          .send(functions.randomText("onlyAlerts", {}))
-          .then(async (msg) => {
-            const generalChannel = await functions.findChannel(
-              message,
-              generalChannelName
+          const filter = (reaction, user) => {
+            return (
+              (reaction.emoji.name === "👍" || reaction.emoji.name === "👎") &&
+              user.id === message.author.id &&
+              !user.bot
             );
-            generalChannel.send(
-              functions.randomText("saidInAlertChannel", {
-                user: message.author.id,
-                message: message.content,
-              })
-            );
-            message.delete();
+          };
 
-            setTimeout(() => msg.delete(), 5000);
-          })
-          .catch(console.error);
+          var collector = replyMessage.createReactionCollector({
+            filter,
+            time: 60000,
+          });
+
+          collector.on("collect", (reaction) => {
+            switch (reaction.emoji.name) {
+              case "👍":
+                reacted = true;
+                replyMessage.delete();
+                break;
+
+              case "👎":
+                reacted = true;
+                const generalChannel = functions.findChannel(
+                  message,
+                  generalChannelName
+                );
+                generalChannel.send(
+                  functions.randomText("saidInAlertChannel", {
+                    user: message.author.id,
+                    message: message.content,
+                  })
+                );
+                message.delete();
+                replyMessage.delete();
+                break;
+            }
+          });
+
+          collector.on("end", () => {
+            if (!reacted) {
+              message.delete();
+              replyMessage.delete();
+            }
+          });
+        });
+
       break;
 
     // When !announcement is used, bot relays the message to announcement channel.
-    case messageFirstWord === "!announcement" &&
-      message.member.roles.cache.some((role) => role.name === moderatorRole):
+    case messageFirstWord === "!announcement" && isMod:
       await functions.findChannel(message, announcementsChannelName).send({
         embeds: [
           {
@@ -253,10 +285,7 @@ ${memberList}`);
 
     // Adds several users to a channel.
     case messageFirstWord === "!add" && isMod:
-      var privateChannel = await functions.findChannel(
-        message,
-        notificationChannelName
-      );
+      var logsChannel = await functions.findChannel(message, logsChannelName);
 
       const mentionedMembersMap = message.mentions.members;
 
@@ -284,22 +313,16 @@ ${memberList}`);
               VIEW_CHANNEL: true,
             });
 
-            message.reply(
-              functions.randomText("add.addedPrompt", {
+            logsChannel.send(
+              functions.randomText("channelExisted_RA", {
                 user: value.user.id,
-                channel: foundChannel.id,
-              })
-            );
-
-            privateChannel.send(
-              functions.randomText("add.addedPrompt", {
-                user: value.user.id,
-                channel: foundChannel.id,
+                project: foundChannel.id,
+                approved: message.author.id,
               })
             );
           });
         } else {
-          message.guild.channels
+          await message.guild.channels
             .create(functions.discordStyleProjectName(channel.content), {
               type: "GUILD_TEXT",
               permissionOverwrites: [
@@ -309,7 +332,7 @@ ${memberList}`);
                 },
               ],
             })
-            .then((createdChannel) => {
+            .then(async (createdChannel) => {
               let category = message.guild.channels.cache.find(
                 (c) => c.name == projectsCategory && c.type == "GUILD_CATEGORY"
               );
@@ -323,28 +346,22 @@ ${memberList}`);
                 })
               );
 
-              privateChannel.send(
+              logsChannel.send(
                 functions.randomText("channelCreatedWOAdd", {
                   createdChannel: createdChannel,
                 })
               );
 
-              mentionedMembersMap.map((value, key) => {
-                createdChannel.permissionOverwrites.edit(key, {
+              mentionedMembersMap.map(async (value, key) => {
+                await createdChannel.permissionOverwrites.edit(key, {
                   VIEW_CHANNEL: true,
                 });
 
-                message.reply(
-                  functions.randomText("add.addedPrompt", {
+                logsChannel.send(
+                  functions.randomText("channelExisted_RA", {
                     user: value.user.id,
-                    channel: createdChannel.id,
-                  })
-                );
-
-                privateChannel.send(
-                  functions.randomText("add.addedPrompt", {
-                    user: value.user.id,
-                    channel: createdChannel.id,
+                    project: createdChannel.id,
+                    approved: message.author.id,
                   })
                 );
               });
@@ -374,10 +391,7 @@ ${memberList}`);
 
     // Add me to this channel. "!addme channel-name"
     case messageFirstWord === "!addme" && isMod:
-      var privateChannel = await functions.findChannel(
-        message,
-        notificationChannelName
-      );
+      var logsChannel = await functions.findChannel(message, logsChannelName);
 
       var projectName = message.content.substring(
         message.content.indexOf(" ") + 1
@@ -398,7 +412,8 @@ ${memberList}`);
           };
           var collector = replyMessage.createReactionCollector({
             filter,
-            time: 100000,
+            time: 60000,
+            max: 1,
           });
 
           collector.on("collect", async () => {
@@ -411,21 +426,14 @@ ${memberList}`);
                 VIEW_CHANNEL: true,
               });
 
-              message.channel.send(
-                functions.randomText("channelExisted", {
-                  user: message.author.id,
-                  project: foundChannel.id,
-                })
-              );
-
-              privateChannel.send(
+              logsChannel.send(
                 functions.randomText("channelExisted", {
                   user: message.author.id,
                   project: foundChannel.id,
                 })
               );
             } else {
-              message.guild.channels
+              await message.guild.channels
                 .create(projectName, {
                   type: "GUILD_TEXT",
                   permissionOverwrites: [
@@ -439,7 +447,7 @@ ${memberList}`);
                     },
                   ],
                 })
-                .then((createdChannel) => {
+                .then(async (createdChannel) => {
                   let category = message.guild.channels.cache.find(
                     (c) =>
                       c.name == projectsCategory && c.type == "GUILD_CATEGORY"
@@ -447,16 +455,16 @@ ${memberList}`);
 
                   if (!category)
                     throw new Error("Category channel does not exist");
-                  createdChannel.setParent(category.id);
+                  await createdChannel.setParent(category.id);
 
-                  message.channel.send(
-                    functions.randomText("channelCreated", {
-                      createdChannel: createdChannel.id,
-                      user: message.author.id,
-                    })
+                  await createdChannel.permissionOverwrites.edit(
+                    message.author.id,
+                    {
+                      VIEW_CHANNEL: true,
+                    }
                   );
 
-                  privateChannel.send(
+                  logsChannel.send(
                     functions.randomText("channelCreated", {
                       createdChannel: createdChannel.id,
                       user: message.author.id,
@@ -466,8 +474,118 @@ ${memberList}`);
                 .catch(console.error);
             }
           });
+          collector.on("end", () => {
+            replyMessage.delete();
+            message.delete();
+          });
         });
 
+      break;
+
+    case messageFirstWord === "!addfunfact" && isMod:
+      if (!message.content.split(" ")[1]) {
+        await message.reply(functions.randomText("addFunfact.empty", {}));
+        break;
+      }
+
+      var fs = require("fs");
+      fs.readFile(
+        "./funfacts.json",
+        "utf8",
+        function readFileCallback(err, data) {
+          if (err) {
+            console.log(err);
+          } else {
+            obj = JSON.parse(data); //now it an object
+            obj.funfacts.push(
+              message.content.substring(message.content.indexOf(" ") + 1)
+            ); //add some data
+            json = JSON.stringify(obj); //convert it back to json
+            fs.writeFile("./funfacts.json", json, "utf8", async () => {
+              await message.reply(
+                functions.randomText("addFunfact.added", {
+                  funfact: message.content.substring(
+                    message.content.indexOf(" ") + 1
+                  ),
+                })
+              );
+            }); // write it back
+          }
+        }
+      );
+
+      break;
+
+    case messageFirstWord === "!archive" && isMod:
+      var logsChannel = await functions.findChannel(message, logsChannelName);
+
+      let category = message.guild.channels.cache.find(
+        (c) => c.name == archiveCategory && c.type == "GUILD_CATEGORY"
+      );
+
+      if (!category) throw new Error("Category channel does not exist");
+      message.channel.setParent(category.id, { lockPermissions: false });
+
+      await message.channel.send(
+        functions.randomText("movedToWO_User", {
+          channel: message.channel.id,
+        })
+      );
+
+      await logsChannel.send(
+        functions.randomText("movedToArchive", {
+          user: message.author.id,
+          channel: message.channel.id,
+        })
+      );
+      await message.delete();
+
+      break;
+
+    case messageFirstWord === "!deletelastmessages" && isMod:
+      var logsChannel = await functions.findChannel(message, logsChannelName);
+      var howMany = message.content.substring(message.content.indexOf(" ") + 1);
+
+      if (Number.isInteger(parseInt(howMany))) {
+        // Bulk delete messages
+        message.channel
+          .bulkDelete(parseInt(howMany))
+          .then(
+            async (messages) =>
+              await logsChannel.send(
+                functions.randomText("deletedMessages", {
+                  user: message.author.id,
+                  channel: message.channel.id,
+                  howMany: messages.size,
+                })
+              )
+          )
+          .catch(console.error);
+      }
+      break;
+
+    case messageFirstWord === "!sendmessage" && isMod:
+      var splitMessage = message.content
+        .substring(message.content.indexOf(" ") + 1)
+        .split(" | ");
+
+      if (splitMessage[0] && splitMessage[1] && splitMessage[2]) {
+        const channelQuery = functions.findChannel(message, splitMessage[0]);
+
+        if (channelQuery) {
+          channelQuery
+            .send({
+              embeds: [
+                {
+                  color: embedColor,
+                  title: splitMessage[1],
+                  description: splitMessage[2],
+                },
+              ],
+            })
+            .catch(console.error);
+        }
+      }
       break;
   }
 });

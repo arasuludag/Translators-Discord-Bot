@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently \"nodemon index.js\" \"nodemon deploy-commands.js\""
   },
+  "nodemonConfig": {
+    "ignore": ["*.json"]
+  },
   "author": "Aras Uludag",
   "license": "ISC",
   "dependencies": {

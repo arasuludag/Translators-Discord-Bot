@@ -1,6 +1,10 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
-const { projectsCategory, notificationChannelName } = require("../config.json");
+const {
+  projectsCategory,
+  awaitingApprovalsChannelName,
+  logsChannelName,
+} = require("../config.json");
 const { Permissions } = require("discord.js");
 
 module.exports = {
@@ -14,15 +18,16 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    const privateChannel = functions.findChannel(
+    const approvalChannel = functions.findChannel(
       interaction,
-      notificationChannelName
+      awaitingApprovalsChannelName
     );
-    const projectName = interaction.options.getString("project_name");
+    const logsChannel = functions.findChannel(interaction, logsChannelName);
+    const channelName = interaction.options.getString("project_name");
 
     await interaction.user.send(
       functions.randomText("waitApproval", {
-        project: projectName,
+        project: channelName,
       })
     );
     await interaction.reply({
@@ -30,81 +35,107 @@ module.exports = {
       ephemeral: true,
     });
 
-    await privateChannel
+    await approvalChannel
       .send(
         functions.randomText("addRequest", {
           user: interaction.user.id,
-          projectName: projectName,
+          projectName: channelName,
         })
       )
       .then((replyMessage) => {
-        const filter = (reaction) => reaction.emoji.name === "✅";
+        replyMessage.react("✅");
+        replyMessage.react("❌");
+
+        const filter = (reaction, user) =>
+          (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") &&
+          !user.bot;
 
         const collector = replyMessage.createReactionCollector({
           filter,
-          time: 300000,
+          time: 30000000,
+          max: 1,
         });
 
-        collector.on("collect", async () => {
-          const foundChannel = await functions.findChannel(
-            interaction,
-            functions.discordStyleProjectName(projectName)
-          );
-          if (foundChannel) {
-            foundChannel.permissionOverwrites.edit(interaction.user.id, {
-              VIEW_CHANNEL: true,
-            });
+        collector.on("collect", async (reaction, user) => {
+          if (reaction.emoji.name === "✅") {
+            const foundChannel = await functions.findChannel(
+              interaction,
+              functions.discordStyleProjectName(channelName)
+            );
+            if (foundChannel) {
+              foundChannel.permissionOverwrites.edit(interaction.user.id, {
+                VIEW_CHANNEL: true,
+              });
 
-            replyMessage.channel.send(
-              functions.randomText("channelExisted", {
+              logsChannel.send(
+                functions.randomText("channelExisted_RA", {
+                  user: interaction.user.id,
+                  project: foundChannel.id,
+                  approved: user.id,
+                })
+              );
+              interaction.user.send(
+                functions.randomText("userAddNotify", {
+                  user: interaction.user.id,
+                  project: foundChannel.id,
+                })
+              );
+            } else {
+              interaction.guild.channels
+                .create(channelName, {
+                  type: "GUILD_TEXT",
+                  permissionOverwrites: [
+                    {
+                      id: interaction.guild.id,
+                      deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                    },
+                  ],
+                })
+                .then(async (createdChannel) => {
+                  let category = await interaction.guild.channels.cache.find(
+                    (c) =>
+                      c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                  );
+
+                  if (!category)
+                    throw new Error("Category channel does not exist");
+                  await createdChannel.setParent(category.id);
+
+                  await createdChannel.permissionOverwrites.edit(
+                    interaction.user.id,
+                    {
+                      VIEW_CHANNEL: true,
+                    }
+                  );
+
+                  logsChannel.send(
+                    functions.randomText("channelCreated_RA", {
+                      createdChannel: createdChannel.id,
+                      user: interaction.user.id,
+                      approved: user.id,
+                    })
+                  );
+                  interaction.user.send(
+                    functions.randomText("userAddNotify", {
+                      user: interaction.user.id,
+                      project: createdChannel,
+                    })
+                  );
+                });
+            }
+          } else {
+            logsChannel.send(
+              functions.randomText("requestAddRejected", {
+                channel: channelName,
                 user: interaction.user.id,
-                project: foundChannel.id,
+                approved: user.id,
               })
             );
             interaction.user.send(
-              functions.randomText("userAddNotify", {
-                user: interaction.user.id,
-                project: foundChannel.id,
+              functions.randomText("requestAddRejectedDM", {
+                channel: channelName,
               })
             );
-          } else {
-            interaction.guild.channels
-              .create(projectName, {
-                type: "GUILD_TEXT",
-                permissionOverwrites: [
-                  {
-                    id: interaction.guild.id,
-                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                  },
-                  {
-                    id: interaction.user.id,
-                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                  },
-                ],
-              })
-              .then((createdChannel) => {
-                let category = interaction.guild.channels.cache.find(
-                  (c) =>
-                    c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-                );
-
-                if (!category)
-                  throw new Error("Category channel does not exist");
-                createdChannel.setParent(category.id);
-
-                replyMessage.channel.send(
-                  functions.randomText("channelCreated", {
-                    createdChannel: createdChannel.id,
-                    user: interaction.user.id,
-                  })
-                );
-                interaction.user.send(
-                  functions.randomText("userAddNotify", {
-                    user: interaction.user.id,
-                    project: createdChannel,
-                  })
-                );
-              });
           }
         });
       });

@@ -14,7 +14,7 @@ i18next.init({
 
 module.exports = {
   // Selects a random text from a JSON array.
-  randomText: (path, values, title) => {
+  randomText: (path, values, title, inLineText) => {
     values.returnObjects = true;
     values.interpolation = { escapeValue: false };
 
@@ -49,7 +49,14 @@ module.exports = {
   // Finds channel by name.
   findChannel: (message, channelName) => {
     return message.guild.channels.cache.find(
-      (channel) => channel.name === channelName
+      (channel) => channel.name === channelName && channel.type == "GUILD_TEXT"
+    );
+  },
+
+  // Finds channel by ID.
+  findChannelByID: (message, channelID) => {
+    return message.guild.channels.cache.find(
+      (channel) => channel.id === channelID  && channel.type == "GUILD_TEXT"
     );
   },
 };
