@@ -78,7 +78,7 @@ module.exports = {
           max: 1,
         });
 
-        collector.on("collect", (reaction, user) => {
+        collector.on("collect", (reaction) => {
           if (reaction.emoji.name === "✅") {
             var roleName;
             switch (role.name) {
@@ -105,8 +105,7 @@ module.exports = {
 
             interaction.member
               .setNickname(`${nickName} - ${roleName}`)
-              .catch((err) => {
-                console.log(err);
+              .catch(() => {
                 interaction.user.send(functions.randomText("setup.error", {}));
               });
             interaction.member.roles.add(role);

@@ -73,7 +73,7 @@ module.exports = {
     const suggestion = interaction.options.getString("suggestion");
 
     switch (true) {
-      case interaction.options.getSubcommand() === "language_specific":
+      case interaction.options.getSubcommand() === "language_specific": {
         const role = interaction.options.getRole("language");
         lmSuggestionChannel.send(
           functions.randomText(
@@ -82,7 +82,7 @@ module.exports = {
               user: interaction.user.id,
               suggestion: role.toString() + " " + suggestion,
             },
-            `Language Spesific Suggestion`
+            "Language Spesific Suggestion"
           )
         );
 
@@ -92,12 +92,13 @@ module.exports = {
             {
               suggestion: suggestion,
             },
-            `Language Spesific Suggestion`
+            "Language Spesific Suggestion"
           )
         );
         break;
+      }
 
-      case interaction.options.getSubcommand() === "lm_meetings":
+      case interaction.options.getSubcommand() === "lm_meetings": {
         const lm = await interaction.guild.roles.cache.find(
           (r) => r.name === langmanagerRole
         );
@@ -122,6 +123,7 @@ module.exports = {
           )
         );
         break;
+      }
 
       case interaction.options.getSubcommand() === "discord":
         suggestionChannel.send(

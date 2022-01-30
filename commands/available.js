@@ -4,12 +4,14 @@ const functions = require("../functions.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("available")
-    .setDescription("Ask if there are any available linguists from a certain language pool.")
+    .setDescription(
+      "Ask if there are any available linguists from a certain language pool."
+    )
     .addRoleOption((option) =>
       option.setName("language").setDescription("A language").setRequired(true)
     ),
   async execute(interaction) {
-    role = interaction.options.getRole("language");
+    const role = interaction.options.getRole("language");
 
     interaction.reply(
       functions.randomText("available.asking", {

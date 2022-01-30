@@ -8,7 +8,9 @@
     "start": "concurrently \"nodemon index.js\" \"nodemon deploy-commands.js\""
   },
   "nodemonConfig": {
-    "ignore": ["*.json"]
+    "ignore": [
+      "*.json"
+    ]
   },
   "author": "Aras Uludag",
   "license": "ISC",
@@ -20,5 +22,8 @@
     "dotenv": "^11.0.0",
     "i18next": "^21.6.7",
     "nodemon": "^2.0.15"
+  },
+  "devDependencies": {
+    "eslint": "^8.8.0"
   }
 }

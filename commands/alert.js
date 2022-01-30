@@ -32,7 +32,7 @@ module.exports = {
     const alertText = await interaction.options.getString("alert_text");
 
     switch (true) {
-      case interaction.options.getSubcommand() === "longform":
+      case interaction.options.getSubcommand() === "longform": {
         const sassAlertChannel = functions.findChannelByID(
           interaction,
           sassAlertChannelID
@@ -44,12 +44,13 @@ module.exports = {
               user: interaction.user.id,
               context: alertText,
             },
-            `🚨 Alert!`
+            "🚨 Alert!"
           )
         );
         break;
+      }
 
-      case interaction.options.getSubcommand() === "supplemental":
+      case interaction.options.getSubcommand() === "supplemental": {
         const supplementalAlertChannel = functions.findChannelByID(
           interaction,
           suppAlertChannelID
@@ -61,10 +62,11 @@ module.exports = {
               user: interaction.user.id,
               context: alertText,
             },
-            `🚨 Alert!`
+            "🚨 Alert!"
           )
         );
         break;
+      }
     }
 
     interaction.reply({

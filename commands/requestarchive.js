@@ -14,7 +14,7 @@ module.exports = {
       option.setName("reason").setDescription("Why?").setRequired(true)
     ),
   async execute(interaction) {
-    reasonText = interaction.options.getString("reason");
+    const reasonText = interaction.options.getString("reason");
 
     interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),

@@ -17,10 +17,9 @@ module.exports = {
         .setDescription("When should the poll close? (In minutes)")
     ),
   async execute(interaction) {
+    var timeLimit = 3000000;
     if (interaction.options.getInteger("time_limit")) {
-      var timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
-    } else {
-      var timeLimit = 3000000;
+      timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
     }
     await interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),
@@ -62,7 +61,7 @@ module.exports = {
           time: timeLimit,
         });
 
-        collector.on("collect", (reaction, user) => {
+        collector.on("collect", (reaction) => {
           switch (reaction.emoji.name) {
             case "👍":
               thumbsUp++;
@@ -87,27 +86,23 @@ module.exports = {
                 maybe: maybe,
                 none: none,
               });
-
-            default:
-              break;
           }
         });
 
-        if (!resultsShown) {
-          collector.on("end", () => {
+        collector.on("end", () => {
+          if (!resultsShown)
             results({
               yes: thumbsUp,
               no: thumbsDown,
               maybe: maybe,
               none: none,
             });
-          });
-        }
+        });
 
         function results(results) {
           resultsShown = true;
           replyMessage.reply(
-            functions.randomText("poll.timeLimitClose", {
+            functions.randomText("poll.close", {
               yes: results.yes,
               no: results.no,
               maybe: results.maybe,

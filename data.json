@@ -65,9 +65,7 @@
     ]
   },
 
-  "saidInAlertChannel": [
-    "<@{{user}}> said '{{message}}' in an alert channel."
-  ],
+  "saidInAlertChannel": ["<@{{user}}> said '{{message}}' in an alert channel."],
 
   "reminder": {
     "remindWhat": ["Remind you what?"],
@@ -96,7 +94,7 @@
     "acceptedDM": ["You are accepted as {{nickName}} and {{role}}."],
     "waitForApproveDM": ["Wait for approval as {{nickName}} and {{role}}."],
     "error": [
-      "There's an error. Probably about permissions. Maybe you're the server owner. That's why."
+      "There's an error with your nickname probably due to being longer than 32 chracters. Contact mods about this."
     ],
     "rejectedDM": [
       "<@{{user}}> rejected as {{nickName}} and {{role}}.\nIt seems one of the details you entered is incorrect. Please go back to the reception channel and try /usersetup again."
@@ -112,8 +110,8 @@
     "results": [
       "👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
     ],
-    "timeLimitClose": [
-      "Time is up, so I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
+    "close": [
+      "I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
     ]
   },
 
@@ -133,7 +131,9 @@
   ],
   "movedToWO_User": ["<#{{channel}}> has been archived."],
 
-  "isThisAlert": ["Is this an alert? 👍 if Yes, 👎 if No."],
+  "isThisAlert": [
+    "Is this an alert? \n \n👍 Yes - Keep my message here.\n \n👎 No - Move my message to <#{{general}}>.\n \n❌ Cancel - On second thought, just delete my message."
+  ],
 
   "requestedArchive": [
     "<@{{user}}> requested <#{{channel}}> to be archived. \n \nReason: {{reason}}"
@@ -141,5 +141,9 @@
 
   "deletedMessages": [
     "<@{{user}}> deleted {{howMany}} messages from <#{{channel}}>."
+  ],
+
+  "messageMovedTo": [
+    "Hi, the following message you posted has been moved to <#{{channel}}>: {{message}}"
   ]
 }

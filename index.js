@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 const { readdirSync } = require("fs");
 const translation = require("./data.json");
 const i18next = require("i18next");
@@ -12,7 +13,7 @@ const {
   logsChannelName,
   receptionChannelID,
   announcementsChannelName,
-  generalChannelName,
+  generalChannelID,
   embedColor,
 } = require("./config.json");
 const functions = require("./functions.js");
@@ -93,68 +94,9 @@ client.on("messageCreate", async (message) => {
   );
 
   // Extracts the first word of message to check for commands later.
-  messageFirstWord = message.content.split(" ")[0];
+  const messageFirstWord = message.content.split(" ")[0];
 
   switch (true) {
-    // Manages the alert channel by asking author if this is what they wanted.
-    case (message.channel === sassAlertChannel ||
-      message.channel === suppAlertChannel) &&
-      !message.author.bot:
-      message
-        .reply(functions.randomText("isThisAlert", {}))
-        .then((replyMessage) => {
-          var reacted = false;
-          replyMessage.react("👍");
-          replyMessage.react("👎");
-
-          const filter = (reaction, user) => {
-            return (
-              (reaction.emoji.name === "👍" || reaction.emoji.name === "👎") &&
-              user.id === message.author.id &&
-              !user.bot
-            );
-          };
-
-          var collector = replyMessage.createReactionCollector({
-            filter,
-            time: 60000,
-          });
-
-          collector.on("collect", (reaction) => {
-            switch (reaction.emoji.name) {
-              case "👍":
-                reacted = true;
-                replyMessage.delete();
-                break;
-
-              case "👎":
-                reacted = true;
-                const generalChannel = functions.findChannel(
-                  message,
-                  generalChannelName
-                );
-                generalChannel.send(
-                  functions.randomText("saidInAlertChannel", {
-                    user: message.author.id,
-                    message: message.content,
-                  })
-                );
-                message.delete();
-                replyMessage.delete();
-                break;
-            }
-          });
-
-          collector.on("end", () => {
-            if (!reacted) {
-              message.delete();
-              replyMessage.delete();
-            }
-          });
-        });
-
-      break;
-
     // When !announcement is used, bot relays the message to announcement channel.
     case messageFirstWord === "!announcement" && isMod:
       await functions.findChannel(message, announcementsChannelName).send({
@@ -189,14 +131,14 @@ client.on("messageCreate", async (message) => {
 
         text.reply(functions.randomText("reminder.when", {}));
 
-        var collector = message.channel.createMessageCollector({
+        const collector = message.channel.createMessageCollector({
           filter,
           time: 60000,
           max: 1,
         });
 
         collector.on("collect", (when) => {
-          unixTimeWhen = Date.parse(when.content);
+          const unixTimeWhen = Date.parse(when.content);
 
           if (isNaN(unixTimeWhen)) {
             when.reply(functions.randomText("reminder.notADate", {}));
@@ -205,7 +147,7 @@ client.on("messageCreate", async (message) => {
 
           when.reply(functions.randomText("reminder.howLongBefore", {}));
 
-          var collector = message.channel.createMessageCollector({
+          const collector = message.channel.createMessageCollector({
             filter,
             time: 60000,
             max: 1,
@@ -217,7 +159,7 @@ client.on("messageCreate", async (message) => {
               return console.log("Someone didn't get the minutes left right.");
             }
 
-            differenceBetween = unixTimeWhen - Date.now();
+            const differenceBetween = unixTimeWhen - Date.now();
 
             minutesBefore.reply(functions.randomText("requestAcquired", {}));
 
@@ -253,9 +195,7 @@ client.on("messageCreate", async (message) => {
       message.guild.roles.cache.forEach((role) => {
         memberCountMessage = memberCountMessage.concat(
           `${role.toString()} has ${
-            message.guild.roles.cache
-              .get(role.id)
-              .members.filter((member) => !member.user.bot).size
+            message.guild.roles.cache.get(role.id).members.size
           } people.
 `
         );
@@ -267,10 +207,10 @@ ${memberCountMessage}
       break;
 
     // Counts the members in spesified role. Has issues.
-    case messageFirstWord === "!list" && isMod:
+    case messageFirstWord === "!list" && isMod: {
       const mentionedRolesMap = message.mentions.roles;
-      mentionedRolesMap.map((values, keys) => {
-        var memberList = "";
+      mentionedRolesMap.map((values) => {
+        let memberList = "";
         values.members.map((role) => {
           memberList = memberList.concat(
             `${role.user.toString()}
@@ -282,95 +222,35 @@ ${memberList}`);
       });
 
       break;
+    }
 
     // Adds several users to a channel.
     case messageFirstWord === "!add" && isMod:
-      var logsChannel = await functions.findChannel(message, logsChannelName);
+      {
+        var logsChannel = await functions.findChannel(message, logsChannelName);
 
-      const mentionedMembersMap = message.mentions.members;
+        const mentionedChannel = message.mentions.channels;
+        const mentionedMembersMap = message.mentions.members;
 
-      // To where?
-      message.reply(functions.randomText("add.where", {}));
-
-      var filter = (m) => {
-        return m.author.id === message.author.id;
-      };
-
-      var collector = message.channel.createMessageCollector({
-        filter,
-        time: 60000,
-        max: 1,
-      });
-
-      collector.on("collect", async (channel) => {
-        var foundChannel = await functions.findChannel(
-          message,
-          functions.discordStyleProjectName(channel.content)
-        );
-        if (foundChannel) {
+        if (mentionedChannel.keys()) {
           mentionedMembersMap.map((value, key) => {
-            foundChannel.permissionOverwrites.edit(key, {
-              VIEW_CHANNEL: true,
-            });
-
-            logsChannel.send(
-              functions.randomText("channelExisted_RA", {
-                user: value.user.id,
-                project: foundChannel.id,
-                approved: message.author.id,
-              })
-            );
-          });
-        } else {
-          await message.guild.channels
-            .create(functions.discordStyleProjectName(channel.content), {
-              type: "GUILD_TEXT",
-              permissionOverwrites: [
-                {
-                  id: message.guild.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-              ],
-            })
-            .then(async (createdChannel) => {
-              let category = message.guild.channels.cache.find(
-                (c) => c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-              );
-
-              if (!category) throw new Error("Category channel does not exist");
-              createdChannel.setParent(category.id);
-
-              message.reply(
-                functions.randomText("channelCreatedWOAdd", {
-                  createdChannel: createdChannel,
-                })
-              );
+            mentionedChannel.map((valueChannel, keyChannel) => {
+              valueChannel.permissionOverwrites.edit(key, {
+                VIEW_CHANNEL: true,
+              });
 
               logsChannel.send(
-                functions.randomText("channelCreatedWOAdd", {
-                  createdChannel: createdChannel,
+                functions.randomText("channelExisted_RA", {
+                  user: value.user.id,
+                  project: keyChannel,
+                  approved: message.author.id,
                 })
               );
-
-              mentionedMembersMap.map(async (value, key) => {
-                await createdChannel.permissionOverwrites.edit(key, {
-                  VIEW_CHANNEL: true,
-                });
-
-                logsChannel.send(
-                  functions.randomText("channelExisted_RA", {
-                    user: value.user.id,
-                    project: createdChannel.id,
-                    approved: message.author.id,
-                  })
-                );
-              });
             });
+          });
+          message.delete();
         }
-
-        channel.reply(functions.randomText("requestCompleted", {}));
-      });
-
+      }
       break;
 
     // Is there a channel with this name?
@@ -382,11 +262,13 @@ ${memberList}`);
         message,
         functions.discordStyleProjectName(projectName)
       );
-      if (foundChannel)
+      if (foundChannel) {
         message.reply(
           functions.randomText("isThere.yes", { foundChannel: foundChannel.id })
         );
-      else message.reply(functions.randomText("isThere.no", {}));
+      } else {
+        message.reply(functions.randomText("isThere.no", {}));
+      }
       break;
 
     // Add me to this channel. "!addme channel-name"
@@ -405,12 +287,12 @@ ${memberList}`);
           functions.randomText("addMePrompt", { projectName: projectName })
         )
         .then((replyMessage) => {
-          var filter = (reaction, user) => {
+          const filter = (reaction, user) => {
             return (
               reaction.emoji.name === "👍" && user.id === message.author.id
             );
           };
-          var collector = replyMessage.createReactionCollector({
+          const collector = replyMessage.createReactionCollector({
             filter,
             time: 60000,
             max: 1,
@@ -448,13 +330,14 @@ ${memberList}`);
                   ],
                 })
                 .then(async (createdChannel) => {
-                  let category = message.guild.channels.cache.find(
+                  const category = message.guild.channels.cache.find(
                     (c) =>
                       c.name == projectsCategory && c.type == "GUILD_CATEGORY"
                   );
 
-                  if (!category)
+                  if (!category) {
                     throw new Error("Category channel does not exist");
+                  }
                   await createdChannel.setParent(category.id);
 
                   await createdChannel.permissionOverwrites.edit(
@@ -482,6 +365,7 @@ ${memberList}`);
 
       break;
 
+    // Add a funfact to the JSON file.
     case messageFirstWord === "!addfunfact" && isMod:
       if (!message.content.split(" ")[1]) {
         await message.reply(functions.randomText("addFunfact.empty", {}));
@@ -496,11 +380,11 @@ ${memberList}`);
           if (err) {
             console.log(err);
           } else {
-            obj = JSON.parse(data); //now it an object
+            var obj = JSON.parse(data); // now it an object
             obj.funfacts.push(
               message.content.substring(message.content.indexOf(" ") + 1)
-            ); //add some data
-            json = JSON.stringify(obj); //convert it back to json
+            ); // add some data
+            var json = JSON.stringify(obj); // convert it back to json
             fs.writeFile("./funfacts.json", json, "utf8", async () => {
               await message.reply(
                 functions.randomText("addFunfact.added", {
@@ -516,10 +400,11 @@ ${memberList}`);
 
       break;
 
-    case messageFirstWord === "!archive" && isMod:
+    // Archive the channel.
+    case messageFirstWord === "!archive" && isMod: {
       var logsChannel = await functions.findChannel(message, logsChannelName);
 
-      let category = message.guild.channels.cache.find(
+      const category = message.guild.channels.cache.find(
         (c) => c.name == archiveCategory && c.type == "GUILD_CATEGORY"
       );
 
@@ -541,7 +426,9 @@ ${memberList}`);
       await message.delete();
 
       break;
+    }
 
+    // Delete last messages. To delete last 10, !deletelastmessages 10
     case messageFirstWord === "!deletelastmessages" && isMod:
       var logsChannel = await functions.findChannel(message, logsChannelName);
       var howMany = message.content.substring(message.content.indexOf(" ") + 1);
@@ -564,16 +451,17 @@ ${memberList}`);
       }
       break;
 
-    case messageFirstWord === "!sendmessage" && isMod:
-      var splitMessage = message.content
+    // Send message to a channel as bot.
+    case messageFirstWord === "!sendmessage" && isMod: {
+      const mentionedChannel = message.mentions.channels;
+
+      const splitMessage = message.content
         .substring(message.content.indexOf(" ") + 1)
         .split(" | ");
 
-      if (splitMessage[0] && splitMessage[1] && splitMessage[2]) {
-        const channelQuery = functions.findChannel(message, splitMessage[0]);
-
-        if (channelQuery) {
-          channelQuery
+      if (mentionedChannel && splitMessage[1] && splitMessage[2]) {
+        mentionedChannel.map((value) => {
+          value
             .send({
               embeds: [
                 {
@@ -584,9 +472,127 @@ ${memberList}`);
               ],
             })
             .catch(console.error);
-        }
+        });
       }
       break;
+    }
+
+    // Move message to another channel.
+    case messageFirstWord === "!moveto" && isMod: {
+      if (message.reference && message.mentions.channels) {
+        const repliedMessage = await message.channel.messages.fetch(
+          message.reference.messageId
+        );
+        const mentionedUser = message.mentions.repliedUser;
+
+        const channelMovedTo = message.mentions.channels;
+        channelMovedTo.map((value) => {
+          value.send({
+            embeds: [
+              {
+                color: embedColor,
+                author: {
+                  name: mentionedUser.displayName
+                    ? mentionedUser.displayName
+                    : mentionedUser.username,
+                  icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
+                },
+                description: repliedMessage.content,
+              },
+            ],
+          });
+
+          mentionedUser
+            .send(
+              functions.randomText("messageMovedTo", {
+                message: repliedMessage.content,
+                channel: value.id,
+              })
+            )
+            .catch((error) => {
+              console.error("Failed to send DM:", error);
+            });
+        });
+
+        repliedMessage.delete();
+        message.delete();
+      }
+      break;
+    }
+
+    // Manages the alert channel by asking author if this is what they wanted.
+    case (message.channel === sassAlertChannel ||
+      message.channel === suppAlertChannel) &&
+      !message.author.bot: {
+      const generalChannel = functions.findChannelByID(
+        message,
+        generalChannelID
+      );
+      message
+        .reply(functions.randomText("isThisAlert", { general: generalChannel }))
+        .then((replyMessage) => {
+          let reacted = false;
+          replyMessage.react("👍");
+          replyMessage.react("👎");
+          replyMessage.react("❌");
+
+          const filter = (reaction, user) => {
+            return (
+              (reaction.emoji.name === "👍" ||
+                reaction.emoji.name === "👎" ||
+                reaction.emoji.name === "❌") &&
+              user.id === message.author.id &&
+              !user.bot
+            );
+          };
+
+          const collector = replyMessage.createReactionCollector({
+            filter,
+            time: 60000,
+            max: 1,
+          });
+
+          collector.on("collect", (reaction) => {
+            switch (reaction.emoji.name) {
+              case "👍":
+                reacted = true;
+                replyMessage.delete();
+                break;
+
+              case "👎": {
+                reacted = true;
+
+                generalChannel.send(
+                  functions.randomText(
+                    "saidInAlertChannel",
+                    {
+                      user: message.author.id,
+                      message: message.content,
+                    },
+                    undefined,
+                    message.author.displayName
+                      ? message.author.displayName
+                      : message.author.username,
+                    `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=256`
+                  )
+                );
+                message.delete();
+                replyMessage.delete();
+                break;
+              }
+            }
+          });
+
+          collector.on("end", () => {
+            if (!reacted) {
+              message.delete();
+              replyMessage.delete();
+            }
+          });
+        });
+
+      break;
+    }
   }
 });
 
