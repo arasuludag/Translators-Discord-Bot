@@ -52,11 +52,12 @@ module.exports = {
 
         const collector = replyMessage.createReactionCollector({
           filter,
-          time: 30000000,
+          time: 300000000,
           max: 1,
         });
 
         collector.on("collect", async (reaction, user) => {
+          replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
             const foundChannel = await functions.findChannel(
               interaction,
@@ -92,13 +93,10 @@ module.exports = {
                   ],
                 })
                 .then(async (createdChannel) => {
-                  let category = await interaction.guild.channels.cache.find(
-                    (c) =>
-                      c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                  const category = await functions.findCategoryByName(
+                    interaction,
+                    projectsCategory
                   );
-
-                  if (!category)
-                    throw new Error("Category channel does not exist");
                   await createdChannel.setParent(category.id);
 
                   await createdChannel.permissionOverwrites.edit(

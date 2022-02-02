@@ -82,7 +82,10 @@ module.exports = {
               user: interaction.user.id,
               suggestion: role.toString() + " " + suggestion,
             },
-            "Language Spesific Suggestion"
+            "Language Spesific Suggestion",
+            undefined,
+            undefined,
+            role.toString()
           )
         );
 
@@ -109,7 +112,10 @@ module.exports = {
               user: interaction.user.id,
               suggestion: lm.toString() + " " + suggestion,
             },
-            "LM Meeting Suggestion"
+            "LM Meeting Suggestion",
+            undefined,
+            undefined,
+            lm.toString()
           )
         );
 

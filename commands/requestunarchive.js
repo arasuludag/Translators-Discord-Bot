@@ -2,15 +2,15 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
 const {
   logsChannelName,
-  archiveCategory,
+  projectsCategory,
   awaitingApprovalsChannelName,
 } = require("../config.json");
 const { findCategoryByName } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("requestarchive")
-    .setDescription("Ask the mods to archive this channel.")
+    .setName("requestunarchive")
+    .setDescription("Ask the mods to unarchive this channel.")
     .addStringOption((option) =>
       option.setName("reason").setDescription("Why?").setRequired(true)
     ),
@@ -32,7 +32,7 @@ module.exports = {
     );
 
     await logsChannel.send(
-      functions.randomText("requestedArchive", {
+      functions.randomText("requestedUnArchive", {
         user: interaction.user.id,
         channel: interaction.channel.id,
         reason: reasonText,
@@ -41,7 +41,7 @@ module.exports = {
 
     await approvalChannel
       .send(
-        functions.randomText("requestedArchive", {
+        functions.randomText("requestedUnArchive", {
           user: interaction.user.id,
           channel: interaction.channel.id,
           reason: reasonText,
@@ -64,26 +64,26 @@ module.exports = {
         collector.on("collect", async (reaction, user) => {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
-            const category = findCategoryByName(interaction, archiveCategory);
+            const category = findCategoryByName(interaction, projectsCategory);
             interaction.channel.setParent(category.id, {
               lockPermissions: false,
             });
 
             await interaction.channel.send(
-              functions.randomText("movedToWO_User", {
+              functions.randomText("movedFromWO_User", {
                 channel: interaction.channel.id,
               })
             );
 
             await logsChannel.send(
-              functions.randomText("movedToArchive", {
+              functions.randomText("movedFromArchive", {
                 user: user.id,
                 channel: interaction.channel.id,
               })
             );
           } else {
             await logsChannel.send(
-              functions.randomText("notMovedToArchive", {
+              functions.randomText("notMovedFromArchive", {
                 user: user.id,
                 channel: interaction.channel.id,
                 requestedUser: interaction.user.id,

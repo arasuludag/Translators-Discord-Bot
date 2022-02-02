@@ -74,40 +74,16 @@ module.exports = {
 
         const collector = replyMessage.createReactionCollector({
           filter,
-          time: 30000000,
+          time: 300000000,
           max: 1,
         });
 
         collector.on("collect", (reaction) => {
+          replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
-            var roleName;
-            switch (role.name) {
-              case "cspanish":
-                roleName = "CSpanish";
-                break;
-              case "latamspanish":
-                roleName = "LatAm Spanish";
-                break;
-              case "tradchinese":
-                roleName = "Traditional Chinese";
-                break;
-              case "brportuguese":
-                roleName = "Brazilian Portuguese";
-                break;
-              case "simplifiedchinese":
-                roleName = "Simplified Chinese";
-                break;
-              default:
-                roleName =
-                  role.name.charAt(0).toUpperCase() + role.name.slice(1);
-                break;
-            }
-
-            interaction.member
-              .setNickname(`${nickName} - ${roleName}`)
-              .catch(() => {
-                interaction.user.send(functions.randomText("setup.error", {}));
-              });
+            interaction.member.setNickname(nickName).catch(() => {
+              interaction.user.send(functions.randomText("setup.error", {}));
+            });
             interaction.member.roles.add(role);
 
             const roleDTT = interaction.guild.roles.cache.find(

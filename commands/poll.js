@@ -17,7 +17,7 @@ module.exports = {
         .setDescription("When should the poll close? (In minutes)")
     ),
   async execute(interaction) {
-    var timeLimit = 3000000;
+    var timeLimit = 300000000;
     if (interaction.options.getInteger("time_limit")) {
       timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
     }

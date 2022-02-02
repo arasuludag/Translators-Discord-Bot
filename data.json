@@ -13,7 +13,7 @@
     ]
   },
 
-  "requestAcquired": ["Request Acquired."],
+  "requestAcquired": ["Request Acquired.", "Got it.", "Understood."],
 
   "waitApproval": ["Wait for approval to access {{project}}"],
 
@@ -76,7 +76,10 @@
     "howLongBefore": ["How long before I should remind? (In minutes) (Ex. 20)"],
     "notAnInt": ["That is not an integer. I am cancelling your request."],
     "minutesLeft": ["{{minutesBefore}} minutes left for {{remindText}}"],
-    "itsTime": ["It's time for {{remindText}}"]
+    "itsTime": ["It's time for {{remindText}}"],
+    "enteredPastDate": [
+      "I wish I could travel back in time, but I'm not quite there yet. Please enter a date in the future."
+    ]
   },
 
   "add": {
@@ -131,6 +134,12 @@
   ],
   "movedToWO_User": ["<#{{channel}}> has been archived."],
 
+  "movedFromArchive": ["<@{{user}}> unarchived <#{{channel}}>."],
+  "notMovedFromArchive": [
+    "<@{{user}}> rejected <@{{requestedUser}}>'s request to unarchive <#{{channel}}>"
+  ],
+  "movedFromWO_User": ["<#{{channel}}> has been unarchived."],
+
   "isThisAlert": [
     "Is this an alert? \n \n👍 Yes - Keep my message here.\n \n👎 No - Move my message to <#{{general}}>.\n \n❌ Cancel - On second thought, just delete my message."
   ],
@@ -139,11 +148,29 @@
     "<@{{user}}> requested <#{{channel}}> to be archived. \n \nReason: {{reason}}"
   ],
 
+  "requestedUnArchive": [
+    "<@{{user}}> requested <#{{channel}}> to be unarchived. \n \nReason: {{reason}}"
+  ],
+
   "deletedMessages": [
     "<@{{user}}> deleted {{howMany}} messages from <#{{channel}}>."
   ],
 
   "messageMovedTo": [
-    "Hi, the following message you posted has been moved to <#{{channel}}>: {{message}}"
-  ]
+    "Hi, the following message you posted has been moved to <#{{channel}}>: {{message}} {{attachment}}"
+  ],
+
+  "messageCopiedTo": [
+    "Hi, the following message you posted has been also copied to <#{{channel}}>: {{message}} {{attachment}}"
+  ],
+
+  "removedFromChannel": [
+    "Removed <@{{user}}> from <#{{project}}>!\n <@{{approved}}> approved."
+  ],
+
+  "taggedBot": ["Hello there!", "I'm alive."],
+
+  "discordError": ["There was an error. Blame Discord for this."],
+
+  "error": "Error: {{error}}"
 }

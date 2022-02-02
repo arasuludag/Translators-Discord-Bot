@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
+const { globalLingSupportChannelID } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,11 +14,26 @@ module.exports = {
   async execute(interaction) {
     const role = interaction.options.getRole("language");
 
-    interaction.reply(
-      functions.randomText("available.asking", {
-        user: interaction.user.id,
-        role: role.id,
-      })
-    );
+    await interaction.reply({
+      content: functions.randomEphemeralText("requestAcquired", {}),
+      ephemeral: true,
+    });
+
+    await functions
+      .findChannelByID(interaction, globalLingSupportChannelID)
+      .send(
+        functions.randomText(
+          "available.asking",
+          {
+            user: interaction.user.id,
+            role: role.id,
+          },
+          undefined,
+          undefined,
+          undefined,
+          role.toString()
+        )
+      )
+      .catch((err) => console.log("Cannot be sent.", err));
   },
 };

@@ -1,4 +1,3 @@
-/* eslint-disable no-redeclare */
 const { readdirSync } = require("fs");
 const translation = require("./data.json");
 const i18next = require("i18next");
@@ -48,9 +47,6 @@ i18next.init({
   },
 });
 
-// Role name of a moderator.
-const moderatorRole = modRole;
-
 client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
@@ -80,18 +76,17 @@ client.on("guildMemberAdd", (member) => {
 });
 
 client.on("messageCreate", async (message) => {
-  // Finds the required channels in Guild.
-  const sassAlertChannel = await functions.findChannelByID(
-    message,
-    sassAlertChannelID
-  );
-  const suppAlertChannel = await functions.findChannelByID(
-    message,
-    suppAlertChannelID
-  );
-  const isMod = message.member.roles.cache.some(
-    (role) => role.name === moderatorRole
-  );
+  // Discord caused a crash by sending a non-existent message that doesn't have a role attribute and that caused a crash.
+  // So that's why.
+  let isMod = false;
+  if (message.member.roles) {
+    isMod = message.member.roles.cache.some((role) => role.name === modRole);
+  } else
+    await message.channel
+      .send(functions.randomText("discordError", {}))
+      .catch((error) => {
+        console.log(error);
+      });
 
   // Extracts the first word of message to check for commands later.
   const messageFirstWord = message.content.split(" ")[0];
@@ -141,8 +136,14 @@ client.on("messageCreate", async (message) => {
           const unixTimeWhen = Date.parse(when.content);
 
           if (isNaN(unixTimeWhen)) {
-            when.reply(functions.randomText("reminder.notADate", {}));
-            return console.log("Someone didn't get the date right.");
+            return when.reply(functions.randomText("reminder.notADate", {}));
+          }
+
+          const differenceBetween = unixTimeWhen - Date.now();
+          if (differenceBetween < 0) {
+            return when.reply(
+              functions.randomText("reminder.enteredPastDate", {})
+            );
           }
 
           when.reply(functions.randomText("reminder.howLongBefore", {}));
@@ -155,11 +156,10 @@ client.on("messageCreate", async (message) => {
 
           collector.on("collect", (minutesBefore) => {
             if (!Number.isInteger(parseInt(minutesBefore.content))) {
-              when.reply(functions.randomText("reminder.notAnInt", {}));
-              return console.log("Someone didn't get the minutes left right.");
+              return minutesBefore.reply(
+                functions.randomText("reminder.notAnInt", {})
+              );
             }
-
-            const differenceBetween = unixTimeWhen - Date.now();
 
             minutesBefore.reply(functions.randomText("requestAcquired", {}));
 
@@ -207,47 +207,86 @@ ${memberCountMessage}
       break;
 
     // Counts the members in spesified role. Has issues.
-    case messageFirstWord === "!list" && isMod: {
-      const mentionedRolesMap = message.mentions.roles;
-      mentionedRolesMap.map((values) => {
-        let memberList = "";
-        values.members.map((role) => {
-          memberList = memberList.concat(
-            `${role.user.toString()}
+    case messageFirstWord === "!list" && isMod:
+      {
+        const mentionedRolesMap = message.mentions.roles;
+        mentionedRolesMap.map((values) => {
+          let memberList = "";
+          values.members.map((role) => {
+            memberList = memberList.concat(
+              `${role.user.toString()}
 `
-          );
-        });
-        message.reply(`${values.toString()} has 
+            );
+          });
+          message.reply(`${values.toString()} has 
 ${memberList}`);
-      });
-
+        });
+      }
       break;
-    }
 
-    // Adds several users to a channel.
+    // Adds several users to several channels. !add username username channelname channelname
     case messageFirstWord === "!add" && isMod:
       {
-        var logsChannel = await functions.findChannel(message, logsChannelName);
+        const logsChannel = await functions.findChannel(
+          message,
+          logsChannelName
+        );
 
         const mentionedChannel = message.mentions.channels;
         const mentionedMembersMap = message.mentions.members;
 
         if (mentionedChannel.keys()) {
-          mentionedMembersMap.map((value, key) => {
-            mentionedChannel.map((valueChannel, keyChannel) => {
-              valueChannel.permissionOverwrites.edit(key, {
-                VIEW_CHANNEL: true,
-              });
+          mentionedMembersMap
+            .filter((value) => !value.user.bot)
+            .map((value, key) => {
+              mentionedChannel.map((valueChannel, keyChannel) => {
+                valueChannel.permissionOverwrites.edit(key, {
+                  VIEW_CHANNEL: true,
+                });
 
-              logsChannel.send(
-                functions.randomText("channelExisted_RA", {
-                  user: value.user.id,
-                  project: keyChannel,
-                  approved: message.author.id,
-                })
-              );
+                logsChannel.send(
+                  functions.randomText("channelExisted_RA", {
+                    user: value.user.id,
+                    project: keyChannel,
+                    approved: message.author.id,
+                  })
+                );
+              });
             });
-          });
+          message.delete();
+        }
+      }
+      break;
+
+    // Removes people from several channels. !remove username username channelname channelname
+    case messageFirstWord === "!remove" && isMod:
+      {
+        const logsChannel = await functions.findChannel(
+          message,
+          logsChannelName
+        );
+
+        const mentionedChannel = message.mentions.channels;
+        const mentionedMembersMap = message.mentions.members;
+
+        if (mentionedChannel.keys()) {
+          mentionedMembersMap
+            .filter((value) => !value.user.bot)
+            .map((value, key) => {
+              mentionedChannel.map((valueChannel, keyChannel) => {
+                valueChannel.permissionOverwrites.edit(key, {
+                  VIEW_CHANNEL: false,
+                });
+
+                logsChannel.send(
+                  functions.randomText("removedFromChannel", {
+                    user: value.user.id,
+                    project: keyChannel,
+                    approved: message.author.id,
+                  })
+                );
+              });
+            });
           message.delete();
         }
       }
@@ -273,96 +312,100 @@ ${memberList}`);
 
     // Add me to this channel. "!addme channel-name"
     case messageFirstWord === "!addme" && isMod:
-      var logsChannel = await functions.findChannel(message, logsChannelName);
+      {
+        const logsChannel = await functions.findChannel(
+          message,
+          logsChannelName
+        );
 
-      var projectName = message.content.substring(
-        message.content.indexOf(" ") + 1
-      );
-      if (projectName === "!addme") {
-        await message.reply(functions.randomText("addMePromptEmpty", {}));
-        break;
-      }
-      await message
-        .reply(
-          functions.randomText("addMePrompt", { projectName: projectName })
-        )
-        .then((replyMessage) => {
-          const filter = (reaction, user) => {
-            return (
-              reaction.emoji.name === "👍" && user.id === message.author.id
-            );
-          };
-          const collector = replyMessage.createReactionCollector({
-            filter,
-            time: 60000,
-            max: 1,
-          });
-
-          collector.on("collect", async () => {
-            const foundChannel = await functions.findChannel(
-              message,
-              functions.discordStyleProjectName(projectName)
-            );
-            if (foundChannel) {
-              foundChannel.permissionOverwrites.edit(message.author.id, {
-                VIEW_CHANNEL: true,
-              });
-
-              logsChannel.send(
-                functions.randomText("channelExisted", {
-                  user: message.author.id,
-                  project: foundChannel.id,
-                })
+        const projectName = message.content.substring(
+          message.content.indexOf(" ") + 1
+        );
+        if (projectName === "!addme") {
+          await message.reply(functions.randomText("addMePromptEmpty", {}));
+          break;
+        }
+        await message
+          .reply(
+            functions.randomText("addMePrompt", { projectName: projectName })
+          )
+          .then((replyMessage) => {
+            const filter = (reaction, user) => {
+              return (
+                reaction.emoji.name === "👍" && user.id === message.author.id
               );
-            } else {
-              await message.guild.channels
-                .create(projectName, {
-                  type: "GUILD_TEXT",
-                  permissionOverwrites: [
-                    {
-                      id: message.guild.id,
-                      deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                    },
-                    {
-                      id: message.author.id,
-                      allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                    },
-                  ],
-                })
-                .then(async (createdChannel) => {
-                  const category = message.guild.channels.cache.find(
-                    (c) =>
-                      c.name == projectsCategory && c.type == "GUILD_CATEGORY"
-                  );
+            };
+            const collector = replyMessage.createReactionCollector({
+              filter,
+              time: 60000,
+              max: 1,
+            });
 
-                  if (!category) {
-                    throw new Error("Category channel does not exist");
-                  }
-                  await createdChannel.setParent(category.id);
+            collector.on("collect", async () => {
+              const foundChannel = await functions.findChannel(
+                message,
+                functions.discordStyleProjectName(projectName)
+              );
+              if (foundChannel) {
+                foundChannel.permissionOverwrites.edit(message.author.id, {
+                  VIEW_CHANNEL: true,
+                });
 
-                  await createdChannel.permissionOverwrites.edit(
-                    message.author.id,
-                    {
-                      VIEW_CHANNEL: true,
+                logsChannel.send(
+                  functions.randomText("channelExisted", {
+                    user: message.author.id,
+                    project: foundChannel.id,
+                  })
+                );
+              } else {
+                await message.guild.channels
+                  .create(projectName, {
+                    type: "GUILD_TEXT",
+                    permissionOverwrites: [
+                      {
+                        id: message.guild.id,
+                        deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                      },
+                      {
+                        id: message.author.id,
+                        allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                      },
+                    ],
+                  })
+                  .then(async (createdChannel) => {
+                    const category = message.guild.channels.cache.find(
+                      (c) =>
+                        c.name == projectsCategory && c.type == "GUILD_CATEGORY"
+                    );
+
+                    if (!category) {
+                      throw new Error("Category channel does not exist");
                     }
-                  );
+                    await createdChannel.setParent(category.id);
 
-                  logsChannel.send(
-                    functions.randomText("channelCreated", {
-                      createdChannel: createdChannel.id,
-                      user: message.author.id,
-                    })
-                  );
-                })
-                .catch(console.error);
-            }
-          });
-          collector.on("end", () => {
-            replyMessage.delete();
-            message.delete();
-          });
-        });
+                    await createdChannel.permissionOverwrites.edit(
+                      message.author.id,
+                      {
+                        VIEW_CHANNEL: true,
+                      }
+                    );
 
+                    logsChannel.send(
+                      functions.randomText("channelCreated", {
+                        createdChannel: createdChannel.id,
+                        user: message.author.id,
+                      })
+                    );
+                  })
+                  .catch(console.error);
+              }
+            });
+            collector.on("end", () => {
+              replyMessage.delete();
+              message.delete();
+            });
+          });
+      }
       break;
 
     // Add a funfact to the JSON file.
@@ -401,198 +444,370 @@ ${memberList}`);
       break;
 
     // Archive the channel.
-    case messageFirstWord === "!archive" && isMod: {
-      var logsChannel = await functions.findChannel(message, logsChannelName);
+    case messageFirstWord === "!archive" && isMod:
+      {
+        var logsChannel = await functions.findChannel(message, logsChannelName);
 
-      const category = message.guild.channels.cache.find(
-        (c) => c.name == archiveCategory && c.type == "GUILD_CATEGORY"
-      );
+        const category = functions.findCategoryByName(message, archiveCategory);
+        message.channel.setParent(category.id, { lockPermissions: false });
 
-      if (!category) throw new Error("Category channel does not exist");
-      message.channel.setParent(category.id, { lockPermissions: false });
+        await message.channel.send(
+          functions.randomText("movedToWO_User", {
+            channel: message.channel.id,
+          })
+        );
 
-      await message.channel.send(
-        functions.randomText("movedToWO_User", {
-          channel: message.channel.id,
-        })
-      );
-
-      await logsChannel.send(
-        functions.randomText("movedToArchive", {
-          user: message.author.id,
-          channel: message.channel.id,
-        })
-      );
-      await message.delete();
-
+        await logsChannel.send(
+          functions.randomText("movedToArchive", {
+            user: message.author.id,
+            channel: message.channel.id,
+          })
+        );
+        await message.delete();
+      }
       break;
-    }
+
+    // Archive the channel.
+    case messageFirstWord === "!unarchive" && isMod:
+      {
+        const logsChannel = await functions.findChannel(
+          message,
+          logsChannelName
+        );
+
+        const category = functions.findCategoryByName(
+          message,
+          projectsCategory
+        );
+        message.channel.setParent(category.id, { lockPermissions: false });
+
+        await message.channel.send(
+          functions.randomText("movedFromWO_User", {
+            channel: message.channel.id,
+          })
+        );
+
+        await logsChannel.send(
+          functions.randomText("movedFromArchive", {
+            user: message.author.id,
+            channel: message.channel.id,
+          })
+        );
+        await message.delete();
+      }
+      break;
 
     // Delete last messages. To delete last 10, !deletelastmessages 10
     case messageFirstWord === "!deletelastmessages" && isMod:
-      var logsChannel = await functions.findChannel(message, logsChannelName);
-      var howMany = message.content.substring(message.content.indexOf(" ") + 1);
+      {
+        const logsChannel = await functions.findChannel(
+          message,
+          logsChannelName
+        );
+        const howMany = parseInt(
+          message.content.substring(message.content.indexOf(" ") + 1)
+        );
 
-      if (Number.isInteger(parseInt(howMany))) {
-        // Bulk delete messages
-        message.channel
-          .bulkDelete(parseInt(howMany))
-          .then(
-            async (messages) =>
-              await logsChannel.send(
-                functions.randomText("deletedMessages", {
-                  user: message.author.id,
-                  channel: message.channel.id,
-                  howMany: messages.size,
-                })
-              )
-          )
-          .catch(console.error);
+        if (Number.isInteger(howMany) && howMany < 101) {
+          // Bulk delete messages
+          message.channel
+            .bulkDelete(howMany)
+            .then(
+              async (messages) =>
+                await logsChannel.send(
+                  functions.randomText("deletedMessages", {
+                    user: message.author.id,
+                    channel: message.channel.id,
+                    howMany: messages.size,
+                  })
+                )
+            )
+            .catch(console.error);
+        }
       }
       break;
 
     // Send message to a channel as bot.
-    case messageFirstWord === "!sendmessage" && isMod: {
-      const mentionedChannel = message.mentions.channels;
+    case messageFirstWord === "!sendmessage" && isMod:
+      {
+        const mentionedChannel = message.mentions.channels;
 
-      const splitMessage = message.content
-        .substring(message.content.indexOf(" ") + 1)
-        .split(" | ");
+        const splitMessage = message.content
+          .substring(message.content.indexOf(" ") + 1)
+          .split(" | ");
 
-      if (mentionedChannel && splitMessage[1] && splitMessage[2]) {
-        mentionedChannel.map((value) => {
-          value
-            .send({
+        if (mentionedChannel && splitMessage[1] && splitMessage[2]) {
+          mentionedChannel.map((value) => {
+            value
+              .send({
+                embeds: [
+                  {
+                    color: embedColor,
+                    title: splitMessage[1],
+                    description: splitMessage[2],
+                  },
+                ],
+              })
+              .catch(console.error);
+          });
+        }
+      }
+      break;
+
+    // Move message to another channel.
+    case messageFirstWord === "!moveto" && isMod:
+      {
+        if (message.reference && message.mentions.channels) {
+          const repliedMessage = await message.channel.messages.fetch(
+            message.reference.messageId
+          );
+          const mentionedUser = message.mentions.repliedUser;
+          const attachment = Array.from(repliedMessage.attachments.values());
+          const mentionedUserNickname = message.guild.members.cache.find(
+            (a) => a.user === mentionedUser
+          ).nickname;
+
+          const channelMovedTo = message.mentions.channels;
+          channelMovedTo.map((value) => {
+            value.send({
               embeds: [
                 {
                   color: embedColor,
-                  title: splitMessage[1],
-                  description: splitMessage[2],
+                  author: {
+                    name: mentionedUserNickname
+                      ? mentionedUserNickname
+                      : mentionedUser.username,
+                    icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
+                  },
+                  description: repliedMessage.content,
+                  image: {
+                    url:
+                      attachment[0] &&
+                      (attachment[0].name.includes(".jpg") ||
+                        attachment[0].name.includes(".png") ||
+                        attachment[0].name.includes(".gif"))
+                        ? attachment[0].url
+                        : undefined,
+                  },
                 },
               ],
-            })
-            .catch(console.error);
-        });
-      }
-      break;
-    }
+              files:
+                attachment[0] &&
+                !(
+                  attachment[0].name.includes(".jpg") ||
+                  attachment[0].name.includes(".png") ||
+                  attachment[0].name.includes(".gif")
+                )
+                  ? [
+                      {
+                        attachment: attachment[0].url,
+                      },
+                    ]
+                  : undefined,
+            });
 
-    // Move message to another channel.
-    case messageFirstWord === "!moveto" && isMod: {
-      if (message.reference && message.mentions.channels) {
-        const repliedMessage = await message.channel.messages.fetch(
-          message.reference.messageId
-        );
-        const mentionedUser = message.mentions.repliedUser;
-
-        const channelMovedTo = message.mentions.channels;
-        channelMovedTo.map((value) => {
-          value.send({
-            embeds: [
-              {
-                color: embedColor,
-                author: {
-                  name: mentionedUser.displayName
-                    ? mentionedUser.displayName
-                    : mentionedUser.username,
-                  icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
-                },
-                description: repliedMessage.content,
-              },
-            ],
+            mentionedUser
+              .send(
+                functions.randomText("messageMovedTo", {
+                  message: repliedMessage.content,
+                  channel: value.id,
+                  attachment: attachment[0] ? attachment[0].url : " ",
+                })
+              )
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
           });
 
-          mentionedUser
-            .send(
-              functions.randomText("messageMovedTo", {
-                message: repliedMessage.content,
-                channel: value.id,
-              })
-            )
-            .catch((error) => {
-              console.error("Failed to send DM:", error);
-            });
-        });
-
-        repliedMessage.delete();
-        message.delete();
+          repliedMessage.delete();
+          message.delete();
+        }
       }
       break;
-    }
+
+    // Copy message to another channel.
+    case messageFirstWord === "!copyto" && isMod:
+      {
+        if (message.reference && message.mentions.channels) {
+          const repliedMessage = await message.channel.messages.fetch(
+            message.reference.messageId
+          );
+          const mentionedUser = message.mentions.repliedUser;
+          const attachment = Array.from(repliedMessage.attachments.values());
+          const mentionedUserNickname = message.guild.members.cache.find(
+            (a) => a.user === mentionedUser
+          ).nickname;
+
+          const channelMovedTo = message.mentions.channels;
+          channelMovedTo.map((value) => {
+            value.send({
+              embeds: [
+                {
+                  color: embedColor,
+                  author: {
+                    name: mentionedUserNickname
+                      ? mentionedUserNickname
+                      : mentionedUser.username,
+                    icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
+                  },
+                  description: repliedMessage.content,
+                  image: {
+                    url:
+                      attachment[0] &&
+                      (attachment[0].name.includes(".jpg") ||
+                        attachment[0].name.includes(".png") ||
+                        attachment[0].name.includes(".gif"))
+                        ? attachment[0].url
+                        : undefined,
+                  },
+                },
+              ],
+              files:
+                attachment[0] &&
+                !(
+                  attachment[0].name.includes(".jpg") ||
+                  attachment[0].name.includes(".png") ||
+                  attachment[0].name.includes(".gif")
+                )
+                  ? [
+                      {
+                        attachment: attachment[0].url,
+                      },
+                    ]
+                  : undefined,
+            });
+
+            mentionedUser
+              .send(
+                functions.randomText("messageCopiedTo", {
+                  message: repliedMessage.content,
+                  channel: value.id,
+                  attachment: attachment[0] ? attachment[0].url : " ",
+                })
+              )
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
+          });
+
+          message.delete();
+        }
+      }
+      break;
 
     // Manages the alert channel by asking author if this is what they wanted.
-    case (message.channel === sassAlertChannel ||
-      message.channel === suppAlertChannel) &&
-      !message.author.bot: {
-      const generalChannel = functions.findChannelByID(
-        message,
-        generalChannelID
-      );
-      message
-        .reply(functions.randomText("isThisAlert", { general: generalChannel }))
-        .then((replyMessage) => {
-          let reacted = false;
-          replyMessage.react("👍");
-          replyMessage.react("👎");
-          replyMessage.react("❌");
+    case (message.channel.id === sassAlertChannelID ||
+      message.channel.id === suppAlertChannelID) &&
+      !message.author.bot &&
+      message.attachments.size === 0:
+      {
+        const generalChannel = await functions.findChannelByID(
+          message,
+          generalChannelID
+        );
+        message
+          .reply(
+            functions.randomText("isThisAlert", { general: generalChannel })
+          )
+          .then((replyMessage) => {
+            let reacted = false;
+            replyMessage.react("👍");
+            replyMessage.react("👎");
+            replyMessage.react("❌");
 
-          const filter = (reaction, user) => {
-            return (
-              (reaction.emoji.name === "👍" ||
-                reaction.emoji.name === "👎" ||
-                reaction.emoji.name === "❌") &&
-              user.id === message.author.id &&
-              !user.bot
-            );
-          };
+            const filter = (reaction, user) => {
+              return (
+                (reaction.emoji.name === "👍" ||
+                  reaction.emoji.name === "👎" ||
+                  reaction.emoji.name === "❌") &&
+                user.id === message.author.id &&
+                !user.bot
+              );
+            };
 
-          const collector = replyMessage.createReactionCollector({
-            filter,
-            time: 60000,
-            max: 1,
-          });
+            const collector = replyMessage.createReactionCollector({
+              filter,
+              time: 60000,
+              max: 1,
+            });
 
-          collector.on("collect", (reaction) => {
-            switch (reaction.emoji.name) {
-              case "👍":
-                reacted = true;
-                replyMessage.delete();
-                break;
+            collector.on("collect", (reaction) => {
+              switch (reaction.emoji.name) {
+                case "👍":
+                  reacted = true;
+                  replyMessage.delete();
+                  break;
 
-              case "👎": {
-                reacted = true;
+                case "👎": {
+                  reacted = true;
 
-                generalChannel.send(
-                  functions.randomText(
-                    "saidInAlertChannel",
-                    {
-                      user: message.author.id,
-                      message: message.content,
-                    },
-                    undefined,
-                    message.author.displayName
-                      ? message.author.displayName
-                      : message.author.username,
-                    `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=256`
-                  )
-                );
+                  const mentionedUserNickname =
+                    message.guild.members.cache.find(
+                      (a) => a.user === message.author
+                    ).nickname;
+
+                  generalChannel.send(
+                    functions.randomText(
+                      "saidInAlertChannel",
+                      {
+                        user: message.author.id,
+                        message: message.content,
+                      },
+                      undefined,
+                      mentionedUserNickname
+                        ? mentionedUserNickname
+                        : message.author.username,
+                      `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=256`
+                    )
+                  );
+                  setTimeout(() => {
+                    message.delete();
+                    replyMessage.delete();
+                  }, 3000);
+
+                  return;
+                }
+              }
+            });
+
+            collector.on("end", () => {
+              if (!reacted) {
                 message.delete();
                 replyMessage.delete();
-                break;
               }
-            }
+            });
           });
-
-          collector.on("end", () => {
-            if (!reacted) {
-              message.delete();
-              replyMessage.delete();
-            }
-          });
-        });
-
+      }
       break;
-    }
+
+    // After this point, it's only for fun.
+    case message.mentions.has(client.user) && !message.author.bot:
+      message.reply(functions.randomText("taggedBot", {}));
+      break;
+
+    case message.content === "Hello there!":
+      message.reply(
+        "https://c.tenor.com/smu7cmwm4rYAAAAd/general-kenobi-kenobi.gif"
+      );
+      break;
+
+    case message.content === "Hi!":
+      message.reply(
+        "https://c.tenor.com/uATlxJ4eqLsAAAAC/tommy-wiseau-oh-hi-mark.gif"
+      );
+      break;
+
+    case message.content === "Hmm.":
+      message.reply(
+        "https://c.tenor.com/SY861GLwsiUAAAAM/the-witcher-geralt.gif"
+      );
+      break;
+
+    case message.content === "Helle.":
+      message.reply(
+        "https://tenor.com/view/jason-momoa-jason-momoa-angelwoodgett-gif-18117252"
+      );
+      break;
   }
 });
 
