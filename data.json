@@ -50,8 +50,10 @@
   "channelCreatedWOAdd": ["Channel created for <#{{createdChannel}}>!"],
 
   "isThere": {
-    "yes": ["Yes. There is <#{{foundChannel}}>."],
-    "no": ["No."]
+    "yes": [
+      "Yes. There is <#{{foundChannel}}>. Would you like me to add you to <#{{foundChannel}}>."
+    ],
+    "no": ["No. Would you like to create it?"]
   },
 
   "addMePrompt": [
@@ -68,17 +70,20 @@
   "saidInAlertChannel": ["<@{{user}}> said '{{message}}' in an alert channel."],
 
   "reminder": {
-    "remindWhat": ["Remind you what?"],
-    "when": [
-      "When will this take place? (Ex. 01 Jan 2022 20:20 GMT or UTC+3 etc.)"
+    "help": [
+      "!remindme Subject | 01 Jan 2022 20:20 GMT or UTC+3 etc. | How long before I should remind? (In minutes) (Ex. 20)"
     ],
     "notADate": ["That is not a date. I am cancelling your request."],
-    "howLongBefore": ["How long before I should remind? (In minutes) (Ex. 20)"],
-    "notAnInt": ["That is not an integer. I am cancelling your request."],
+    "notAnInt": [
+      "Time reminded before is not an integer. I am cancelling your request."
+    ],
     "minutesLeft": ["{{minutesBefore}} minutes left for {{remindText}}"],
     "itsTime": ["It's time for {{remindText}}"],
     "enteredPastDate": [
       "I wish I could travel back in time, but I'm not quite there yet. Please enter a date in the future."
+    ],
+    "initiated": [
+      "There's a new event coming up called '{{event}}' It's going to take place on {{time}}. You'll be reminded in this channel {{before}} minute(s) before the event. See you then ⌛!"
     ]
   },
 
@@ -108,13 +113,10 @@
 
   "poll": {
     "itself": [
-      "<@{{user}}> asks, {{pollText}}. \n 👍 for 'Yes' \n👎 for 'No' \n🤷 for 'Maybe' \n💡 for 'None, I'll share my opinion with you using the /suggest command.' \n \nThe owner should react ✅ after votes are collected."
-    ],
-    "results": [
-      "👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
+      "<@{{user}}> asks, {{pollText}}. \n 👍 for 'Yes' \n👎 for 'No' \n🤷 for 'Maybe' \n{{bulb}} \n \nThe owner should react ✅ after votes are collected."
     ],
     "close": [
-      "I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n💡   {{none}} None"
+      "I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n{{optionalBulb}} {{bulb}}"
     ]
   },
 
@@ -168,9 +170,23 @@
     "Removed <@{{user}}> from <#{{project}}>!\n <@{{approved}}> approved."
   ],
 
-  "taggedBot": ["Hello there!", "I'm alive."],
+  "taggedBot": [
+    "Speak, friend, and enter.",
+    "You rang?",
+    "Hello there!",
+    "I'm alive.",
+    "You called?",
+    "What is thy bidding, my master?",
+    "Who dares disturb my slumber?",
+    "How may I serve?",
+    "I am the chosen one.",
+    "No, I wasn't translating, I swear!",
+    "How about coffee first?",
+    "Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn."
+  ],
 
   "discordError": ["There was an error. Blame Discord for this."],
 
-  "error": "Error: {{error}}"
+  "joinedServer": ["<@{{user}}> joined the server. Contact initiated 👽."],
+  "leftServer": ["<@{{user}}> left the server. Boooo!"]
 }

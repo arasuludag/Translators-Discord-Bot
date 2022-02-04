@@ -12,13 +12,9 @@ i18next.init({
   },
 });
 
-function handleError(message, error) {
-  message.channel.send(i18next.t("error", error));
-}
-
 module.exports = {
   // Selects a random text from a JSON array.
-  randomText: (path, values, title, author, iconURL, content) => {
+  randomText: (path, values, title, author, iconURL, content, mentions) => {
     values.returnObjects = true;
     values.interpolation = { escapeValue: false };
 
@@ -37,6 +33,7 @@ module.exports = {
         },
       ],
       content: content,
+      mentions: mentions,
     };
   },
 
@@ -57,31 +54,22 @@ module.exports = {
 
   // Finds channel by name.
   findChannel: (message, channelName) => {
-    const foundChannel = message.guild.channels.cache.find(
+    return message.guild.channels.cache.find(
       (channel) => channel.name === channelName && channel.type == "GUILD_TEXT"
     );
-
-    if (foundChannel) return foundChannel;
-    else throw handleError(message, "Can't find channel. Check config file.");
   },
 
   // Finds channel by ID.
   findChannelByID: (message, channelID) => {
-    const foundChannel = message.guild.channels.cache.find(
+    return message.guild.channels.cache.find(
       (channel) => channel.id === channelID && channel.type == "GUILD_TEXT"
     );
-
-    if (foundChannel) return foundChannel;
-    else throw handleError(message, "Can't find channel. Check config file.");
   },
 
   // Find category by name.
   findCategoryByName: (message, channelName) => {
-    const foundChannel = message.guild.channels.cache.find(
+    return message.guild.channels.cache.find(
       (c) => c.name == channelName && c.type == "GUILD_CATEGORY"
     );
-
-    if (foundChannel) return foundChannel;
-    else throw handleError(message, "Can't find category. Check config file.");
   },
 };

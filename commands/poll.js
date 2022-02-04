@@ -15,6 +15,9 @@ module.exports = {
       option
         .setName("time_limit")
         .setDescription("When should the poll close? (In minutes)")
+    )
+    .addStringOption((option) =>
+      option.setName("bulb_option").setDescription("An optional option.")
     ),
   async execute(interaction) {
     var timeLimit = 300000000;
@@ -25,24 +28,28 @@ module.exports = {
       content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
     });
+
+    const bulb = interaction.options.getString("bulb_option");
+
     interaction.channel
       .send(
         functions.randomText("poll.itself", {
           user: interaction.user.id,
           pollText: interaction.options.getString("poll_text"),
+          bulb: bulb ? `💡 for '${bulb}'` : " ",
         })
       )
       .then((replyMessage) => {
         replyMessage.react("👍");
         replyMessage.react("👎");
         replyMessage.react("🤷");
-        replyMessage.react("💡");
+        if (bulb) replyMessage.react("💡");
 
         var resultsShown = false;
         var thumbsUp = 0;
         var thumbsDown = 0;
         var maybe = 0;
-        var none = 0;
+        var optionalBulb = 0;
 
         const filter = (reaction, user) => {
           return (
@@ -76,7 +83,7 @@ module.exports = {
               break;
 
             case "💡":
-              none++;
+              optionalBulb++;
               break;
 
             case "✅":
@@ -84,7 +91,7 @@ module.exports = {
                 yes: thumbsUp,
                 no: thumbsDown,
                 maybe: maybe,
-                none: none,
+                optionalBulb: optionalBulb,
               });
           }
         });
@@ -95,7 +102,7 @@ module.exports = {
               yes: thumbsUp,
               no: thumbsDown,
               maybe: maybe,
-              none: none,
+              optionalBulb: optionalBulb,
             });
         });
 
@@ -106,7 +113,8 @@ module.exports = {
               yes: results.yes,
               no: results.no,
               maybe: results.maybe,
-              none: results.none,
+              optionalBulb: bulb ? `💡 ${results.optionalBulb}` : "",
+              bulb: bulb ? bulb : "",
             })
           );
         }
