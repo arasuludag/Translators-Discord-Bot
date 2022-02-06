@@ -110,7 +110,7 @@ module.exports = {
               undefined,
               undefined,
               undefined,
-              "<@everyone>"
+              "@everyone"
             )
           );
 
@@ -132,7 +132,7 @@ module.exports = {
                   undefined,
                   undefined,
                   undefined,
-                  "<@everyone>"
+                  "@everyone"
                 )
               ),
             differenceBetween - splitMessage[2] * 60 * 1000
@@ -207,16 +207,28 @@ ${memberList}`);
             mentionedMembersMap
               .filter((value) => !value.user.bot)
               .map((value, key) => {
-                mentionedChannel.map((valueChannel, keyChannel) => {
-                  valueChannel.permissionOverwrites.edit(key, {
-                    VIEW_CHANNEL: true,
-                  });
+                mentionedChannel.map(async (valueChannel, keyChannel) => {
+                  try {
+                    await valueChannel.permissionOverwrites.edit(key, {
+                      VIEW_CHANNEL: true,
+                    });
+                  } catch (error) {
+                    await message.author.send(
+                      functions.randomText("threadError", {})
+                    );
+                    return;
+                  }
 
-                  logsChannel.send(
+                  await logsChannel.send(
                     functions.randomText("channelExisted_RA", {
                       user: value.user.id,
                       project: keyChannel,
                       approved: message.author.id,
+                    })
+                  );
+                  await value.user.send(
+                    functions.randomText("userAddNotify", {
+                      project: keyChannel,
                     })
                   );
                 });
@@ -241,12 +253,19 @@ ${memberList}`);
             mentionedMembersMap
               .filter((value) => !value.user.bot)
               .map((value, key) => {
-                mentionedChannel.map((valueChannel, keyChannel) => {
-                  valueChannel.permissionOverwrites.edit(key, {
-                    VIEW_CHANNEL: false,
-                  });
+                mentionedChannel.map(async (valueChannel, keyChannel) => {
+                  try {
+                    await valueChannel.permissionOverwrites.edit(key, {
+                      VIEW_CHANNEL: false,
+                    });
+                  } catch (error) {
+                    await message.author.send(
+                      functions.randomText("threadError", {})
+                    );
+                    return;
+                  }
 
-                  logsChannel.send(
+                  await logsChannel.send(
                     functions.randomText("removedFromChannel", {
                       user: value.user.id,
                       project: keyChannel,
@@ -523,7 +542,13 @@ ${memberList}`);
             message,
             archiveCategory
           );
-          message.channel.setParent(category.id, { lockPermissions: false });
+
+          try {
+            message.channel.setParent(category.id, { lockPermissions: false });
+          } catch (error) {
+            await message.author.send(functions.randomText("threadError", {}));
+            return;
+          }
 
           await message.channel.send(
             functions.randomText("movedToWO_User", {
@@ -553,7 +578,12 @@ ${memberList}`);
             message,
             projectsCategory
           );
-          message.channel.setParent(category.id, { lockPermissions: false });
+          try {
+            message.channel.setParent(category.id, { lockPermissions: false });
+          } catch (error) {
+            await message.author.send(functions.randomText("threadError", {}));
+            return;
+          }
 
           await message.channel.send(
             functions.randomText("movedFromWO_User", {
@@ -571,8 +601,8 @@ ${memberList}`);
         }
         break;
 
-      // Delete last messages. To delete last 10, !deletelastmessages 10
-      case messageFirstWord === "!deletelastmessages" && isMod:
+      // Delete last messages. To delete last 10, !delete 10
+      case messageFirstWord === "!delete" && isMod:
         {
           const logsChannel = await functions.findChannel(
             message,

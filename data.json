@@ -18,7 +18,7 @@
   "waitApproval": ["Wait for approval to access {{project}}"],
 
   "addRequest": [
-    "<@{{user}}> wants to be added to {{projectName}}. React ✅ to approve."
+    "<@{{user}}> wants to be added to {{projectName}}. React ✅ to approve. {{reason}}"
   ],
 
   "channelExisted": [
@@ -188,5 +188,17 @@
   "discordError": ["There was an error. Blame Discord for this."],
 
   "joinedServer": ["<@{{user}}> joined the server. Contact initiated 👽."],
-  "leftServer": ["<@{{user}}> left the server. Boooo!"]
+  "leftServer": ["<@{{user}}> has left the server. Boooo!"],
+
+  "threadPrompt": [
+    "If there are more than 3 people working on this project, a channel is going to be created. \n \nUse /requestadd for that."
+  ],
+
+  "threadError": [
+    "There was an error with thread creation. \nI'm assuming you tried to create a thread, inside a thread, or used !add !remove on a thread. Why would you even do that?"
+  ],
+
+  "threadCreated": [
+    "A new thread called <#{{thread}}> has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
+  ]
 }

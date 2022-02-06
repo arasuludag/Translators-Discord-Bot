@@ -16,6 +16,9 @@ module.exports = {
         .setName("project_name")
         .setDescription("Name of the project. Beware of typos!")
         .setRequired(true)
+    )
+    .addStringOption((option) =>
+      option.setName("reason").setDescription("Why?")
     ),
   async execute(interaction) {
     const approvalChannel = functions.findChannel(
@@ -24,6 +27,7 @@ module.exports = {
     );
     const logsChannel = functions.findChannel(interaction, logsChannelName);
     const channelName = interaction.options.getString("project_name");
+    const reason = interaction.options.getString("reason");
 
     await interaction.user.send(
       functions.randomText("waitApproval", {
@@ -40,6 +44,7 @@ module.exports = {
         functions.randomText("addRequest", {
           user: interaction.user.id,
           projectName: channelName,
+          reason: reason ? `\nReason: ${reason}` : " ",
         })
       )
       .then((replyMessage) => {
@@ -77,7 +82,6 @@ module.exports = {
               );
               interaction.user.send(
                 functions.randomText("userAddNotify", {
-                  user: interaction.user.id,
                   project: foundChannel.id,
                 })
               );

@@ -1,0 +1,92 @@
+const { SlashCommandBuilder } = require("@discordjs/builders");
+const functions = require("../functions.js");
+const {
+  projectChannelRequestsChannelID,
+  threadType,
+} = require("../config.json");
+const { findChannelByID } = require("../functions.js");
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("buddyup")
+    .setDescription("What do you want to buddy up for?")
+    .addStringOption((option) =>
+      option
+        .setName("for")
+        .setDescription("Maybe for a project?")
+        .setRequired(true)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("is_this_a_project")
+        .setDescription("Yes or No")
+        .setRequired(true)
+    ),
+  async execute(interaction) {
+    const projectName = functions.discordStyleProjectName(
+      interaction.options.getString("for")
+    );
+
+    await interaction.reply({
+      content: functions.randomEphemeralText("requestAcquired", {}),
+      ephemeral: true,
+    });
+
+    let channel;
+    if (interaction.options.getBoolean("is_this_a_project")) {
+      channel = await findChannelByID(
+        interaction,
+        projectChannelRequestsChannelID
+      );
+    } else {
+      channel = interaction.channel;
+    }
+
+    let thread;
+    try {
+      thread = channel.threads.cache.find((x) => x.name === projectName);
+    } catch (error) {
+      interaction.user.send(functions.randomText("threadError", {}));
+      return;
+    }
+
+    if (thread) {
+      await thread.members.add(interaction.user.id);
+
+      interaction.user.send(
+        functions.randomText("userAddNotify", {
+          project: thread.id,
+        })
+      );
+
+      return;
+    }
+
+    await channel.threads
+      .create({
+        name: projectName,
+        autoArchiveDuration: "MAX",
+        type: threadType,
+        reason: "For a project.",
+      })
+      .then(async (thread) => {
+        if (thread.joinable) await thread.join();
+        await thread.members.add(interaction.user.id);
+
+        await interaction.user.send(
+          functions.randomText("userAddNotify", {
+            project: thread.id,
+          })
+        );
+
+        await channel.send(
+          functions.randomText("threadCreated", {
+            thread: thread.id,
+            user: interaction.user.id,
+          })
+        );
+
+        await thread.send(functions.randomText("threadPrompt", {}));
+      });
+  },
+};
