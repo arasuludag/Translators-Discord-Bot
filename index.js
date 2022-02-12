@@ -5,11 +5,13 @@ const { Client, Intents, Collection } = require("discord.js");
 const {
   token,
   receptionChannelID,
+  generalChannelID,
   logsChannelName,
   embedColor,
 } = require("./config.json");
 const { commands } = require("./exclamationCommands");
 const functions = require("./functions");
+const { pronounRoleManager } = require("./pronounRoleManager");
 
 const myIntents = new Intents();
 myIntents.add(
@@ -19,7 +21,10 @@ myIntents.add(
   Intents.FLAGS.GUILD_MEMBERS,
   Intents.FLAGS.GUILD_PRESENCES
 );
-const client = new Client({ intents: myIntents });
+const client = new Client({
+  intents: myIntents,
+  partials: ["MESSAGE", "CHANNEL", "REACTION"],
+});
 
 client.commands = new Collection();
 const commandFiles = readdirSync("./commands").filter((file) =>
@@ -55,6 +60,34 @@ client.on("ready", async () => {
   });
 });
 
+client.on("messageReactionAdd", async (reaction, user) => {
+  // When a reaction is received, check if the structure is partial
+  if (reaction.partial) {
+    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+    try {
+      pronounRoleManager(reaction, user, true);
+    } catch (error) {
+      console.error("Something went wrong when fetching the message:", error);
+      // Return as `reaction.message.author` may be undefined/null
+      return;
+    }
+  }
+});
+
+client.on("messageReactionRemove", async (reaction, user) => {
+  // When a reaction is received, check if the structure is partial
+  if (reaction.partial) {
+    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+    try {
+      pronounRoleManager(reaction, user, false);
+    } catch (error) {
+      console.error("Something went wrong when fetching the message:", error);
+      // Return as `reaction.message.author` may be undefined/null
+      return;
+    }
+  }
+});
+
 // Sends a welcome message to newly joined users.
 client.on("guildMemberAdd", (member) => {
   member
@@ -88,7 +121,7 @@ client.on("guildMemberRemove", (member) => {
 });
 
 client.on("messageCreate", async (message) => {
-  commands(message, client);
+  await commands(message, client);
 });
 
 client.on("error", function (error) {
@@ -113,6 +146,24 @@ client.on("interactionCreate", async (interaction) => {
       ephemeral: true,
     });
   }
+});
+
+// Let the guild know about the crash.
+process.on("uncaughtException", async (error) => {
+  await client.channels.cache
+    .find(
+      (channel) =>
+        channel.id === generalChannelID && channel.type == "GUILD_TEXT"
+    )
+    .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
+  await client.channels.cache
+    .find(
+      (channel) =>
+        channel.name === logsChannelName && channel.type == "GUILD_TEXT"
+    )
+    .send(`There is a crash. Contact Aras about this.\n \n${error}`);
+  console.log(error);
+  process.exit(1);
 });
 
 client.login(token); // Login bot using token.

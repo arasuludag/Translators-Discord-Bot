@@ -64,6 +64,9 @@
   "alert": {
     "message": [
       "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for their target language:\n \n {{context}}"
+    ],
+    "messageTemplate": [
+      "<@{{user}}> wanted to let you know that they've just submitted the template QC for the following project:\n \n {{context}}"
     ]
   },
 
@@ -194,11 +197,13 @@
     "If there are more than 3 people working on this project, a channel is going to be created. \n \nUse /requestadd for that."
   ],
 
-  "threadError": [
-    "There was an error with thread creation. \nI'm assuming you tried to create a thread, inside a thread, or used !add !remove on a thread. Why would you even do that?"
+  "setParentError": [
+    "There was an error about setting parent categories. \nI'm assuming you tried to create a thread, inside a thread, or used used some commands that were made for channels on a thread. Why would you even do that?"
   ],
 
   "threadCreated": [
     "A new thread called <#{{thread}}> has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
-  ]
+  ],
+
+  "userPronounNotify": ["You will {{isAdd}} be called {{pronoun}} from now on."]
 }

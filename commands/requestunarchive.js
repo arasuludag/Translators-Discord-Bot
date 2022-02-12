@@ -65,9 +65,14 @@ module.exports = {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
             const category = findCategoryByName(interaction, projectsCategory);
-            interaction.channel.setParent(category.id, {
-              lockPermissions: false,
-            });
+            try {
+              interaction.channel.setParent(category.id, {
+                lockPermissions: false,
+              });
+            } catch (error) {
+              await user.send(functions.randomText("setParentError", {}));
+              return;
+            }
 
             await interaction.channel.send(
               functions.randomText("movedFromWO_User", {

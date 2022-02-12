@@ -27,6 +27,8 @@ module.exports = {
       interaction.options.getString("for")
     );
 
+    const isProject = interaction.options.getBoolean("is_this_a_project");
+
     await interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
@@ -46,7 +48,8 @@ module.exports = {
     try {
       thread = channel.threads.cache.find((x) => x.name === projectName);
     } catch (error) {
-      interaction.user.send(functions.randomText("threadError", {}));
+      // If someone tries to create a thread, under a thread.
+      interaction.user.send(functions.randomText("setParentError", {}));
       return;
     }
 
@@ -66,7 +69,7 @@ module.exports = {
       .create({
         name: projectName,
         autoArchiveDuration: "MAX",
-        type: threadType,
+        type: isProject ? threadType : "GUILD_PUBLIC_THREAD",
         reason: "For a project.",
       })
       .then(async (thread) => {
@@ -79,14 +82,16 @@ module.exports = {
           })
         );
 
-        await channel.send(
-          functions.randomText("threadCreated", {
-            thread: thread.id,
-            user: interaction.user.id,
-          })
-        );
+        if (isProject) {
+          await channel.send(
+            functions.randomText("threadCreated", {
+              thread: thread.id,
+              user: interaction.user.id,
+            })
+          );
 
-        await thread.send(functions.randomText("threadPrompt", {}));
+          await thread.send(functions.randomText("threadPrompt", {}));
+        }
       });
   },
 };

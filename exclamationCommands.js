@@ -31,14 +31,16 @@ module.exports = {
     // Discord caused a crash by sending a non-existent message that doesn't have a role attribute and that caused a crash.
     // So that's why.
     let isMod = false;
-    if (message.member.roles) {
+    try {
       isMod = message.member.roles.cache.some((role) => role.name === modRole);
-    } else
+    } catch (error) {
       await message.channel
         .send(functions.randomText("discordError", {}))
         .catch((error) => {
           console.log(error);
         });
+      return;
+    }
 
     // Extracts the first word of message to check for commands later.
     const messageFirstWord = message.content.split(" ")[0];
@@ -214,7 +216,7 @@ ${memberList}`);
                     });
                   } catch (error) {
                     await message.author.send(
-                      functions.randomText("threadError", {})
+                      functions.randomText("setParentError", {})
                     );
                     return;
                   }
@@ -260,7 +262,7 @@ ${memberList}`);
                     });
                   } catch (error) {
                     await message.author.send(
-                      functions.randomText("threadError", {})
+                      functions.randomText("setParentError", {})
                     );
                     return;
                   }
@@ -546,7 +548,9 @@ ${memberList}`);
           try {
             message.channel.setParent(category.id, { lockPermissions: false });
           } catch (error) {
-            await message.author.send(functions.randomText("threadError", {}));
+            await message.author.send(
+              functions.randomText("setParentError", {})
+            );
             return;
           }
 
@@ -581,7 +585,9 @@ ${memberList}`);
           try {
             message.channel.setParent(category.id, { lockPermissions: false });
           } catch (error) {
-            await message.author.send(functions.randomText("threadError", {}));
+            await message.author.send(
+              functions.randomText("setParentError", {})
+            );
             return;
           }
 

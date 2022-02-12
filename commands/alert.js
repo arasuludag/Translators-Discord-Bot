@@ -16,6 +16,11 @@ module.exports = {
             .setDescription("The alert.")
             .setRequired(true)
         )
+        .addBooleanOption((option) =>
+          option
+            .setName("template")
+            .setDescription("Is this a template QC you've submitted?")
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
@@ -27,6 +32,11 @@ module.exports = {
             .setDescription("The alert.")
             .setRequired(true)
         )
+        .addBooleanOption((option) =>
+          option
+            .setName("template")
+            .setDescription("Is this a template QC you've submitted?")
+        )
     ),
   async execute(interaction) {
     const alertText = await interaction.options.getString("alert_text");
@@ -37,6 +47,19 @@ module.exports = {
           interaction,
           sassAlertChannelID
         );
+        if (interaction.options.getBoolean("template")) {
+          sassAlertChannel.send(
+            functions.randomText(
+              "alert.messageTemplate",
+              {
+                user: interaction.user.id,
+                context: alertText,
+              },
+              "🚨 Alert - TEMPLATE QC!"
+            )
+          );
+          break;
+        }
         sassAlertChannel.send(
           functions.randomText(
             "alert.message",
@@ -55,6 +78,19 @@ module.exports = {
           interaction,
           suppAlertChannelID
         );
+        if (interaction.options.getBoolean("template")) {
+          supplementalAlertChannel.send(
+            functions.randomText(
+              "alert.messageTemplate",
+              {
+                user: interaction.user.id,
+                context: alertText,
+              },
+              "🚨 Alert - TEMPLATE QC!"
+            )
+          );
+          break;
+        }
         supplementalAlertChannel.send(
           functions.randomText(
             "alert.message",
