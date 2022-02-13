@@ -1,5 +1,6 @@
 const translation = require("./data.json");
 const i18next = require("i18next");
+const fs = require("fs");
 const { Permissions } = require("discord.js");
 const {
   modRole,
@@ -68,10 +69,13 @@ module.exports = {
             .substring(message.content.indexOf(" ") + 1)
             .split(" | ");
 
+          const mentionedChannel = await message.mentions.channels;
+
           if (
             splitMessage[0] === "!remindme" ||
             !splitMessage[1] ||
-            !splitMessage[2]
+            !splitMessage[2] ||
+            !mentionedChannel.keys().next().value
           ) {
             await message.reply(functions.randomText("reminder.help", {}));
             return;
@@ -97,83 +101,105 @@ module.exports = {
 
           await message.react("⏳");
 
-          setTimeout(() => {
-            message.delete();
-          }, 3000);
+          let timeLeftTimeout = [];
+          let timeCameTimeout = [];
 
-          await message.channel.send(
-            functions.randomText(
-              "reminder.initiated",
-              {
-                event: remindText,
-                time: splitMessage[1],
-                before: splitMessage[2],
-              },
-              undefined,
-              undefined,
-              undefined,
-              "@everyone"
-            )
-          );
+          mentionedChannel.map(async (value, index) => {
+            await value.send(
+              functions.randomText(
+                "reminder.initiated",
+                {
+                  event: remindText,
+                  time: `<t:${unixTimeWhen / 1000}> (<t:${
+                    unixTimeWhen / 1000
+                  }:R>)`,
+                  before: splitMessage[2],
+                },
+                undefined,
+                undefined,
+                undefined,
+                "@everyone"
+              )
+            );
 
-          let mentions = "";
-          if (message.mentions.roles)
-            await message.mentions.roles.map((value) => {
-              mentions = mentions.concat(`${value.toString()} `);
+            timeLeftTimeout[index] = setTimeout(
+              () =>
+                value.send(
+                  functions.randomText(
+                    "reminder.minutesLeft",
+                    {
+                      minutesBefore: splitMessage[2],
+                      remindText: remindText,
+                    },
+                    undefined,
+                    undefined,
+                    undefined,
+                    "@everyone"
+                  )
+                ),
+              differenceBetween - splitMessage[2] * 60 * 1000
+            );
+            timeCameTimeout[index] = setTimeout(
+              () =>
+                value.send(
+                  functions.randomText(
+                    "reminder.itsTime",
+                    {
+                      remindText: remindText,
+                    },
+                    undefined,
+                    undefined,
+                    undefined,
+                    "@everyone"
+                  )
+                ),
+              differenceBetween
+            );
+          });
+
+          const filter = (reaction, user) =>
+            reaction.emoji.name === "❌" && !user.bot;
+
+          const collector = message.createReactionCollector({
+            filter,
+            time: differenceBetween,
+            max: 1,
+          });
+
+          collector.on("collect", async () => {
+            message.react("❌");
+
+            mentionedChannel.map(async (value, index) => {
+              clearTimeout(timeLeftTimeout[index]);
+              clearTimeout(timeCameTimeout[index]);
+
+              await value.send(
+                functions.randomText("reminder.canceled", {
+                  event: remindText,
+                })
+              );
             });
-
-          setTimeout(
-            () =>
-              message.channel.send(
-                functions.randomText(
-                  "reminder.minutesLeft",
-                  {
-                    minutesBefore: splitMessage[2],
-                    remindText: remindText,
-                  },
-                  undefined,
-                  undefined,
-                  undefined,
-                  "@everyone"
-                )
-              ),
-            differenceBetween - splitMessage[2] * 60 * 1000
-          );
-          setTimeout(
-            () =>
-              message.channel.send(
-                functions.randomText(
-                  "reminder.itsTime",
-                  {
-                    remindText: remindText,
-                  },
-                  undefined,
-                  undefined,
-                  undefined,
-                  "<@everyone>"
-                )
-              ),
-            differenceBetween
-          );
+          });
         }
         break;
 
       // Stats for member count. Has issues.
       case messageFirstWord === "!stats" && isMod:
-        var memberCountMessage = "";
+        {
+          let memberCountMessage = "";
 
-        message.guild.roles.cache.forEach((role) => {
-          memberCountMessage = memberCountMessage.concat(
-            `${role.toString()} has ${
-              message.guild.roles.cache.get(role.id).members.size
-            } people.
+          message.guild.roles.cache.forEach((role) => {
+            memberCountMessage = memberCountMessage.concat(
+              `${role.toString()} has ${
+                message.guild.roles.cache.get(role.id).members.size
+              } people.
 `
-          );
-        });
-        message.reply(`We have ${message.member.guild.memberCount} members in total. 
+            );
+          });
+          message.reply(`We have ${message.member.guild.memberCount} members in total. 
 ${memberCountMessage} 
 `);
-
+        }
         break;
 
       // Counts the members in spesified role. Has issues.
@@ -288,10 +314,10 @@ ${memberList}`);
             message,
             logsChannelName
           );
-          var projectName = message.content.substring(
+          const projectName = message.content.substring(
             message.content.indexOf(" ") + 1
           );
-          var foundChannel = await functions.findChannel(
+          const foundChannel = await functions.findChannel(
             message,
             functions.discordStyleProjectName(projectName)
           );
@@ -504,7 +530,6 @@ ${memberList}`);
           break;
         }
 
-        var fs = require("fs");
         fs.readFile(
           "./funfacts.json",
           "utf8",
@@ -512,11 +537,11 @@ ${memberList}`);
             if (err) {
               console.log(err);
             } else {
-              var obj = JSON.parse(data); // now it an object
+              let obj = JSON.parse(data); // now it an object
               obj.funfacts.push(
                 message.content.substring(message.content.indexOf(" ") + 1)
               ); // add some data
-              var json = JSON.stringify(obj); // convert it back to json
+              const json = JSON.stringify(obj); // convert it back to json
               fs.writeFile("./funfacts.json", json, "utf8", async () => {
                 await message.reply(
                   functions.randomText("addFunfact.added", {
@@ -905,6 +930,18 @@ ${memberList}`);
           });
         break;
 
+      case messageFirstWord === "!memory" && isMod:
+        {
+          const used = process.memoryUsage();
+          let response = "";
+          for (let key in used) {
+            response = response.concat(
+              `${key} ${Math.round((used[key] / 1024 / 1024) * 100) / 100} MB\n`
+            );
+          }
+          message.channel.send(response);
+        }
+        break;
       // ****************************************************** //
       // After this point, it's only for fun.
       case message.mentions.has(client.user) && !message.author.bot:

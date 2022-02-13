@@ -87,7 +87,8 @@
     ],
     "initiated": [
       "There's a new event coming up called '{{event}}' It's going to take place on {{time}}. You'll be reminded in this channel {{before}} minute(s) before the event. See you then ⌛!"
-    ]
+    ],
+    "canceled": ["{{event}} is cancelled."]
   },
 
   "add": {
