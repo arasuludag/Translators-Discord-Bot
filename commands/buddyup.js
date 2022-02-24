@@ -89,8 +89,6 @@ module.exports = {
               user: interaction.user.id,
             })
           );
-
-          await thread.send(functions.randomText("threadPrompt", {}));
         }
       });
   },

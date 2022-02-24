@@ -12,6 +12,7 @@ const {
 const { commands } = require("./exclamationCommands");
 const functions = require("./functions");
 const { pronounRoleManager } = require("./pronounRoleManager");
+const { twitterStream } = require("./twitterStream");
 
 const myIntents = new Intents();
 myIntents.add(
@@ -165,5 +166,7 @@ process.on("uncaughtException", async (error) => {
   console.log(error);
   process.exit(1);
 });
+
+twitterStream(client);
 
 client.login(token); // Login bot using token.
