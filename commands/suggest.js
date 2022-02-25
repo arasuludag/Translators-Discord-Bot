@@ -89,15 +89,19 @@ module.exports = {
           )
         );
 
-        interaction.user.send(
-          functions.randomText(
-            "suggestion.suggestionRecieved",
-            {
-              suggestion: suggestion,
-            },
-            "Language Spesific Suggestion"
+        interaction.user
+          .send(
+            functions.randomText(
+              "suggestion.suggestionRecieved",
+              {
+                suggestion: suggestion,
+              },
+              "Language Spesific Suggestion"
+            )
           )
-        );
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
         break;
       }
 
@@ -143,15 +147,19 @@ module.exports = {
           )
         );
 
-        interaction.user.send(
-          functions.randomText(
-            "suggestion.suggestionRecieved",
-            {
-              suggestion: suggestion,
-            },
-            "Discord Suggestion"
+        interaction.user
+          .send(
+            functions.randomText(
+              "suggestion.suggestionRecieved",
+              {
+                suggestion: suggestion,
+              },
+              "Discord Suggestion"
+            )
           )
-        );
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
         break;
 
       case interaction.options.getSubcommand() === "other":

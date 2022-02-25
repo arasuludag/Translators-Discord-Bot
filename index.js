@@ -59,6 +59,8 @@ client.on("ready", async () => {
     ],
     status: "idle",
   });
+
+  twitterStream(client);
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {
@@ -167,6 +169,15 @@ process.on("uncaughtException", async (error) => {
   process.exit(1);
 });
 
-twitterStream(client);
+// Let the guild know about the crash.
+process.on("connResetException", async (error) => {
+  await client.channels.cache
+    .find(
+      (channel) =>
+        channel.name === logsChannelName && channel.type == "GUILD_TEXT"
+    )
+    .send(`Something happened to the connection. \n \n${error}`);
+  console.log(error);
+});
 
 client.login(token); // Login bot using token.

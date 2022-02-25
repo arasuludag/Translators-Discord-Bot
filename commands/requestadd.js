@@ -29,11 +29,15 @@ module.exports = {
     const channelName = interaction.options.getString("project_name");
     const reason = interaction.options.getString("reason");
 
-    await interaction.user.send(
-      functions.randomText("waitApproval", {
-        project: channelName,
-      })
-    );
+    await interaction.user
+      .send(
+        functions.randomText("waitApproval", {
+          project: channelName,
+        })
+      )
+      .catch(() => {
+        console.error("Failed to send DM");
+      });
     await interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
@@ -117,12 +121,16 @@ module.exports = {
                       approved: user.id,
                     })
                   );
-                  interaction.user.send(
-                    functions.randomText("userAddNotify", {
-                      user: interaction.user.id,
-                      project: createdChannel,
-                    })
-                  );
+                  interaction.user
+                    .send(
+                      functions.randomText("userAddNotify", {
+                        user: interaction.user.id,
+                        project: createdChannel,
+                      })
+                    )
+                    .catch(() => {
+                      console.error("Failed to send DM");
+                    });
                 });
             }
           } else {

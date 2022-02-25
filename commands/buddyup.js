@@ -49,7 +49,11 @@ module.exports = {
       thread = channel.threads.cache.find((x) => x.name === projectName);
     } catch (error) {
       // If someone tries to create a thread, under a thread.
-      interaction.user.send(functions.randomText("setParentError", {}));
+      interaction.user
+        .send(functions.randomText("setParentError", {}))
+        .catch(() => {
+          console.error("Failed to send DM");
+        });
       return;
     }
 
@@ -57,9 +61,13 @@ module.exports = {
       await thread.members.add(interaction.user.id);
 
       interaction.user.send(
-        functions.randomText("userAddNotify", {
-          project: thread.id,
-        })
+        functions
+          .randomText("userAddNotify", {
+            project: thread.id,
+          })
+          .catch(() => {
+            console.error("Failed to send DM");
+          })
       );
 
       return;

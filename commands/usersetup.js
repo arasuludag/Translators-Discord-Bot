@@ -45,12 +45,16 @@ module.exports = {
     const nickName = interaction.options.getString("full_name");
     const role = interaction.options.getRole("target_language");
 
-    await interaction.user.send(
-      functions.randomText("setup.waitForApproveDM", {
-        nickName: nickName,
-        role: role.name,
-      })
-    );
+    await interaction.user
+      .send(
+        functions.randomText("setup.waitForApproveDM", {
+          nickName: nickName,
+          role: role.name,
+        })
+      )
+      .catch(() => {
+        console.error("Failed to send DM");
+      });
     await interaction.reply({
       content: functions.randomEphemeralText("requestAcquired", {}),
       ephemeral: true,
@@ -98,13 +102,17 @@ module.exports = {
                 role: role.id,
               })
             );
-            interaction.user.send(
-              functions.randomText("setup.acceptedDM", {
-                user: interaction.user.id,
-                nickName: nickName,
-                role: role.name,
-              })
-            );
+            interaction.user
+              .send(
+                functions.randomText("setup.acceptedDM", {
+                  user: interaction.user.id,
+                  nickName: nickName,
+                  role: role.name,
+                })
+              )
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
             interaction.user.send({
               embeds: [
                 {
@@ -132,13 +140,17 @@ module.exports = {
                 role: role.id,
               })
             );
-            interaction.user.send(
-              functions.randomText("setup.rejectedDM", {
-                user: interaction.user.id,
-                nickName: nickName,
-                role: role.name,
-              })
-            );
+            interaction.user
+              .send(
+                functions.randomText("setup.rejectedDM", {
+                  user: interaction.user.id,
+                  nickName: nickName,
+                  role: role.name,
+                })
+              )
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
           }
         });
       });

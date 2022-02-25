@@ -22,10 +22,14 @@ function pronounRoleManager(reaction, user, isAdd) {
 
   function notify(pronoun) {
     user.send(
-      functions.randomText("userPronounNotify", {
-        pronoun: pronoun,
-        isAdd: isAdd ? "" : "not",
-      })
+      functions
+        .randomText("userPronounNotify", {
+          pronoun: pronoun,
+          isAdd: isAdd ? "" : "not",
+        })
+        .catch(() => {
+          console.error("Failed to send DM");
+        })
     );
   }
 

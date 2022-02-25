@@ -71,7 +71,11 @@ module.exports = {
                 lockPermissions: false,
               });
             } catch (error) {
-              await user.send(functions.randomText("setParentError", {}));
+              await user
+                .send(functions.randomText("setParentError", {}))
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
               return;
             }
 

@@ -255,9 +255,13 @@ ${memberList}`);
                     })
                   );
                   await value.user.send(
-                    functions.randomText("userAddNotify", {
-                      project: keyChannel,
-                    })
+                    functions
+                      .randomText("userAddNotify", {
+                        project: keyChannel,
+                      })
+                      .catch(() => {
+                        console.error("Failed to send DM");
+                      })
                   );
                 });
               });
