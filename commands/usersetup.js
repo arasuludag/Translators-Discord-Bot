@@ -3,7 +3,7 @@ const functions = require("../functions.js");
 const i18next = require("i18next");
 const {
   awaitingApprovalsChannelName,
-  logsChannelName,
+  logsChannelID,
   dttRoleName,
   discord101ChannelID,
   channelIndexChannelID,
@@ -38,9 +38,9 @@ module.exports = {
       interaction,
       awaitingApprovalsChannelName
     );
-    const logsChannel = await functions.findChannel(
+    const logsChannel = await functions.findChannelByID(
       interaction,
-      logsChannelName
+      logsChannelID
     );
     const nickName = interaction.options.getString("full_name");
     const role = interaction.options.getRole("target_language");
@@ -86,7 +86,11 @@ module.exports = {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
             interaction.member.setNickname(nickName).catch(() => {
-              interaction.user.send(functions.randomText("setup.error", {}));
+              interaction.user
+                .send(functions.randomText("setup.error", {}))
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
             });
             interaction.member.roles.add(role);
 
@@ -113,25 +117,29 @@ module.exports = {
               .catch(() => {
                 console.error("Failed to send DM");
               });
-            interaction.user.send({
-              embeds: [
-                {
-                  color: embedColor,
-                  title: i18next.t("welcome.title"),
-                  description: i18next.t("setup.afterApproval", {
-                    discord101: discord101ChannelID,
-                    channelindex: channelIndexChannelID,
-                    readingspeed: readingSpeedChannelID,
-                    lmmeetingrecaps: lmMeetingRecapsChannelID,
-                    general: generalChannelID,
-                    globallinguisticsupport: globalLingSupportChannelID,
-                    sassalert: sassAlertChannelID,
-                    supplementalalert: suppAlertChannelID,
-                    botcommands: botCommandsChannelID,
-                  }),
-                },
-              ],
-            });
+            interaction.user
+              .send({
+                embeds: [
+                  {
+                    color: embedColor,
+                    title: i18next.t("welcome.title"),
+                    description: i18next.t("setup.afterApproval", {
+                      discord101: discord101ChannelID,
+                      channelindex: channelIndexChannelID,
+                      readingspeed: readingSpeedChannelID,
+                      lmmeetingrecaps: lmMeetingRecapsChannelID,
+                      general: generalChannelID,
+                      globallinguisticsupport: globalLingSupportChannelID,
+                      sassalert: sassAlertChannelID,
+                      supplementalalert: suppAlertChannelID,
+                      botcommands: botCommandsChannelID,
+                    }),
+                  },
+                ],
+              })
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
           } else {
             logsChannel.send(
               functions.randomText("setup.rejected", {

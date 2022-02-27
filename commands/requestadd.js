@@ -3,7 +3,7 @@ const functions = require("../functions.js");
 const {
   projectsCategory,
   awaitingApprovalsChannelName,
-  logsChannelName,
+  logsChannelID,
 } = require("../config.json");
 const { Permissions } = require("discord.js");
 
@@ -25,7 +25,7 @@ module.exports = {
       interaction,
       awaitingApprovalsChannelName
     );
-    const logsChannel = functions.findChannel(interaction, logsChannelName);
+    const logsChannel = functions.findChannelByID(interaction, logsChannelID);
     const channelName = interaction.options.getString("project_name");
     const reason = interaction.options.getString("reason");
 
@@ -84,11 +84,15 @@ module.exports = {
                   approved: user.id,
                 })
               );
-              interaction.user.send(
-                functions.randomText("userAddNotify", {
-                  project: foundChannel.id,
-                })
-              );
+              interaction.user
+                .send(
+                  functions.randomText("userAddNotify", {
+                    project: foundChannel.id,
+                  })
+                )
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
             } else {
               interaction.guild.channels
                 .create(channelName, {
@@ -141,11 +145,15 @@ module.exports = {
                 approved: user.id,
               })
             );
-            interaction.user.send(
-              functions.randomText("requestAddRejectedDM", {
-                channel: channelName,
-              })
-            );
+            interaction.user
+              .send(
+                functions.randomText("requestAddRejectedDM", {
+                  channel: channelName,
+                })
+              )
+              .catch(() => {
+                console.error("Failed to send DM");
+              });
           }
         });
       });

@@ -1,7 +1,7 @@
-const { pronounMessageID } = require("./config.json");
+const fs = require("fs");
 const functions = require("./functions");
 
-function pronounRoleManager(reaction, user, isAdd) {
+async function pronounRoleManager(reaction, user, isAdd) {
   function roleManager(roleName) {
     const role = reaction.message.guild.roles.cache.find(
       (r) => r.name === roleName
@@ -21,19 +21,24 @@ function pronounRoleManager(reaction, user, isAdd) {
   }
 
   function notify(pronoun) {
-    user.send(
-      functions
-        .randomText("userPronounNotify", {
+    user
+      .send(
+        functions.randomText("userPronounNotify", {
           pronoun: pronoun,
           isAdd: isAdd ? "" : "not",
         })
-        .catch(() => {
-          console.error("Failed to send DM");
-        })
-    );
+      )
+      .catch(() => {
+        console.error("Failed to send DM");
+      });
   }
 
-  if (reaction.message.id === pronounMessageID)
+  const rawConfig = fs.readFileSync(require.resolve("./config.json"), {
+    encoding: "utf8",
+  });
+  const config = await JSON.parse(rawConfig);
+
+  if (reaction.message.id === config.pronounMessageID)
     switch (reaction.emoji.name) {
       case "🍓":
         roleManager("he");

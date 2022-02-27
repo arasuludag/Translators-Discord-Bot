@@ -60,15 +60,15 @@ module.exports = {
     if (thread) {
       await thread.members.add(interaction.user.id);
 
-      interaction.user.send(
-        functions
-          .randomText("userAddNotify", {
+      interaction.user
+        .send(
+          functions.randomText("userAddNotify", {
             project: thread.id,
           })
-          .catch(() => {
-            console.error("Failed to send DM");
-          })
-      );
+        )
+        .catch(() => {
+          console.error("Failed to send DM");
+        });
 
       return;
     }
@@ -84,11 +84,15 @@ module.exports = {
         if (thread.joinable) await thread.join();
         await thread.members.add(interaction.user.id);
 
-        await interaction.user.send(
-          functions.randomText("userAddNotify", {
-            project: thread.id,
-          })
-        );
+        await interaction.user
+          .send(
+            functions.randomText("userAddNotify", {
+              project: thread.id,
+            })
+          )
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
 
         if (isProject) {
           await channel.send(

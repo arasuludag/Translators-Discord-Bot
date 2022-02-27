@@ -6,10 +6,10 @@ const {
   token,
   receptionChannelID,
   generalChannelID,
-  logsChannelName,
+  logsChannelID,
   embedColor,
 } = require("./config.json");
-const { commands } = require("./exclamationCommands");
+const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
 const { pronounRoleManager } = require("./pronounRoleManager");
 const { twitterStream } = require("./twitterStream");
@@ -106,17 +106,22 @@ client.on("guildMemberAdd", (member) => {
       ],
     })
     .then(() => {
-      functions.findChannel(member, logsChannelName).send(
+      functions.findChannelByID(member, logsChannelID).send(
         functions.randomText("joinedServer", {
           user: member.id,
         })
       );
+    })
+    .catch((error) => {
+      functions
+        .findChannelByID(member, logsChannelID)
+        .send(`Probably couldn't send DM to <@${member.id}> \n \n ${error}`);
     });
 });
 
 // Who left the server. Log it on the logs channel.
 client.on("guildMemberRemove", (member) => {
-  functions.findChannel(member, logsChannelName).send(
+  functions.findChannelByID(member, logsChannelID).send(
     functions.randomText("leftServer", {
       user: member.id,
     })
@@ -161,23 +166,11 @@ process.on("uncaughtException", async (error) => {
     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
   await client.channels.cache
     .find(
-      (channel) =>
-        channel.name === logsChannelName && channel.type == "GUILD_TEXT"
+      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
     )
     .send(`There is a crash. Contact Aras about this.\n \n${error}`);
   console.log(error);
   process.exit(1);
-});
-
-// Let the guild know about the crash.
-process.on("connResetException", async (error) => {
-  await client.channels.cache
-    .find(
-      (channel) =>
-        channel.name === logsChannelName && channel.type == "GUILD_TEXT"
-    )
-    .send(`Something happened to the connection. \n \n${error}`);
-  console.log(error);
 });
 
 client.login(token); // Login bot using token.

@@ -123,15 +123,19 @@ module.exports = {
           )
         );
 
-        interaction.user.send(
-          functions.randomText(
-            "suggestion.suggestionRecieved",
-            {
-              suggestion: suggestion,
-            },
-            "LM Meeting Suggestion"
+        interaction.user
+          .send(
+            functions.randomText(
+              "suggestion.suggestionRecieved",
+              {
+                suggestion: suggestion,
+              },
+              "LM Meeting Suggestion"
+            )
           )
-        );
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
         break;
       }
 
@@ -174,15 +178,19 @@ module.exports = {
           )
         );
 
-        interaction.user.send(
-          functions.randomText(
-            "suggestion.suggestionRecieved",
-            {
-              suggestion: suggestion,
-            },
-            "Other Suggestion"
+        interaction.user
+          .send(
+            functions.randomText(
+              "suggestion.suggestionRecieved",
+              {
+                suggestion: suggestion,
+              },
+              "Other Suggestion"
+            )
           )
-        );
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
         break;
 
       default:

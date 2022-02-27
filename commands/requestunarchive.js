@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
 const {
-  logsChannelName,
+  logsChannelID,
   projectsCategory,
   awaitingApprovalsChannelName,
 } = require("../config.json");
@@ -26,9 +26,9 @@ module.exports = {
       interaction,
       awaitingApprovalsChannelName
     );
-    const logsChannel = await functions.findChannel(
+    const logsChannel = await functions.findChannelByID(
       interaction,
-      logsChannelName
+      logsChannelID
     );
 
     await logsChannel.send(
@@ -70,7 +70,11 @@ module.exports = {
                 lockPermissions: false,
               });
             } catch (error) {
-              await user.send(functions.randomText("setParentError", {}));
+              await user
+                .send(functions.randomText("setParentError", {}))
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
               return;
             }
 
