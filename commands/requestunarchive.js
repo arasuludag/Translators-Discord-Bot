@@ -64,12 +64,7 @@ module.exports = {
         collector.on("collect", async (reaction, user) => {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
-            const category = findCategoryByName(interaction, projectsCategory);
-            try {
-              interaction.channel.setParent(category.id, {
-                lockPermissions: false,
-              });
-            } catch (error) {
+            if (interaction.channel.isThread()) {
               await user
                 .send(functions.randomText("setParentError", {}))
                 .catch(() => {
@@ -77,6 +72,16 @@ module.exports = {
                 });
               return;
             }
+
+            const category = findCategoryByName(interaction, projectsCategory);
+
+            interaction.channel
+              .setParent(category.id, {
+                lockPermissions: false,
+              })
+              .catch((error) => {
+                user.send("Error", error);
+              });
 
             await interaction.channel.send(
               functions.randomText("movedFromWO_User", {

@@ -64,29 +64,30 @@ module.exports = {
         collector.on("collect", async (reaction, user) => {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
-            const success = Array.from(Array(100).keys()).some((i) => {
-              try {
-                const category = findCategoryByName(
-                  interaction,
-                  `${archiveCategory} ${i}🗑`
-                );
-                if (!category) return false;
-                interaction.channel.setParent(category.id, {
-                  lockPermissions: false,
-                });
-                return true;
-              } catch {
-                return false;
-              }
-            });
-
-            if (!success) {
-              await interaction.user
+            if (interaction.channel.isThread()) {
+              await user
                 .send(functions.randomText("setParentError", {}))
                 .catch(() => {
                   console.error("Failed to send DM");
                 });
               return;
+            }
+
+            for await (let i of Array.from(Array(100).keys())) {
+              let isOkay = true;
+              const category = findCategoryByName(
+                interaction,
+                `${archiveCategory} ${i}🗑`
+              );
+              if (!category) continue;
+
+              await interaction.channel
+                .setParent(category.id, { lockPermissions: false })
+                .catch(() => {
+                  isOkay = false;
+                });
+
+              if (isOkay) break;
             }
 
             await interaction.channel.send(

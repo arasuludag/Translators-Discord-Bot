@@ -57,10 +57,6 @@ async function twitterStream(discordClient) {
   });
 
   // Start stream!
-  await stream
-    .connect({ autoReconnect: true, autoReconnectRetries: Infinity })
-    .catch((error) => {
-      console.log(error);
-    });
+  await stream.connect({ autoReconnect: true, autoReconnectRetries: Infinity });
 }
 exports.twitterStream = twitterStream;

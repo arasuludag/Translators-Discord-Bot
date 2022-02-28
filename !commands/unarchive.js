@@ -4,10 +4,7 @@ const functions = require("../functions.js");
 async function unarchive(message) {
   const logsChannel = await functions.findChannelByID(message, logsChannelID);
 
-  const category = functions.findCategoryByName(message, projectsCategory);
-  try {
-    message.channel.setParent(category.id, { lockPermissions: false });
-  } catch (error) {
+  if (message.channel.isThread()) {
     await message.author
       .send(functions.randomText("setParentError", {}))
       .catch(() => {
@@ -15,6 +12,14 @@ async function unarchive(message) {
       });
     return;
   }
+
+  const category = functions.findCategoryByName(message, projectsCategory);
+
+  message.channel
+    .setParent(category.id, { lockPermissions: false })
+    .catch((error) => {
+      message.author.send("Error", error);
+    });
 
   await message.channel.send(
     functions.randomText("movedFromWO_User", {

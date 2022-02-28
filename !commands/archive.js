@@ -4,27 +4,30 @@ const functions = require("../functions.js");
 async function archive(message) {
   const logsChannel = await functions.findChannelByID(message, logsChannelID);
 
-  const success = Array.from(Array(100).keys()).some((i) => {
-    try {
-      const category = functions.findCategoryByName(
-        message,
-        `${archiveCategory} ${i}🗑`
-      );
-      if (!category) return false;
-      message.channel.setParent(category.id, { lockPermissions: false });
-      return true;
-    } catch {
-      return false;
-    }
-  });
-
-  if (!success) {
+  if (message.channel.isThread()) {
     await message.author
       .send(functions.randomText("setParentError", {}))
       .catch(() => {
         console.error("Failed to send DM");
       });
     return;
+  }
+
+  for await (let i of Array.from(Array(100).keys())) {
+    let isOkay = true;
+    const category = functions.findCategoryByName(
+      message,
+      `${archiveCategory} ${i}🗑`
+    );
+    if (!category) continue;
+
+    await message.channel
+      .setParent(category.id, { lockPermissions: false })
+      .catch(() => {
+        isOkay = false;
+      });
+
+    if (isOkay) break;
   }
 
   await message.channel.send(
