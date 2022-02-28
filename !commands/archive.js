@@ -4,11 +4,21 @@ const functions = require("../functions.js");
 async function archive(message) {
   const logsChannel = await functions.findChannelByID(message, logsChannelID);
 
-  const category = functions.findCategoryByName(message, archiveCategory);
+  const success = Array.from(Array(100).keys()).some((i) => {
+    try {
+      const category = functions.findCategoryByName(
+        message,
+        `${archiveCategory} ${i}🗑`
+      );
+      if (!category) return false;
+      message.channel.setParent(category.id, { lockPermissions: false });
+      return true;
+    } catch {
+      return false;
+    }
+  });
 
-  try {
-    message.channel.setParent(category.id, { lockPermissions: false });
-  } catch (error) {
+  if (!success) {
     await message.author
       .send(functions.randomText("setParentError", {}))
       .catch(() => {

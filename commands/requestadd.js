@@ -109,7 +109,9 @@ module.exports = {
                     interaction,
                     projectsCategory
                   );
-                  await createdChannel.setParent(category.id);
+                  await createdChannel.setParent(category.id).catch((error) => {
+                    logsChannel.send("Error. ", error);
+                  });
 
                   await createdChannel.permissionOverwrites.edit(
                     interaction.user.id,
@@ -135,6 +137,9 @@ module.exports = {
                     .catch(() => {
                       console.error("Failed to send DM");
                     });
+                })
+                .catch((error) => {
+                  logsChannel.send("Error. ", error);
                 });
             }
           } else {

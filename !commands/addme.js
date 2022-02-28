@@ -80,7 +80,9 @@ async function addme(message) {
                 })
               );
             })
-            .catch(console.error);
+            .catch((error) => {
+              message.reply("Error.", error);
+            });
         }
       });
       collector.on("end", () => {

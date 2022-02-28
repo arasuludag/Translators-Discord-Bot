@@ -64,14 +64,24 @@ module.exports = {
         collector.on("collect", async (reaction, user) => {
           replyMessage.react("🍻");
           if (reaction.emoji.name === "✅") {
-            const category = findCategoryByName(interaction, archiveCategory);
+            const success = Array.from(Array(100).keys()).some((i) => {
+              try {
+                const category = findCategoryByName(
+                  interaction,
+                  `${archiveCategory} ${i}🗑`
+                );
+                if (!category) return false;
+                interaction.channel.setParent(category.id, {
+                  lockPermissions: false,
+                });
+                return true;
+              } catch {
+                return false;
+              }
+            });
 
-            try {
-              interaction.channel.setParent(category.id, {
-                lockPermissions: false,
-              });
-            } catch (error) {
-              await user
+            if (!success) {
+              await interaction.user
                 .send(functions.randomText("setParentError", {}))
                 .catch(() => {
                   console.error("Failed to send DM");
