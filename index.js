@@ -48,7 +48,8 @@ i18next.init({
   },
 });
 
-client.on("ready", async () => {
+// When we are ready, emit this.
+client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setPresence({
     activities: [
@@ -60,7 +61,18 @@ client.on("ready", async () => {
     status: "idle",
   });
 
-  twitterStream(client);
+  try {
+    twitterStream(client);
+  } catch (error) {
+    client.channels.cache
+      .find(
+        (channel) =>
+          channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+      )
+      .send(
+        `Twitter stream has a problem. You may need to restart the server to get it working. \n \n${error}`
+      );
+  }
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {
@@ -128,10 +140,19 @@ client.on("guildMemberRemove", (member) => {
   );
 });
 
+// For ! commands and funny replies.
 client.on("messageCreate", async (message) => {
-  await commands(message, client);
+  try {
+    await commands(message, client);
+  } catch (error) {
+    console.error(error);
+    return message.reply(
+      "There was an error while executing this command! Contact mods if it persists."
+    );
+  }
 });
 
+// If there's an error. Log it.
 client.on("error", function (error) {
   console.error(`client's WebSocket encountered a connection error: ${error}`);
 });

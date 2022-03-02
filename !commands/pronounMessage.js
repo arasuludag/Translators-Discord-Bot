@@ -5,13 +5,13 @@ async function pronounMessage(message) {
     message.content.indexOf(" ") + 1
   );
 
-  const fileName = "./config.json";
+  const fileName = "../config.json";
   const file = require(fileName);
 
   file.pronounMessageID = splitMessage;
 
   fs.writeFile(
-    fileName,
+    require.resolve(fileName),
     JSON.stringify(file, null, 2),
     function writeJSON(err) {
       if (err) return console.log(err);

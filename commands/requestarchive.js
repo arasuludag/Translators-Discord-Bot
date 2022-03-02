@@ -74,17 +74,19 @@ module.exports = {
             }
 
             for await (let i of Array.from(Array(100).keys())) {
-              let isOkay = true;
               const category = findCategoryByName(
                 interaction,
                 `${archiveCategory} ${i}🗑`
               );
               if (!category) continue;
 
-              await interaction.channel
+              const isOkay = await interaction.channel
                 .setParent(category.id, { lockPermissions: false })
+                .then(() => {
+                  return true;
+                })
                 .catch(() => {
-                  isOkay = false;
+                  return false;
                 });
 
               if (isOkay) break;

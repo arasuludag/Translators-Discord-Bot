@@ -14,17 +14,19 @@ async function archive(message) {
   }
 
   for await (let i of Array.from(Array(100).keys())) {
-    let isOkay = true;
     const category = functions.findCategoryByName(
       message,
       `${archiveCategory} ${i}🗑`
     );
     if (!category) continue;
 
-    await message.channel
+    const isOkay = await message.channel
       .setParent(category.id, { lockPermissions: false })
+      .then(() => {
+        return true;
+      })
       .catch(() => {
-        isOkay = false;
+        return false;
       });
 
     if (isOkay) break;

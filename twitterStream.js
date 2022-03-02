@@ -22,6 +22,7 @@ async function twitterStream(discordClient) {
   // Emitted on Tweet
   stream.on(ETwitterStreamEvent.Data, async (tweet) => {
     if (tweet.user && twitterIDs.some((id) => tweet.user.id_str === id)) {
+      // Twitter doesn't care about duplication. We should check for it.
       const sentBefore = await newsChannel.messages
         .fetch({ limit: 20 })
         .then((messages) =>

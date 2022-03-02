@@ -11,7 +11,7 @@ async function removefunfact(message) {
     message.content.indexOf(" ") + 1
   );
 
-  fs.readFile("./funfacts.json", function (err, data) {
+  fs.readFile(require.resolve("../funfacts.json"), function (err, data) {
     let json = JSON.parse(data);
 
     json.funfacts = json.funfacts.filter(
@@ -19,9 +19,14 @@ async function removefunfact(message) {
     );
 
     const saveableJSON = JSON.stringify(json, null, 2); // convert it back to json
-    fs.writeFile("./funfacts.json", saveableJSON, "utf8", async () => {
-      await message.reply(functions.randomText("requestCompleted", {}));
-    }); // write it back
+    fs.writeFile(
+      require.resolve("../funfacts.json"),
+      saveableJSON,
+      "utf8",
+      async () => {
+        await message.reply(functions.randomText("requestCompleted", {}));
+      }
+    ); // write it back
   });
 }
 exports.removefunfact = removefunfact;
