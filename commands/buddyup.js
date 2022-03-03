@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 const {
   projectChannelRequestsChannelID,
@@ -27,61 +28,80 @@ module.exports = {
       interaction.options.getString("for")
     );
 
-    const isProject = interaction.options.getBoolean("is_this_a_project");
+    // Is this a project?
+    const isProject = await interaction.options.getBoolean("is_this_a_project");
 
-    await interaction.reply({
-      content: functions.randomEphemeralText("requestAcquired", {}),
-      ephemeral: true,
+    // Create the button. Button needs a custom ID.
+    const button = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(interaction.user + interaction.id)
+        .setLabel("Confirm")
+        .setStyle("SUCCESS")
+    );
+
+    // If project, show the addmepromt, if not accept thread joining promt.
+    if (isProject) {
+      await interaction.reply({
+        content: functions.randomEphemeralText("addMePrompt", {
+          projectName: projectName,
+        }),
+        ephemeral: true,
+        components: [button],
+      });
+    } else {
+      await interaction.reply({
+        content: functions.randomEphemeralText("acceptThread", {
+          thread: projectName,
+        }),
+        ephemeral: true,
+        components: [button],
+      });
+    }
+
+    const filter = (i) => i.customId === interaction.user + interaction.id;
+
+    const collector = interaction.channel.createMessageComponentCollector({
+      filter,
+      max: 1,
+      time: 300000,
     });
 
-    let channel;
-    if (interaction.options.getBoolean("is_this_a_project")) {
-      channel = await findChannelByID(
-        interaction,
-        projectChannelRequestsChannelID
+    collector.on("collect", async (i) => {
+      // Changes the message to acknowledge button press.
+      await i.update({
+        content: functions.randomEphemeralText("requestAcquired", {}),
+        components: [],
+      });
+
+      // If project, pass projects channel, if not, current channel.
+      let channel;
+      if (isProject) {
+        channel = await findChannelByID(
+          interaction,
+          projectChannelRequestsChannelID
+        );
+      } else {
+        channel = await interaction.channel;
+      }
+
+      // If someone tries to create thread under a thread, return.
+      if (channel.isThread()) {
+        // If someone tries to create a thread, under a thread.
+        interaction.user
+          .send(functions.randomText("setParentError", {}))
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
+        return;
+      }
+
+      // Find thread.
+      const thread = await channel.threads.cache.find(
+        (x) => x.name === projectName
       );
-    } else {
-      channel = interaction.channel;
-    }
 
-    let thread;
-    try {
-      thread = channel.threads.cache.find((x) => x.name === projectName);
-    } catch (error) {
-      // If someone tries to create a thread, under a thread.
-      interaction.user
-        .send(functions.randomText("setParentError", {}))
-        .catch(() => {
-          console.error("Failed to send DM");
-        });
-      return;
-    }
-
-    if (thread) {
-      await thread.members.add(interaction.user.id);
-
-      interaction.user
-        .send(
-          functions.randomText("userAddNotify", {
-            project: thread.id,
-          })
-        )
-        .catch(() => {
-          console.error("Failed to send DM");
-        });
-
-      return;
-    }
-
-    await channel.threads
-      .create({
-        name: projectName,
-        autoArchiveDuration: "MAX",
-        type: isProject ? threadType : "GUILD_PUBLIC_THREAD",
-        reason: "For a project.",
-      })
-      .then(async (thread) => {
-        if (thread.joinable) await thread.join();
+      // If thread exists, add the person.
+      if (thread) {
         await thread.members.add(interaction.user.id);
 
         await interaction.user
@@ -94,14 +114,40 @@ module.exports = {
             console.error("Failed to send DM");
           });
 
-        if (isProject) {
-          await channel.send(
-            functions.randomText("threadCreated", {
-              thread: thread.id,
-              user: interaction.user.id,
-            })
-          );
-        }
-      });
+        return;
+      }
+
+      // If thread doesn't exists, create and add the person.
+      await channel.threads
+        .create({
+          name: projectName,
+          autoArchiveDuration: "MAX",
+          type: isProject ? threadType : "GUILD_PUBLIC_THREAD",
+          reason: "For a project.",
+        })
+        .then(async (thread) => {
+          if (thread.joinable) await thread.join();
+          await thread.members.add(interaction.user.id);
+
+          await interaction.user
+            .send(
+              functions.randomText("userAddNotify", {
+                project: thread.id,
+              })
+            )
+            .catch(() => {
+              console.error("Failed to send DM");
+            });
+
+          if (isProject) {
+            await channel.send(
+              functions.randomText("threadCreated", {
+                thread: thread.id,
+                user: interaction.user.id,
+              })
+            );
+          }
+        });
+    });
   },
 };

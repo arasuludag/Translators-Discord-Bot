@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 const {
   logsChannelID,
@@ -39,33 +40,57 @@ module.exports = {
       })
     );
 
+    const acceptButtonCustomID = "Accept" + interaction.id;
+    const rejectButtonCustomID = "Reject" + interaction.id;
+
+    const acceptButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(acceptButtonCustomID)
+        .setLabel("Accept")
+        .setStyle("SUCCESS")
+    );
+    const rejectButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(rejectButtonCustomID)
+        .setLabel("Reject")
+        .setStyle("DANGER")
+    );
+
     await approvalChannel
       .send(
-        functions.randomText("requestedUnArchive", {
-          user: interaction.user.id,
-          channel: interaction.channel.id,
-          reason: reasonText,
-        })
+        functions.randomText(
+          "requestedUnArchive",
+          {
+            user: interaction.user.id,
+            channel: interaction.channel.id,
+            reason: reasonText,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [acceptButton, rejectButton]
+        )
       )
       .then((replyMessage) => {
-        replyMessage.react("✅");
-        replyMessage.react("❌");
+        const filter = (i) =>
+          i.customId === acceptButtonCustomID || rejectButtonCustomID;
 
-        const filter = (reaction, user) =>
-          (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") &&
-          !user.bot;
-
-        const collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
-          time: 300000000,
           max: 1,
+          time: 300000000,
         });
 
-        collector.on("collect", async (reaction, user) => {
+        collector.on("collect", async (i) => {
+          await i.update({
+            components: [],
+          });
           replyMessage.react("🍻");
-          if (reaction.emoji.name === "✅") {
+          if (i.customId === acceptButtonCustomID) {
             if (interaction.channel.isThread()) {
-              await user
+              await i.user
                 .send(functions.randomText("setParentError", {}))
                 .catch(() => {
                   console.error("Failed to send DM");
@@ -80,7 +105,7 @@ module.exports = {
                 lockPermissions: false,
               })
               .catch((error) => {
-                user.send("Error", error);
+                i.user.send("Error", error);
               });
 
             await interaction.channel.send(
@@ -91,14 +116,14 @@ module.exports = {
 
             await logsChannel.send(
               functions.randomText("movedFromArchive", {
-                user: user.id,
+                user: i.user.id,
                 channel: interaction.channel.id,
               })
             );
           } else {
             await logsChannel.send(
               functions.randomText("notMovedFromArchive", {
-                user: user.id,
+                user: i.user.id,
                 channel: interaction.channel.id,
                 requestedUser: interaction.user.id,
               })

@@ -61,18 +61,7 @@ client.on("ready", () => {
     status: "idle",
   });
 
-  try {
-    twitterStream(client);
-  } catch (error) {
-    client.channels.cache
-      .find(
-        (channel) =>
-          channel.id === logsChannelID && channel.type == "GUILD_TEXT"
-      )
-      .send(
-        `Twitter stream has a problem. You may need to restart the server to get it working. \n \n${error}`
-      );
-  }
+  twitterStream(client);
 });
 
 client.on("messageReactionAdd", async (reaction, user) => {
@@ -178,20 +167,20 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // Let the guild know about the crash.
-process.on("uncaughtException", async (error) => {
-  await client.channels.cache
-    .find(
-      (channel) =>
-        channel.id === generalChannelID && channel.type == "GUILD_TEXT"
-    )
-    .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
-  await client.channels.cache
-    .find(
-      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
-    )
-    .send(`There is a crash. Contact Aras about this.\n \n${error}`);
-  console.log(error);
-  process.exit(1);
-});
+// process.on("uncaughtException", async (error) => {
+//   await client.channels.cache
+//     .find(
+//       (channel) =>
+//         channel.id === generalChannelID && channel.type == "GUILD_TEXT"
+//     )
+//     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
+//   await client.channels.cache
+//     .find(
+//       (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+//     )
+//     .send(`There is a crash. Contact Aras about this.\n \n${error}`);
+//   console.log(error);
+//   process.exit(1);
+// });
 
 client.login(token); // Login bot using token.

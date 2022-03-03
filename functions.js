@@ -14,7 +14,16 @@ i18next.init({
 
 module.exports = {
   // Selects a random text from a JSON array.
-  randomText: (path, values, title, author, iconURL, content, mentions) => {
+  randomText: (
+    path,
+    values,
+    title,
+    author,
+    iconURL,
+    content,
+    mentions,
+    components
+  ) => {
     values.returnObjects = true;
     values.interpolation = { escapeValue: false };
 
@@ -34,6 +43,7 @@ module.exports = {
       ],
       content: content,
       mentions: mentions,
+      components: components,
     };
   },
 

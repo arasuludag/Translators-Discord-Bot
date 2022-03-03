@@ -121,7 +121,10 @@
     ],
     "close": [
       "I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n{{optionalBulb}} {{bulb}}"
-    ]
+    ],
+    "ended": ["Poll has ended."],
+
+    "tooMany": ["Poll options must be 5 or fewer."]
   },
 
   "welcome": {
@@ -206,5 +209,9 @@
     "A new thread called <#{{thread}}> has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
   ],
 
-  "userPronounNotify": ["You will {{isAdd}} be called {{pronoun}} from now on."]
+  "userPronounNotify": [
+    "You will {{isAdd}} be called {{pronoun}} from now on."
+  ],
+
+  "acceptThread": ["Do you accept to create or join to {{thread}}?"]
 }

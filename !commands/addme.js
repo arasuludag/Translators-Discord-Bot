@@ -1,4 +1,4 @@
-const { Permissions } = require("discord.js");
+const { MessageButton, MessageActionRow, Permissions } = require("discord.js");
 const { projectsCategory, logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
@@ -12,20 +12,38 @@ async function addme(message) {
     await message.reply(functions.randomText("addMePromptEmpty", {}));
     return;
   }
+
+  const button = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(message.user + message.id)
+      .setLabel("Confirm")
+      .setStyle("SUCCESS")
+  );
+
   await message
     .reply(
-      functions.randomText("addMePrompt", {
-        projectName: projectName,
-      })
+      functions.randomText(
+        "addMePrompt",
+        {
+          projectName: projectName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [button]
+      )
     )
     .then((replyMessage) => {
-      const filter = (reaction, user) => {
-        return reaction.emoji.name === "👍" && user.id === message.author.id;
-      };
-      const collector = replyMessage.createReactionCollector({
+      const filter = (i) =>
+        i.customId === message.user + message.id &&
+        i.user.id === message.author.id;
+
+      const collector = message.channel.createMessageComponentCollector({
         filter,
-        time: 60000,
         max: 1,
+        time: 300000,
       });
 
       collector.on("collect", async () => {

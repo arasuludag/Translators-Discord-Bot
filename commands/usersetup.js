@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 const i18next = require("i18next");
 const {
@@ -60,31 +61,55 @@ module.exports = {
       ephemeral: true,
     });
 
+    const acceptButtonCustomID = "Accept" + interaction.id;
+    const rejectButtonCustomID = "Reject" + interaction.id;
+
+    const acceptButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(acceptButtonCustomID)
+        .setLabel("Accept")
+        .setStyle("SUCCESS")
+    );
+    const rejectButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(rejectButtonCustomID)
+        .setLabel("Reject")
+        .setStyle("DANGER")
+    );
+
     await approvalChannel
       .send(
-        functions.randomText("setup.request", {
-          user: interaction.user.id,
-          nickName: nickName,
-          role: role.id,
-        })
+        functions.randomText(
+          "setup.request",
+          {
+            user: interaction.user.id,
+            nickName: nickName,
+            role: role.id,
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [acceptButton, rejectButton]
+        )
       )
       .then((replyMessage) => {
-        replyMessage.react("✅");
-        replyMessage.react("❌");
+        const filter = (i) =>
+          i.customId === acceptButtonCustomID || rejectButtonCustomID;
 
-        const filter = (reaction, user) =>
-          (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") &&
-          !user.bot;
-
-        const collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
-          time: 300000000,
           max: 1,
+          time: 300000000,
         });
 
-        collector.on("collect", (reaction) => {
+        collector.on("collect", async (i) => {
+          await i.update({
+            components: [],
+          });
           replyMessage.react("🍻");
-          if (reaction.emoji.name === "✅") {
+          if (i.customId === acceptButtonCustomID) {
             interaction.member.setNickname(nickName).catch(() => {
               interaction.user
                 .send(functions.randomText("setup.error", {}))

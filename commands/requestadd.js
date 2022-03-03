@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 const {
   projectsCategory,
@@ -43,31 +44,56 @@ module.exports = {
       ephemeral: true,
     });
 
+    const acceptButtonCustomID = "Accept" + interaction.id;
+    const rejectButtonCustomID = "Reject" + interaction.id;
+
+    const acceptButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(acceptButtonCustomID)
+        .setLabel("Accept")
+        .setStyle("SUCCESS")
+    );
+    const rejectButton = new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(rejectButtonCustomID)
+        .setLabel("Reject")
+        .setStyle("DANGER")
+    );
+
     await approvalChannel
       .send(
-        functions.randomText("addRequest", {
-          user: interaction.user.id,
-          projectName: channelName,
-          reason: reason ? `\nReason: ${reason}` : " ",
-        })
+        functions.randomText(
+          "addRequest",
+          {
+            user: interaction.user.id,
+            projectName: channelName,
+            reason: reason ? `\nReason: ${reason}` : " ",
+          },
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          [acceptButton, rejectButton]
+        )
       )
       .then((replyMessage) => {
-        replyMessage.react("✅");
-        replyMessage.react("❌");
+        const filter = (i) =>
+          i.customId === acceptButtonCustomID || rejectButtonCustomID;
 
-        const filter = (reaction, user) =>
-          (reaction.emoji.name === "✅" || reaction.emoji.name === "❌") &&
-          !user.bot;
-
-        const collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
-          time: 300000000,
           max: 1,
+          time: 300000000,
         });
 
-        collector.on("collect", async (reaction, user) => {
+        collector.on("collect", async (i) => {
+          await i.update({
+            components: [],
+          });
           replyMessage.react("🍻");
-          if (reaction.emoji.name === "✅") {
+
+          if (i.customId === acceptButtonCustomID) {
             const foundChannel = await functions.findChannel(
               interaction,
               functions.discordStyleProjectName(channelName)
@@ -81,7 +107,7 @@ module.exports = {
                 functions.randomText("channelExisted_RA", {
                   user: interaction.user.id,
                   project: foundChannel.id,
-                  approved: user.id,
+                  approved: i.user.id,
                 })
               );
               interaction.user
@@ -124,7 +150,7 @@ module.exports = {
                     functions.randomText("channelCreated_RA", {
                       createdChannel: createdChannel.id,
                       user: interaction.user.id,
-                      approved: user.id,
+                      approved: i.user.id,
                     })
                   );
                   interaction.user
@@ -147,7 +173,7 @@ module.exports = {
               functions.randomText("requestAddRejected", {
                 channel: channelName,
                 user: interaction.user.id,
-                approved: user.id,
+                approved: i.user.id,
               })
             );
             interaction.user

@@ -20,7 +20,7 @@ module.exports = {
       option.setName("bulb_option").setDescription("An optional option.")
     ),
   async execute(interaction) {
-    var timeLimit = 300000000;
+    let timeLimit = 300000000;
     if (interaction.options.getInteger("time_limit")) {
       timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
     }
@@ -45,11 +45,10 @@ module.exports = {
         replyMessage.react("🤷");
         if (bulb) replyMessage.react("💡");
 
-        var resultsShown = false;
-        var thumbsUp = 0;
-        var thumbsDown = 0;
-        var maybe = 0;
-        var optionalBulb = 0;
+        let thumbsUp = 0;
+        let thumbsDown = 0;
+        let maybe = 0;
+        let optionalBulb = 0;
 
         const filter = (reaction, user) => {
           return (
@@ -63,7 +62,7 @@ module.exports = {
           );
         };
 
-        var collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.createReactionCollector({
           filter,
           time: timeLimit,
         });
@@ -87,27 +86,20 @@ module.exports = {
               break;
 
             case "✅":
-              results({
-                yes: thumbsUp,
-                no: thumbsDown,
-                maybe: maybe,
-                optionalBulb: optionalBulb,
-              });
+              collector.stop();
           }
         });
 
         collector.on("end", () => {
-          if (!resultsShown)
-            results({
-              yes: thumbsUp,
-              no: thumbsDown,
-              maybe: maybe,
-              optionalBulb: optionalBulb,
-            });
+          results({
+            yes: thumbsUp,
+            no: thumbsDown,
+            maybe: maybe,
+            optionalBulb: optionalBulb,
+          });
         });
 
         function results(results) {
-          resultsShown = true;
           replyMessage.reply(
             functions.randomText("poll.close", {
               yes: results.yes,
