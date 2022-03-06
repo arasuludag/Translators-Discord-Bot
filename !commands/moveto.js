@@ -24,7 +24,14 @@ async function moveto(message) {
                 : mentionedUser.username,
               icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
             },
-            description: repliedMessage.content,
+            description: repliedMessage.content
+              ? repliedMessage.content
+              : repliedMessage.embeds[0]
+              ? repliedMessage.embeds[0].description
+              : ".",
+            title: repliedMessage.embeds[0]
+              ? repliedMessage.embeds[0].title
+              : undefined,
             image: {
               url:
                 attachment[0] &&
@@ -64,8 +71,8 @@ async function moveto(message) {
         });
     });
 
-    repliedMessage.delete();
-    message.delete();
+    await repliedMessage.delete();
+    await message.delete();
   }
 }
 exports.moveto = moveto;

@@ -198,7 +198,7 @@ module.exports = {
     }
 
     interaction.reply({
-      content: functions.randomEphemeralText("suggestion.acquired", {}),
+      content: functions.randomNonEmbedText("suggestion.acquired", {}),
       ephemeral: true,
     });
   },

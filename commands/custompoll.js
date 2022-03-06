@@ -26,10 +26,8 @@ module.exports = {
         .setDescription("When should the poll close? (In minutes)")
     ),
   async execute(interaction) {
-    let timeLimit = 300000000;
-    if (interaction.options.getInteger("time_limit")) {
-      timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
-    }
+    const timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
+
     const splitMessage = await interaction.options
       .getString("options")
       .split("-")
@@ -37,7 +35,7 @@ module.exports = {
 
     if (splitMessage.length > 5) {
       await interaction.reply({
-        content: functions.randomEphemeralText("poll.tooMany", {}),
+        content: functions.randomNonEmbedText("poll.tooMany", {}),
         ephemeral: true,
       });
       return;
@@ -91,6 +89,7 @@ module.exports = {
         const collector = interaction.channel.createMessageComponentCollector({
           filter,
           time: timeLimit,
+          idle: timeLimit ? undefined : 86400000,
         });
 
         let pollCount = [];
@@ -100,7 +99,10 @@ module.exports = {
           let votes = Array(splitMessage.length).fill(0);
           const index = i.customId.split(" ")[0];
 
-          if (index === "End") collector.stop();
+          if (index === "End") {
+            collector.stop();
+            return;
+          }
 
           const found = await pollCount.find(
             (vote) => vote.userID === i.user.id
@@ -147,7 +149,8 @@ module.exports = {
               await replyMessage.reply(functions.randomText("poll.ended", {}));
             });
           await interaction.editReply({
-            description: "Done.",
+            content: functions.randomNonEmbedText("poll.ended", {}),
+            ephemeral: true,
             components: [],
           });
         });

@@ -3,14 +3,10 @@ async function stats(message) {
 
   message.guild.roles.cache.forEach((role) => {
     memberCountMessage = memberCountMessage.concat(
-      `${role.toString()} has ${
-        message.guild.roles.cache.get(role.id).members.size
-      } people.
-`
+      `${role.toString()} has ${role.members.size} people.\n`
     );
   });
   message.reply(`We have ${message.member.guild.memberCount} members in total. 
-${memberCountMessage} 
-`);
+${memberCountMessage}\n`);
 }
 exports.stats = stats;

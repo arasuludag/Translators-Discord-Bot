@@ -48,7 +48,7 @@ module.exports = {
   },
 
   // Selects a random text from a JSON array.
-  randomEphemeralText: (path, values) => {
+  randomNonEmbedText: (path, values) => {
     values.returnObjects = true;
     values.interpolation = { escapeValue: false };
 

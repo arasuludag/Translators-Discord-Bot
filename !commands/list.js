@@ -3,10 +3,7 @@ async function list(message) {
   mentionedRolesMap.map((values) => {
     let memberList = "";
     values.members.map((role) => {
-      memberList = memberList.concat(
-        `${role.user.toString()}
-`
-      );
+      memberList = memberList.concat(`${role.user.toString()}\n`);
     });
     message.reply(`${values.toString()} has 
 ${memberList}`);

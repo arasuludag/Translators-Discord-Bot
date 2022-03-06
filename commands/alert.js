@@ -106,7 +106,7 @@ module.exports = {
     }
 
     interaction.reply({
-      content: functions.randomEphemeralText("requestAcquired", {}),
+      content: functions.randomNonEmbedText("requestAcquired", {}),
       ephemeral: true,
     });
   },

@@ -1,4 +1,5 @@
-const { generalChannelID } = require("../config.json");
+const { generalChannelID, embedColor } = require("../config.json");
+const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 
 async function isThisAlert(message) {
@@ -6,72 +7,170 @@ async function isThisAlert(message) {
     message,
     generalChannelID
   );
+
+  const yesButtonCustomID = "Yes" + message.id;
+  const noButtonCustomID = "No" + message.id;
+  const cancelButtonCustomID = "Cancel" + message.id;
+
+  const yesButton = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(yesButtonCustomID)
+      .setLabel("Yes - Keep my message here.")
+      .setStyle("SUCCESS")
+  );
+  const noButton = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(noButtonCustomID)
+      .setLabel(`No - Move my message to ${generalChannel.name}.`)
+      .setStyle("DANGER")
+  );
+
+  const cancelButton = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(cancelButtonCustomID)
+      .setLabel("Cancel - On second thought, just delete my message.")
+      .setStyle("DANGER")
+  );
+
   message
-    .reply(functions.randomText("isThisAlert", { general: generalChannel }))
+    .reply(
+      functions.randomText(
+        "isThisAlert",
+        { general: generalChannel },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [yesButton, noButton, cancelButton]
+      )
+    )
     .then((replyMessage) => {
       let reacted = false;
-      replyMessage.react("👍");
-      replyMessage.react("👎");
-      replyMessage.react("❌");
 
-      const filter = (reaction, user) => {
-        return (
-          (reaction.emoji.name === "👍" ||
-            reaction.emoji.name === "👎" ||
-            reaction.emoji.name === "❌") &&
-          user.id === message.author.id &&
-          !user.bot
-        );
-      };
+      const filter = (i) =>
+        i.customId === yesButtonCustomID ||
+        noButtonCustomID ||
+        cancelButtonCustomID;
 
-      const collector = replyMessage.createReactionCollector({
+      const collector = replyMessage.channel.createMessageComponentCollector({
         filter,
-        time: 60000,
         max: 1,
+        time: 120000,
       });
 
-      collector.on("collect", (reaction) => {
-        switch (reaction.emoji.name) {
-          case "👍":
+      collector.on("collect", async (i) => {
+        switch (i.customId) {
+          case yesButtonCustomID:
             reacted = true;
-            replyMessage.delete();
-            break;
+            await replyMessage.delete();
+            return;
 
-          case "👎": {
+          case noButtonCustomID: {
             reacted = true;
+            let repliedEmbed;
 
-            const mentionedUserNickname = message.guild.members.cache.find(
-              (a) => a.user === message.author
+            if (message.reference) {
+              const repliedMessage = await message.channel.messages.fetch(
+                message.reference.messageId
+              );
+              const mentionedUser = message.mentions.repliedUser;
+              const attachment = Array.from(
+                repliedMessage.attachments.values()
+              );
+              const mentionedUserNickname = message.guild.members.cache.find(
+                (a) => a.user === mentionedUser
+              ).nickname;
+
+              repliedEmbed = [
+                {
+                  color: embedColor,
+                  author: {
+                    name: mentionedUserNickname
+                      ? mentionedUserNickname
+                      : mentionedUser.username,
+                    icon_url: `https://cdn.discordapp.com/avatars/${mentionedUser.id}/${mentionedUser.avatar}.png?size=256`,
+                  },
+                  description: repliedMessage.content
+                    ? repliedMessage.content
+                    : repliedMessage.embeds[0]
+                    ? repliedMessage.embeds[0].description
+                    : ".",
+                  title: repliedMessage.embeds[0]
+                    ? repliedMessage.embeds[0].title
+                    : undefined,
+                  image: {
+                    url:
+                      attachment[0] &&
+                      (attachment[0].name.includes(".jpg") ||
+                        attachment[0].name.includes(".png") ||
+                        attachment[0].name.includes(".gif"))
+                        ? attachment[0].url
+                        : undefined,
+                  },
+                  footer: {
+                    text: "In reply to this.",
+                  },
+                },
+              ];
+            }
+
+            const attachment = Array.from(message.attachments.values());
+            const userNickname = await message.guild.members.cache.find(
+              (a) => a.user === i.user
             ).nickname;
 
-            generalChannel.send(
-              functions.randomText(
-                "saidInAlertChannel",
-                {
-                  user: message.author.id,
-                  message: message.content,
+            const embedMessage = [
+              {
+                color: embedColor,
+                author: {
+                  name: userNickname ? userNickname : i.user.username,
+                  icon_url: `https://cdn.discordapp.com/avatars/${i.user.id}/${i.user.avatar}.png?size=256`,
                 },
-                undefined,
-                mentionedUserNickname
-                  ? mentionedUserNickname
-                  : message.author.username,
-                `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png?size=256`
-              )
-            );
-            setTimeout(() => {
-              message.delete();
-              replyMessage.delete();
-            }, 3000);
+                description: message.content,
+                image: {
+                  url:
+                    attachment[0] &&
+                    (attachment[0].name.includes(".jpg") ||
+                      attachment[0].name.includes(".png") ||
+                      attachment[0].name.includes(".gif"))
+                      ? attachment[0].url
+                      : undefined,
+                },
+                footer: {
+                  text: "Automatically relayed from and alert channel.",
+                },
+              },
+            ];
+
+            if (message.reference) {
+              await generalChannel
+                .send({
+                  embeds: repliedEmbed,
+                })
+                .then(async (repliedMessage) => {
+                  await repliedMessage.reply({
+                    embeds: embedMessage,
+                  });
+                });
+            } else {
+              await generalChannel.send({
+                embeds: embedMessage,
+              });
+            }
+
+            await replyMessage.delete();
+            await message.delete();
 
             return;
           }
         }
       });
 
-      collector.on("end", () => {
+      collector.on("end", async () => {
         if (!reacted) {
-          message.delete();
-          replyMessage.delete();
+          await replyMessage.delete();
+          await message.delete();
         }
       });
     });

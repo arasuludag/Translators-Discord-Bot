@@ -20,12 +20,10 @@ module.exports = {
       option.setName("bulb_option").setDescription("An optional option.")
     ),
   async execute(interaction) {
-    let timeLimit = 300000000;
-    if (interaction.options.getInteger("time_limit")) {
-      timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
-    }
+    const timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
+
     await interaction.reply({
-      content: functions.randomEphemeralText("requestAcquired", {}),
+      content: functions.randomNonEmbedText("requestAcquired", {}),
       ephemeral: true,
     });
 
@@ -65,6 +63,7 @@ module.exports = {
         const collector = replyMessage.createReactionCollector({
           filter,
           time: timeLimit,
+          idle: timeLimit ? undefined : 86400000,
         });
 
         collector.on("collect", (reaction) => {

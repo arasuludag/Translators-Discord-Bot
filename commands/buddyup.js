@@ -42,7 +42,7 @@ module.exports = {
     // If project, show the addmepromt, if not accept thread joining promt.
     if (isProject) {
       await interaction.reply({
-        content: functions.randomEphemeralText("addMePrompt", {
+        content: functions.randomNonEmbedText("addMePrompt", {
           projectName: projectName,
         }),
         ephemeral: true,
@@ -50,7 +50,7 @@ module.exports = {
       });
     } else {
       await interaction.reply({
-        content: functions.randomEphemeralText("acceptThread", {
+        content: functions.randomNonEmbedText("acceptThread", {
           thread: projectName,
         }),
         ephemeral: true,
@@ -69,7 +69,7 @@ module.exports = {
     collector.on("collect", async (i) => {
       // Changes the message to acknowledge button press.
       await i.update({
-        content: functions.randomEphemeralText("requestAcquired", {}),
+        content: functions.randomNonEmbedText("requestAcquired", {}),
         components: [],
       });
 

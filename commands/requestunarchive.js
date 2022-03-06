@@ -19,7 +19,7 @@ module.exports = {
     const reasonText = interaction.options.getString("reason");
 
     interaction.reply({
-      content: functions.randomEphemeralText("requestAcquired", {}),
+      content: functions.randomNonEmbedText("requestAcquired", {}),
       ephemeral: true,
     });
 
@@ -46,7 +46,7 @@ module.exports = {
     const acceptButton = new MessageActionRow().addComponents(
       new MessageButton()
         .setCustomId(acceptButtonCustomID)
-        .setLabel("Accept")
+        .setLabel("Approve")
         .setStyle("SUCCESS")
     );
     const rejectButton = new MessageActionRow().addComponents(
@@ -80,7 +80,6 @@ module.exports = {
         const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
           max: 1,
-          time: 300000000,
         });
 
         collector.on("collect", async (i) => {

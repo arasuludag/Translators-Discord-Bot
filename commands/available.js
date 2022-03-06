@@ -15,7 +15,7 @@ module.exports = {
     const role = interaction.options.getRole("language");
 
     await interaction.reply({
-      content: functions.randomEphemeralText("requestAcquired", {}),
+      content: functions.randomNonEmbedText("requestAcquired", {}),
       ephemeral: true,
     });
 

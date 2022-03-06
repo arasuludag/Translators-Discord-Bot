@@ -51,15 +51,21 @@ i18next.init({
 // When we are ready, emit this.
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setPresence({
-    activities: [
-      {
-        name: "Translation",
-        type: 3,
-      },
-    ],
-    status: "idle",
-  });
+
+  function presence() {
+    client.user.setPresence({
+      status: "idle",
+      activities: [
+        {
+          name: "Translation",
+          type: "WATCHING",
+        },
+      ],
+    });
+  }
+
+  presence();
+  setInterval(presence, 1000 * 60 * 60);
 
   twitterStream(client);
 });
@@ -167,20 +173,20 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // Let the guild know about the crash.
-// process.on("uncaughtException", async (error) => {
-//   await client.channels.cache
-//     .find(
-//       (channel) =>
-//         channel.id === generalChannelID && channel.type == "GUILD_TEXT"
-//     )
-//     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
-//   await client.channels.cache
-//     .find(
-//       (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
-//     )
-//     .send(`There is a crash. Contact Aras about this.\n \n${error}`);
-//   console.log(error);
-//   process.exit(1);
-// });
+process.on("uncaughtException", async (error) => {
+  await client.channels.cache
+    .find(
+      (channel) =>
+        channel.id === generalChannelID && channel.type == "GUILD_TEXT"
+    )
+    .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
+  await client.channels.cache
+    .find(
+      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+    )
+    .send(`There is a crash. Contact Aras about this.\n \n${error}`);
+  console.log(error);
+  process.exit(1);
+});
 
 client.login(token); // Login bot using token.
