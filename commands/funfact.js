@@ -1,12 +1,19 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { embedColor } = require("../config.json");
+const { embedColor, zenChannelName } = require("../config.json");
 const fs = require("fs");
+const { findChannel, randomSend } = require("../functions");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("funfact")
     .setDescription("A funfact."),
   async execute(interaction) {
+    const zenChannel = await findChannel(interaction, zenChannelName);
+
+    await interaction.reply(
+      randomSend({ path: "requestAcquired", ephemeral: true })
+    );
+
     const data = () =>
       fs.readFileSync(require.resolve("../funfacts.json"), {
         encoding: "utf8",
@@ -20,9 +27,9 @@ module.exports = {
       funfact.includes(".png") ||
       funfact.includes(".jpg")
     ) {
-      interaction.reply(funfact);
+      zenChannel.send(funfact);
     } else {
-      interaction.reply({
+      zenChannel.send({
         embeds: [
           {
             color: embedColor,

@@ -18,7 +18,9 @@ async function add(message) {
             });
           } catch (error) {
             await message.author
-              .send(functions.randomText("setParentError", {}))
+              .send(
+                functions.randomSend({ path: "setParentError", values: {} })
+              )
               .catch(() => {
                 console.error("Failed to send DM");
               });
@@ -26,16 +28,22 @@ async function add(message) {
           }
 
           await logsChannel.send(
-            functions.randomText("channelExisted_RA", {
-              user: value.user.id,
-              project: keyChannel,
-              approved: message.author.id,
+            functions.randomSend({
+              path: "channelExisted_RA",
+              values: {
+                user: value.user.id,
+                project: keyChannel,
+                approved: message.author.id,
+              },
             })
           );
           await value.user
             .send(
-              functions.randomText("userAddNotify", {
-                project: keyChannel,
+              functions.randomSend({
+                path: "userAddNotify",
+                values: {
+                  project: keyChannel,
+                },
               })
             )
             .catch(() => {

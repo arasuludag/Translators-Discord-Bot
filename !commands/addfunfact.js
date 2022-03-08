@@ -3,7 +3,7 @@ const functions = require("../functions.js");
 
 async function addfunfact(message) {
   if (!message.content.split(" ")[1]) {
-    await message.reply(functions.randomText("addFunfact.empty", {}));
+    await message.reply(functions.randomSend("addFunfact.empty"));
     return;
   }
 
@@ -25,10 +25,13 @@ async function addfunfact(message) {
           "utf8",
           async () => {
             await message.reply(
-              functions.randomText("addFunfact.added", {
-                funfact: message.content.substring(
-                  message.content.indexOf(" ") + 1
-                ),
+              functions.randomSend({
+                path: "addFunfact.added",
+                values: {
+                  funfact: message.content.substring(
+                    message.content.indexOf(" ") + 1
+                  ),
+                },
               })
             );
           }

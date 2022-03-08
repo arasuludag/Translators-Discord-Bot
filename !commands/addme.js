@@ -9,7 +9,7 @@ async function addme(message) {
     message.content.indexOf(" ") + 1
   );
   if (projectName === "!addme") {
-    await message.reply(functions.randomText("addMePromptEmpty", {}));
+    await message.reply(functions.randomSend({ path: "addMePromptEmpty" }));
     return;
   }
 
@@ -22,18 +22,13 @@ async function addme(message) {
 
   await message
     .reply(
-      functions.randomText(
-        "addMePrompt",
-        {
+      functions.randomSend({
+        path: "addMePrompt",
+        values: {
           projectName: projectName,
         },
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        [button]
-      )
+        components: [button],
+      })
     )
     .then((replyMessage) => {
       const filter = (i) =>
@@ -57,9 +52,12 @@ async function addme(message) {
           });
 
           logsChannel.send(
-            functions.randomText("channelExisted", {
-              user: message.author.id,
-              project: foundChannel.id,
+            functions.randomSend({
+              path: "channelExisted",
+              values: {
+                user: message.author.id,
+                project: foundChannel.id,
+              },
             })
           );
         } else {
@@ -92,9 +90,12 @@ async function addme(message) {
               );
 
               logsChannel.send(
-                functions.randomText("channelCreated", {
-                  createdChannel: createdChannel.id,
-                  user: message.author.id,
+                functions.randomSend({
+                  path: "channelCreated",
+                  values: {
+                    createdChannel: createdChannel.id,
+                    user: message.author.id,
+                  },
                 })
               );
             })

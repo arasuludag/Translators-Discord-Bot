@@ -60,10 +60,13 @@ async function moveto(message) {
 
       mentionedUser
         .send(
-          functions.randomText("messageMovedTo", {
-            message: repliedMessage.content,
-            channel: value.id,
-            attachment: attachment[0] ? attachment[0].url : " ",
+          functions.randomSend({
+            path: "messageMovedTo",
+            values: {
+              message: repliedMessage.content,
+              channel: value.id,
+              attachment: attachment[0] ? attachment[0].url : " ",
+            },
           })
         )
         .catch(() => {

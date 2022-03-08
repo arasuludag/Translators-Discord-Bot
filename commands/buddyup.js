@@ -41,21 +41,27 @@ module.exports = {
 
     // If project, show the addmepromt, if not accept thread joining promt.
     if (isProject) {
-      await interaction.reply({
-        content: functions.randomNonEmbedText("addMePrompt", {
-          projectName: projectName,
-        }),
-        ephemeral: true,
-        components: [button],
-      });
+      await interaction.reply(
+        functions.randomSend({
+          path: "addMePrompt",
+          values: {
+            projectName: projectName,
+          },
+          ephemeral: true,
+          components: [button],
+        })
+      );
     } else {
-      await interaction.reply({
-        content: functions.randomNonEmbedText("acceptThread", {
-          thread: projectName,
-        }),
-        ephemeral: true,
-        components: [button],
-      });
+      await interaction.reply(
+        functions.randomSend({
+          path: "acceptThread",
+          value: {
+            thread: projectName,
+          },
+          ephemeral: true,
+          components: [button],
+        })
+      );
     }
 
     const filter = (i) => i.customId === interaction.user + interaction.id;
@@ -68,10 +74,9 @@ module.exports = {
 
     collector.on("collect", async (i) => {
       // Changes the message to acknowledge button press.
-      await i.update({
-        content: functions.randomNonEmbedText("requestAcquired", {}),
-        components: [],
-      });
+      await i.update(
+        functions.randomSend({ path: "requestAcquired", components: [] })
+      );
 
       // If project, pass projects channel, if not, current channel.
       let channel;
@@ -88,7 +93,7 @@ module.exports = {
       if (channel.isThread()) {
         // If someone tries to create a thread, under a thread.
         interaction.user
-          .send(functions.randomText("setParentError", {}))
+          .send(functions.randomSend("setParentError"))
           .catch(() => {
             console.error("Failed to send DM");
           });
@@ -106,8 +111,11 @@ module.exports = {
 
         await interaction.user
           .send(
-            functions.randomText("userAddNotify", {
-              project: thread.id,
+            functions.randomSend({
+              path: "userAddNotify",
+              values: {
+                project: thread.id,
+              },
             })
           )
           .catch(() => {
@@ -131,8 +139,11 @@ module.exports = {
 
           await interaction.user
             .send(
-              functions.randomText("userAddNotify", {
-                project: thread.id,
+              functions.randomSend({
+                path: "userAddNotify",
+                values: {
+                  project: thread.id,
+                },
               })
             )
             .catch(() => {
@@ -141,9 +152,12 @@ module.exports = {
 
           if (isProject) {
             await channel.send(
-              functions.randomText("threadCreated", {
-                thread: thread.id,
-                user: interaction.user.id,
+              functions.randomSend({
+                path: "threadCreated",
+                values: {
+                  thread: thread.id,
+                  user: interaction.user.id,
+                },
               })
             );
           }

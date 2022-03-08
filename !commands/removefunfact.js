@@ -3,7 +3,7 @@ const functions = require("../functions.js");
 
 async function removefunfact(message) {
   if (!message.content.split(" ")[1]) {
-    await message.reply(functions.randomText("addFunfact.empty", {}));
+    await message.reply(functions.randomSend("addFunfact.empty"));
     return;
   }
 
@@ -24,7 +24,7 @@ async function removefunfact(message) {
       saveableJSON,
       "utf8",
       async () => {
-        await message.reply(functions.randomText("requestCompleted", {}));
+        await message.reply(functions.randomSend("requestCompleted"));
       }
     ); // write it back
   });

@@ -22,19 +22,21 @@ module.exports = {
   async execute(interaction) {
     const timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
 
-    await interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
 
     const bulb = interaction.options.getString("bulb_option");
 
     interaction.channel
       .send(
-        functions.randomText("poll.itself", {
-          user: interaction.user.id,
-          pollText: interaction.options.getString("poll_text"),
-          bulb: bulb ? `💡 for '${bulb}'` : " ",
+        functions.randomSend({
+          path: "poll.itself",
+          values: {
+            user: interaction.user.id,
+            pollText: interaction.options.getString("poll_text"),
+            bulb: bulb ? `💡 for '${bulb}'` : " ",
+          },
         })
       )
       .then((replyMessage) => {
@@ -100,12 +102,15 @@ module.exports = {
 
         function results(results) {
           replyMessage.reply(
-            functions.randomText("poll.close", {
-              yes: results.yes,
-              no: results.no,
-              maybe: results.maybe,
-              optionalBulb: bulb ? `💡 ${results.optionalBulb}` : "",
-              bulb: bulb ? bulb : "",
+            functions.randomSend({
+              path: "poll.close",
+              values: {
+                yes: results.yes,
+                no: results.no,
+                maybe: results.maybe,
+                optionalBulb: bulb ? `💡 ${results.optionalBulb}` : "",
+                bulb: bulb ? bulb : "",
+              },
             })
           );
         }

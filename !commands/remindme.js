@@ -13,7 +13,7 @@ async function remindme(message) {
     !splitMessage[2] ||
     !mentionedChannel.keys().next().value
   ) {
-    await message.reply(functions.randomText("reminder.help", {}));
+    await message.reply(functions.randomSend("reminder.help"));
     return;
   }
 
@@ -21,16 +21,16 @@ async function remindme(message) {
   const unixTimeWhen = Date.parse(splitMessage[1]);
 
   if (isNaN(unixTimeWhen)) {
-    return message.reply(functions.randomText("reminder.notADate", {}));
+    return message.reply(functions.randomSend("reminder.notADate"));
   }
 
   const differenceBetween = unixTimeWhen - Date.now();
   if (differenceBetween < 0) {
-    return message.reply(functions.randomText("reminder.enteredPastDate", {}));
+    return message.reply(functions.randomSend("reminder.enteredPastDate"));
   }
 
   if (!Number.isInteger(parseInt(splitMessage[2]))) {
-    return message.reply(functions.randomText("reminder.notAnInt", {}));
+    return message.reply(functions.randomSend("reminder.notAnInt"));
   }
 
   await message.react("⏳");
@@ -40,50 +40,41 @@ async function remindme(message) {
 
   mentionedChannel.map(async (value, index) => {
     await value.send(
-      functions.randomText(
-        "reminder.initiated",
-        {
+      functions.randomSend({
+        path: "reminder.initiated",
+        values: {
           event: remindText,
           time: `<t:${unixTimeWhen / 1000}> (<t:${unixTimeWhen / 1000}:R>)`,
           before: splitMessage[2],
         },
-        undefined,
-        undefined,
-        undefined,
-        "@everyone"
-      )
+        content: "@everyone",
+      })
     );
 
     timeLeftTimeout[index] = setTimeout(
       () =>
         value.send(
-          functions.randomText(
-            "reminder.minutesLeft",
-            {
+          functions.randomSend({
+            path: "reminder.minutesLeft",
+            values: {
               minutesBefore: splitMessage[2],
               remindText: remindText,
             },
-            undefined,
-            undefined,
-            undefined,
-            "@everyone"
-          )
+            content: "@everyone",
+          })
         ),
       differenceBetween - splitMessage[2] * 60 * 1000
     );
     timeCameTimeout[index] = setTimeout(
       () =>
         value.send(
-          functions.randomText(
-            "reminder.itsTime",
-            {
+          functions.randomSend({
+            path: "reminder.itsTime",
+            values: {
               remindText: remindText,
             },
-            undefined,
-            undefined,
-            undefined,
-            "@everyone"
-          )
+            content: "@everyone",
+          })
         ),
       differenceBetween
     );
@@ -105,8 +96,11 @@ async function remindme(message) {
       clearTimeout(timeCameTimeout[index]);
 
       await value.send(
-        functions.randomText("reminder.canceled", {
-          event: remindText,
+        functions.randomSend({
+          path: "reminder.canceled",
+          values: {
+            event: remindText,
+          },
         })
       );
     });

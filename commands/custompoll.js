@@ -34,10 +34,9 @@ module.exports = {
       .filter((n) => n);
 
     if (splitMessage.length > 5) {
-      await interaction.reply({
-        content: functions.randomNonEmbedText("poll.tooMany", {}),
-        ephemeral: true,
-      });
+      await interaction.reply(
+        functions.randomSend({ path: "poll.tooMany", ephemeral: true })
+      );
       return;
     }
 
@@ -146,13 +145,15 @@ module.exports = {
               components: [],
             })
             .then(async (replyMessage) => {
-              await replyMessage.reply(functions.randomText("poll.ended", {}));
+              await replyMessage.reply(functions.randomSend("poll.ended"));
             });
-          await interaction.editReply({
-            content: functions.randomNonEmbedText("poll.ended", {}),
-            ephemeral: true,
-            components: [],
-          });
+          await interaction.editReply(
+            functions.randomSend({
+              path: "poll.ended",
+              ephemeral: true,
+              components: [],
+            })
+          );
         });
       });
   },

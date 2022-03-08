@@ -18,10 +18,9 @@ module.exports = {
   async execute(interaction) {
     const reasonText = interaction.options.getString("reason");
 
-    interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
 
     const approvalChannel = await functions.findChannel(
       interaction,
@@ -33,10 +32,13 @@ module.exports = {
     );
 
     await logsChannel.send(
-      functions.randomText("requestedUnArchive", {
-        user: interaction.user.id,
-        channel: interaction.channel.id,
-        reason: reasonText,
+      functions.randomSend({
+        path: "requestedUnArchive",
+        values: {
+          user: interaction.user.id,
+          channel: interaction.channel.id,
+          reason: reasonText,
+        },
       })
     );
 
@@ -58,20 +60,15 @@ module.exports = {
 
     await approvalChannel
       .send(
-        functions.randomText(
-          "requestedUnArchive",
-          {
+        functions.randomSend({
+          path: "requestedUnArchive",
+          values: {
             user: interaction.user.id,
             channel: interaction.channel.id,
             reason: reasonText,
           },
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          [acceptButton, rejectButton]
-        )
+          components: [acceptButton, rejectButton],
+        })
       )
       .then((replyMessage) => {
         const filter = (i) =>
@@ -90,7 +87,7 @@ module.exports = {
           if (i.customId === acceptButtonCustomID) {
             if (interaction.channel.isThread()) {
               await i.user
-                .send(functions.randomText("setParentError", {}))
+                .send(functions.randomSend("setParentError"))
                 .catch(() => {
                   console.error("Failed to send DM");
                 });
@@ -108,23 +105,32 @@ module.exports = {
               });
 
             await interaction.channel.send(
-              functions.randomText("movedFromWO_User", {
-                channel: interaction.channel.id,
+              functions.randomSend({
+                path: "movedFromWO_User",
+                values: {
+                  channel: interaction.channel.id,
+                },
               })
             );
 
             await logsChannel.send(
-              functions.randomText("movedFromArchive", {
-                user: i.user.id,
-                channel: interaction.channel.id,
+              functions.randomSend({
+                path: "movedFromArchive",
+                values: {
+                  user: i.user.id,
+                  channel: interaction.channel.id,
+                },
               })
             );
           } else {
             await logsChannel.send(
-              functions.randomText("notMovedFromArchive", {
-                user: i.user.id,
-                channel: interaction.channel.id,
-                requestedUser: interaction.user.id,
+              functions.randomSend({
+                path: "notMovedFromArchive",
+                values: {
+                  user: i.user.id,
+                  channel: interaction.channel.id,
+                  requestedUser: interaction.user.id,
+                },
               })
             );
           }

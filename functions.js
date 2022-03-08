@@ -14,47 +14,36 @@ i18next.init({
 
 module.exports = {
   // Selects a random text from a JSON array.
-  randomText: (
-    path,
-    values,
-    title,
-    author,
-    iconURL,
-    content,
-    mentions,
-    components
+  randomSend: (
+    params,
+    {
+      path = params.path ? params.path : params,
+      values = params.values ? params.values : {},
+      title = params.title,
+      content = params.content,
+      components = params.components,
+      ephemeral = params.ephemeral,
+    } = {}
   ) => {
     values.returnObjects = true;
     values.interpolation = { escapeValue: false };
+
+    const description = i18next.t(path, values)[
+      Math.floor(Math.random() * i18next.t(path, values).length)
+    ];
 
     return {
       embeds: [
         {
           color: embedColor,
           title: title,
-          author: {
-            name: author,
-            icon_url: iconURL,
-          },
-          description: i18next.t(path, values)[
-            Math.floor(Math.random() * i18next.t(path, values).length)
-          ],
+          description: description,
         },
       ],
       content: content,
-      mentions: mentions,
       components: components,
+      ephemeral: ephemeral,
     };
-  },
-
-  // Selects a random text from a JSON array.
-  randomNonEmbedText: (path, values) => {
-    values.returnObjects = true;
-    values.interpolation = { escapeValue: false };
-
-    return i18next.t(path, values)[
-      Math.floor(Math.random() * i18next.t(path, values).length)
-    ];
   },
 
   // Getting and turning project name into Discords channel format. Ex. 'Hede Hodo' into 'hede-hodo'

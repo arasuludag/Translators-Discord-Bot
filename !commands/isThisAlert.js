@@ -34,16 +34,11 @@ async function isThisAlert(message) {
 
   message
     .reply(
-      functions.randomText(
-        "isThisAlert",
-        { general: generalChannel },
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        [yesButton, noButton, cancelButton]
-      )
+      functions.randomSend({
+        path: "isThisAlert",
+        values: { general: generalChannel },
+        components: [yesButton, noButton, cancelButton],
+      })
     )
     .then((replyMessage) => {
       let reacted = false;

@@ -1,4 +1,4 @@
-const { Permissions } = require("discord.js");
+const { MessageButton, MessageActionRow, Permissions } = require("discord.js");
 const { projectsCategory, logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
@@ -11,97 +11,135 @@ async function isthere(message) {
     message,
     functions.discordStyleProjectName(projectName)
   );
+
+  const acceptButtonCustomID = "Accept" + message.id;
+  const rejectButtonCustomID = "Reject" + message.id;
+
+  const acceptButton = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(acceptButtonCustomID)
+      .setLabel("Yes")
+      .setStyle("SUCCESS")
+  );
+  const rejectButton = new MessageActionRow().addComponents(
+    new MessageButton()
+      .setCustomId(rejectButtonCustomID)
+      .setLabel("No")
+      .setStyle("DANGER")
+  );
+
   if (foundChannel) {
     message
       .reply(
-        functions.randomText("isThere.yes", {
-          foundChannel: foundChannel.id,
+        functions.randomSend({
+          path: "isThere.yes",
+          values: {
+            foundChannel: foundChannel.id,
+          },
+          components: [acceptButton, rejectButton],
         })
       )
       .then((replyMessage) => {
-        replyMessage.react("👍");
+        const filter = (i) =>
+          (i.customId === acceptButtonCustomID ||
+            i.customId === rejectButtonCustomID) &&
+          i.user.id === message.author.id;
 
-        const filter = (reaction, user) => {
-          return reaction.emoji.name === "👍" && user.id === message.author.id;
-        };
-        const collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
-          time: 60000,
+          time: 120000,
           max: 1,
         });
 
-        collector.on("collect", async () => {
-          await foundChannel.permissionOverwrites.edit(message.author.id, {
-            VIEW_CHANNEL: true,
-          });
+        collector.on("collect", async (i) => {
+          if (i.customId === acceptButtonCustomID) {
+            await foundChannel.permissionOverwrites.edit(message.author.id, {
+              VIEW_CHANNEL: true,
+            });
 
-          logsChannel.send(
-            functions.randomText("channelExisted", {
-              user: message.author.id,
-              project: foundChannel.id,
-            })
-          );
+            logsChannel.send(
+              functions.randomSend({
+                path: "channelExisted",
+                values: {
+                  user: message.author.id,
+                  project: foundChannel.id,
+                },
+              })
+            );
+          }
+        });
+        collector.on("end", async () => {
+          await replyMessage.edit({
+            components: [],
+          });
         });
       });
   } else {
     message
-      .reply(functions.randomText("isThere.no", {}))
+      .reply(
+        functions.randomSend({
+          path: "isThere.no",
+          components: [acceptButton, rejectButton],
+        })
+      )
       .then((replyMessage) => {
-        replyMessage.react("👍");
-        replyMessage.react("👎");
+        const filter = (i) =>
+          (i.customId === acceptButtonCustomID ||
+            i.customId === rejectButtonCustomID) &&
+          i.user.id === message.author.id;
 
-        const filter = (reaction, user) => {
-          return reaction.emoji.name === "👍" && user.id === message.author.id;
-        };
-        const collector = replyMessage.createReactionCollector({
+        const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
-          time: 60000,
+          time: 120000,
           max: 1,
         });
 
-        collector.on("collect", async () => {
-          await message.guild.channels
-            .create(projectName, {
-              type: "GUILD_TEXT",
-              permissionOverwrites: [
-                {
-                  id: message.guild.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-                {
-                  id: message.author.id,
-                  allow: [Permissions.FLAGS.VIEW_CHANNEL],
-                },
-              ],
-            })
-            .then(async (createdChannel) => {
-              const category = await functions.findCategoryByName(
-                message,
-                projectsCategory
-              );
-              await createdChannel.setParent(category.id);
+        collector.on("collect", async (i) => {
+          if (i.customId === acceptButtonCustomID)
+            await message.guild.channels
+              .create(projectName, {
+                type: "GUILD_TEXT",
+                permissionOverwrites: [
+                  {
+                    id: message.guild.id,
+                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                  {
+                    id: message.author.id,
+                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                  },
+                ],
+              })
+              .then(async (createdChannel) => {
+                const category = await functions.findCategoryByName(
+                  message,
+                  projectsCategory
+                );
+                await createdChannel.setParent(category.id);
 
-              await createdChannel.permissionOverwrites.edit(
-                message.author.id,
-                {
-                  VIEW_CHANNEL: true,
-                }
-              );
+                await createdChannel.permissionOverwrites.edit(
+                  message.author.id,
+                  {
+                    VIEW_CHANNEL: true,
+                  }
+                );
 
-              logsChannel.send(
-                functions.randomText("channelCreated", {
-                  createdChannel: createdChannel.id,
-                  user: message.author.id,
-                })
-              );
-            })
-            .catch(console.error);
+                logsChannel.send(
+                  functions.randomSend({
+                    path: "channelCreated",
+                    values: {
+                      createdChannel: createdChannel.id,
+                      user: message.author.id,
+                    },
+                  })
+                );
+              })
+              .catch(console.error);
         });
-        collector.on("end", () => {
-          setTimeout(() => {
-            message.delete();
-            replyMessage.delete();
-          }, 3000);
+        collector.on("end", async () => {
+          await replyMessage.edit({
+            components: [],
+          });
         });
       });
   }

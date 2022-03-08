@@ -6,7 +6,7 @@ async function archive(message) {
 
   if (message.channel.isThread()) {
     await message.author
-      .send(functions.randomText("setParentError", {}))
+      .send(functions.randomSend({ path: "setParentError" }))
       .catch(() => {
         console.error("Failed to send DM");
       });
@@ -33,15 +33,21 @@ async function archive(message) {
   }
 
   await message.channel.send(
-    functions.randomText("movedToWO_User", {
-      channel: message.channel.id,
+    functions.randomSend({
+      path: "movedToWO_User",
+      values: {
+        channel: message.channel.id,
+      },
     })
   );
 
   await logsChannel.send(
-    functions.randomText("movedToArchive", {
-      user: message.author.id,
-      channel: message.channel.id,
+    functions.randomSend({
+      path: "movedToArchive",
+      values: {
+        user: message.author.id,
+        channel: message.channel.id,
+      },
     })
   );
   await message.delete();

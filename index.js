@@ -114,8 +114,11 @@ client.on("guildMemberAdd", (member) => {
     })
     .then(() => {
       functions.findChannelByID(member, logsChannelID).send(
-        functions.randomText("joinedServer", {
-          user: member.id,
+        functions.randomSend({
+          path: "joinedServer",
+          values: {
+            user: member.id,
+          },
         })
       );
     })
@@ -129,8 +132,11 @@ client.on("guildMemberAdd", (member) => {
 // Who left the server. Log it on the logs channel.
 client.on("guildMemberRemove", (member) => {
   functions.findChannelByID(member, logsChannelID).send(
-    functions.randomText("leftServer", {
-      user: member.id,
+    functions.randomSend({
+      path: "leftServer",
+      values: {
+        user: member.id,
+      },
     })
   );
 });

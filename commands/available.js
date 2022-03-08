@@ -14,25 +14,21 @@ module.exports = {
   async execute(interaction) {
     const role = interaction.options.getRole("language");
 
-    await interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
 
     await functions
       .findChannelByID(interaction, globalLingSupportChannelID)
       .send(
-        functions.randomText(
-          "available.asking",
-          {
+        functions.randomSend({
+          path: "available.asking",
+          values: {
             user: interaction.user.id,
             role: role.id,
           },
-          undefined,
-          undefined,
-          undefined,
-          role.toString()
-        )
+          content: role.toString(),
+        })
       )
       .catch((err) => console.log("Cannot be sent.", err));
   },

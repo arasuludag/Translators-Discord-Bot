@@ -76,28 +76,26 @@ module.exports = {
       case interaction.options.getSubcommand() === "language_specific": {
         const role = interaction.options.getRole("language");
         lmSuggestionChannel.send(
-          functions.randomText(
-            "suggestion.personSuggests",
-            {
+          functions.randomSend({
+            path: "suggestion.personSuggests",
+            values: {
               user: interaction.user.id,
               suggestion: role.toString() + " " + suggestion,
             },
-            "Language Spesific Suggestion",
-            undefined,
-            undefined,
-            role.toString()
-          )
+            title: "Language Spesific Suggestion",
+            content: role.toString(),
+          })
         );
 
         interaction.user
           .send(
-            functions.randomText(
-              "suggestion.suggestionRecieved",
-              {
+            functions.randomSend({
+              path: "suggestion.suggestionRecieved",
+              values: {
                 suggestion: suggestion,
               },
-              "Language Spesific Suggestion"
-            )
+              title: "Language Spesific Suggestion",
+            })
           )
           .catch(() => {
             console.error("Failed to send DM");
@@ -110,28 +108,26 @@ module.exports = {
           (r) => r.name === langmanagerRole
         );
         lmSuggestionChannel.send(
-          functions.randomText(
-            "suggestion.personSuggests",
-            {
+          functions.randomSend({
+            path: "suggestion.personSuggests",
+            values: {
               user: interaction.user.id,
               suggestion: lm.toString() + " " + suggestion,
             },
-            "LM Meeting Suggestion",
-            undefined,
-            undefined,
-            lm.toString()
-          )
+            title: "LM Meeting Suggestion",
+            content: lm.toString(),
+          })
         );
 
         interaction.user
           .send(
-            functions.randomText(
-              "suggestion.suggestionRecieved",
-              {
+            functions.randomSend({
+              path: "suggestion.suggestionRecieved",
+              values: {
                 suggestion: suggestion,
               },
-              "LM Meeting Suggestion"
-            )
+              title: "LM Meeting Suggestion",
+            })
           )
           .catch(() => {
             console.error("Failed to send DM");
@@ -141,25 +137,25 @@ module.exports = {
 
       case interaction.options.getSubcommand() === "discord":
         suggestionChannel.send(
-          functions.randomText(
-            "suggestion.personSuggests",
-            {
+          functions.randomSend({
+            path: "suggestion.personSuggests",
+            values: {
               user: interaction.user.id,
               suggestion: suggestion,
             },
-            "Discord Suggestion"
-          )
+            title: "Discord Suggestion",
+          })
         );
 
         interaction.user
           .send(
-            functions.randomText(
-              "suggestion.suggestionRecieved",
-              {
+            functions.randomSend({
+              path: "suggestion.suggestionRecieved",
+              values: {
                 suggestion: suggestion,
               },
-              "Discord Suggestion"
-            )
+              title: "Discord Suggestion",
+            })
           )
           .catch(() => {
             console.error("Failed to send DM");
@@ -168,25 +164,25 @@ module.exports = {
 
       case interaction.options.getSubcommand() === "other":
         suggestionChannel.send(
-          functions.randomText(
-            "suggestion.personSuggests",
-            {
+          functions.randomSend({
+            path: "suggestion.personSuggests",
+            values: {
               user: interaction.user.id,
               suggestion: suggestion,
             },
-            "Other Suggestion"
-          )
+            title: "Other Suggestion",
+          })
         );
 
         interaction.user
           .send(
-            functions.randomText(
-              "suggestion.suggestionRecieved",
-              {
+            functions.randomSend({
+              path: "suggestion.suggestionRecieved",
+              values: {
                 suggestion: suggestion,
               },
-              "Other Suggestion"
-            )
+              title: "Other Suggestion",
+            })
           )
           .catch(() => {
             console.error("Failed to send DM");
@@ -197,9 +193,8 @@ module.exports = {
         break;
     }
 
-    interaction.reply({
-      content: functions.randomNonEmbedText("suggestion.acquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "suggestion.acquired", ephemeral: true })
+    );
   },
 };

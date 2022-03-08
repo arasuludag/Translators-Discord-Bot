@@ -17,7 +17,7 @@ async function basicMessageChecking(message, client) {
       // After this point, it's only for fun.
       case message.mentions.has(client.user):
         message
-          .reply(functions.randomText("taggedBot", {}))
+          .reply(functions.randomSend({ path: "taggedBot" }))
           .then((replyMessage) => {
             if (
               replyMessage.embeds[0].description === "Speak, friend, and enter."

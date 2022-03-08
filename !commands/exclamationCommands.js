@@ -27,10 +27,12 @@ module.exports = {
     // So that's why.
     let isMod = false;
     try {
-      isMod = message.member.roles.cache.some((role) => role.name === modRole);
+      isMod = await message.member.roles.cache.some(
+        (role) => role.name === modRole
+      );
     } catch (error) {
       await message.channel
-        .send(functions.randomText("discordError", {}))
+        .send(functions.randomSend({ path: "discordError" }))
         .catch((error) => {
           console.log(error);
         });

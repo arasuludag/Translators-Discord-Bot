@@ -49,26 +49,26 @@ module.exports = {
         );
         if (interaction.options.getBoolean("template")) {
           sassAlertChannel.send(
-            functions.randomText(
-              "alert.messageTemplate",
-              {
+            functions.randomSend({
+              path: "alert.messageTemplate",
+              values: {
                 user: interaction.user.id,
                 context: alertText,
               },
-              "🚨 Alert - TEMPLATE QC!"
-            )
+              title: "🚨 Alert - TEMPLATE QC!",
+            })
           );
           break;
         }
         sassAlertChannel.send(
-          functions.randomText(
-            "alert.message",
-            {
+          functions.randomSend({
+            path: "alert.message",
+            values: {
               user: interaction.user.id,
               context: alertText,
             },
-            "🚨 Alert!"
-          )
+            title: "🚨 Alert!",
+          })
         );
         break;
       }
@@ -80,34 +80,33 @@ module.exports = {
         );
         if (interaction.options.getBoolean("template")) {
           supplementalAlertChannel.send(
-            functions.randomText(
-              "alert.messageTemplate",
-              {
+            functions.randomSend({
+              path: "alert.messageTemplate",
+              values: {
                 user: interaction.user.id,
                 context: alertText,
               },
-              "🚨 Alert - TEMPLATE QC!"
-            )
+              title: "🚨 Alert - TEMPLATE QC!",
+            })
           );
           break;
         }
         supplementalAlertChannel.send(
-          functions.randomText(
-            "alert.message",
-            {
+          functions.randomSend({
+            path: "alert.message",
+            values: {
               user: interaction.user.id,
               context: alertText,
             },
-            "🚨 Alert!"
-          )
+            title: "🚨 Alert!",
+          })
         );
         break;
       }
     }
 
-    interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
   },
 };

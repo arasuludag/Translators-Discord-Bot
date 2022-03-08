@@ -18,7 +18,7 @@ async function remove(message) {
             });
           } catch (error) {
             await message.author
-              .send(functions.randomText("setParentError", {}))
+              .send(functions.randomSend("setParentError"))
               .catch(() => {
                 console.error("Failed to send DM");
               });
@@ -26,10 +26,13 @@ async function remove(message) {
           }
 
           await logsChannel.send(
-            functions.randomText("removedFromChannel", {
-              user: value.user.id,
-              project: keyChannel,
-              approved: message.author.id,
+            functions.randomSend({
+              path: "removedFromChannel",
+              values: {
+                user: value.user.id,
+                project: keyChannel,
+                approved: message.author.id,
+              },
             })
           );
         });

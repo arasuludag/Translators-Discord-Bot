@@ -32,17 +32,19 @@ module.exports = {
 
     await interaction.user
       .send(
-        functions.randomText("waitApproval", {
-          project: channelName,
+        functions.randomSend({
+          path: "waitApproval",
+          values: {
+            project: channelName,
+          },
         })
       )
       .catch(() => {
         console.error("Failed to send DM");
       });
-    await interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
 
     const acceptButtonCustomID = "Accept" + interaction.id;
     const rejectButtonCustomID = "Reject" + interaction.id;
@@ -62,20 +64,15 @@ module.exports = {
 
     await approvalChannel
       .send(
-        functions.randomText(
-          "addRequest",
-          {
+        functions.randomSend({
+          path: "addRequest",
+          values: {
             user: interaction.user.id,
             projectName: channelName,
             reason: reason ? `\nReason: ${reason}` : " ",
           },
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          [acceptButton, rejectButton]
-        )
+          components: [acceptButton, rejectButton],
+        })
       )
       .then((replyMessage) => {
         const filter = (i) =>
@@ -103,16 +100,22 @@ module.exports = {
               });
 
               logsChannel.send(
-                functions.randomText("channelExisted_RA", {
-                  user: interaction.user.id,
-                  project: foundChannel.id,
-                  approved: i.user.id,
+                functions.randomSend({
+                  path: "channelExisted_RA",
+                  values: {
+                    user: interaction.user.id,
+                    project: foundChannel.id,
+                    approved: i.user.id,
+                  },
                 })
               );
               interaction.user
                 .send(
-                  functions.randomText("userAddNotify", {
-                    project: foundChannel.id,
+                  functions.randomSend({
+                    path: "userAddNotify",
+                    values: {
+                      project: foundChannel.id,
+                    },
                   })
                 )
                 .catch(() => {
@@ -146,17 +149,23 @@ module.exports = {
                   );
 
                   logsChannel.send(
-                    functions.randomText("channelCreated_RA", {
-                      createdChannel: createdChannel.id,
-                      user: interaction.user.id,
-                      approved: i.user.id,
+                    functions.randomSend({
+                      path: "channelCreated_RA",
+                      values: {
+                        createdChannel: createdChannel.id,
+                        user: interaction.user.id,
+                        approved: i.user.id,
+                      },
                     })
                   );
                   interaction.user
                     .send(
-                      functions.randomText("userAddNotify", {
-                        user: interaction.user.id,
-                        project: createdChannel,
+                      functions.randomSend({
+                        path: "userAddNotify",
+                        values: {
+                          user: interaction.user.id,
+                          project: createdChannel,
+                        },
                       })
                     )
                     .catch(() => {
@@ -169,16 +178,22 @@ module.exports = {
             }
           } else {
             logsChannel.send(
-              functions.randomText("requestAddRejected", {
-                channel: channelName,
-                user: interaction.user.id,
-                approved: i.user.id,
+              functions.randomSend({
+                path: "requestAddRejected",
+                values: {
+                  channel: channelName,
+                  user: interaction.user.id,
+                  approved: i.user.id,
+                },
               })
             );
             interaction.user
               .send(
-                functions.randomText("requestAddRejectedDM", {
-                  channel: channelName,
+                functions.randomSend({
+                  path: "requestAddRejectedDM",
+                  values: {
+                    channel: channelName,
+                  },
                 })
               )
               .catch(() => {

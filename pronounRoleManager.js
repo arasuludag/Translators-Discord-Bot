@@ -23,9 +23,12 @@ async function pronounRoleManager(reaction, user, isAdd) {
   function notify(pronoun) {
     user
       .send(
-        functions.randomText("userPronounNotify", {
-          pronoun: pronoun,
-          isAdd: isAdd ? "" : "not",
+        functions.randomSend({
+          path: "userPronounNotify",
+          values: {
+            pronoun: pronoun,
+            isAdd: isAdd ? "" : "not",
+          },
         })
       )
       .catch(() => {

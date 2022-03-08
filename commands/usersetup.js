@@ -48,18 +48,20 @@ module.exports = {
 
     await interaction.user
       .send(
-        functions.randomText("setup.waitForApproveDM", {
-          nickName: nickName,
-          role: role.name,
+        functions.randomSend({
+          path: "setup.waitForApproveDM",
+          values: {
+            nickName: nickName,
+            role: role.name,
+          },
         })
       )
       .catch(() => {
         console.error("Failed to send DM");
       });
-    await interaction.reply({
-      content: functions.randomNonEmbedText("requestAcquired", {}),
-      ephemeral: true,
-    });
+    await interaction.reply(
+      functions.randomSend({ path: "requestAcquired", ephemeral: true })
+    );
 
     const acceptButtonCustomID = "Accept" + interaction.id;
     const rejectButtonCustomID = "Reject" + interaction.id;
@@ -79,20 +81,15 @@ module.exports = {
 
     await approvalChannel
       .send(
-        functions.randomText(
-          "setup.request",
-          {
+        functions.randomSend({
+          path: "setup.request",
+          values: {
             user: interaction.user.id,
             nickName: nickName,
             role: role.id,
           },
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          [acceptButton, rejectButton]
-        )
+          components: [acceptButton, rejectButton],
+        })
       )
       .then((replyMessage) => {
         const filter = (i) =>
@@ -111,7 +108,7 @@ module.exports = {
           if (i.customId === acceptButtonCustomID) {
             interaction.member.setNickname(nickName).catch(() => {
               interaction.user
-                .send(functions.randomText("setup.error", {}))
+                .send(functions.randomSend("setup.error"))
                 .catch(() => {
                   console.error("Failed to send DM");
                 });
@@ -124,18 +121,24 @@ module.exports = {
             interaction.member.roles.add(roleDTT);
 
             logsChannel.send(
-              functions.randomText("setup.accepted", {
-                user: interaction.user.id,
-                nickName: nickName,
-                role: role.id,
+              functions.randomSend({
+                path: "setup.accepted",
+                values: {
+                  user: interaction.user.id,
+                  nickName: nickName,
+                  role: role.id,
+                },
               })
             );
             interaction.user
               .send(
-                functions.randomText("setup.acceptedDM", {
-                  user: interaction.user.id,
-                  nickName: nickName,
-                  role: role.name,
+                functions.randomSend({
+                  path: "setup.acceptedDM",
+                  values: {
+                    user: interaction.user.id,
+                    nickName: nickName,
+                    role: role.name,
+                  },
                 })
               )
               .catch(() => {
@@ -166,18 +169,24 @@ module.exports = {
               });
           } else {
             logsChannel.send(
-              functions.randomText("setup.rejected", {
-                user: interaction.user.id,
-                nickName: nickName,
-                role: role.id,
+              functions.randomSend({
+                path: "setup.rejected",
+                values: {
+                  user: interaction.user.id,
+                  nickName: nickName,
+                  role: role.id,
+                },
               })
             );
             interaction.user
               .send(
-                functions.randomText("setup.rejectedDM", {
-                  user: interaction.user.id,
-                  nickName: nickName,
-                  role: role.name,
+                functions.randomSend({
+                  path: "setup.rejectedDM",
+                  values: {
+                    user: interaction.user.id,
+                    nickName: nickName,
+                    role: role.name,
+                  },
                 })
               )
               .catch(() => {

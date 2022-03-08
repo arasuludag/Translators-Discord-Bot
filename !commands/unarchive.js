@@ -6,7 +6,7 @@ async function unarchive(message) {
 
   if (message.channel.isThread()) {
     await message.author
-      .send(functions.randomText("setParentError", {}))
+      .send(functions.randomSend("setParentError"))
       .catch(() => {
         console.error("Failed to send DM");
       });
@@ -22,15 +22,21 @@ async function unarchive(message) {
     });
 
   await message.channel.send(
-    functions.randomText("movedFromWO_User", {
-      channel: message.channel.id,
+    functions.randomSend({
+      path: "movedFromWO_User",
+      values: {
+        channel: message.channel.id,
+      },
     })
   );
 
   await logsChannel.send(
-    functions.randomText("movedFromArchive", {
-      user: message.author.id,
-      channel: message.channel.id,
+    functions.randomSend({
+      path: "movedFromArchive",
+      values: {
+        user: message.author.id,
+        channel: message.channel.id,
+      },
     })
   );
   await message.delete();

@@ -60,10 +60,13 @@ async function copyto(message) {
 
       mentionedUser
         .send(
-          functions.randomText("messageCopiedTo", {
-            message: repliedMessage.content,
-            channel: value.id,
-            attachment: attachment[0] ? attachment[0].url : " ",
+          functions.randomSend({
+            path: "messageCopiedTo",
+            values: {
+              message: repliedMessage.content,
+              channel: value.id,
+              attachment: attachment[0] ? attachment[0].url : " ",
+            },
           })
         )
         .catch(() => {

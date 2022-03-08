@@ -14,10 +14,13 @@ async function deleteBulk(message) {
       .then(
         async (messages) =>
           await logsChannel.send(
-            functions.randomText("deletedMessages", {
-              user: message.author.id,
-              channel: message.channel.id,
-              howMany: messages.size,
+            functions.randomSend({
+              path: "deletedMessages",
+              values: {
+                user: message.author.id,
+                channel: message.channel.id,
+                howMany: messages.size,
+              },
             })
           )
       )
