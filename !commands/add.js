@@ -18,9 +18,7 @@ async function add(message) {
             });
           } catch (error) {
             await message.author
-              .send(
-                functions.randomSend({ path: "setParentError", values: {} })
-              )
+              .send(functions.randomSend("setParentError"))
               .catch(() => {
                 console.error("Failed to send DM");
               });

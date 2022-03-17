@@ -93,6 +93,20 @@ module.exports = {
 
         let pollCount = [];
         let fields = [];
+        let pollResultMessage = {
+          embeds: [
+            {
+              color: embedColor,
+              title: "Poll",
+              author: {
+                name: userNickname ? userNickname : interaction.user.username,
+                icon_url: `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.png?size=256`,
+              },
+              description: pollText,
+              fields: fields,
+            },
+          ],
+        };
 
         collector.on("collect", async (i) => {
           let votes = Array(splitMessage.length).fill(0);
@@ -123,7 +137,7 @@ module.exports = {
             });
           }
 
-          await i.update({
+          pollResultMessage = {
             embeds: [
               {
                 color: embedColor,
@@ -136,7 +150,9 @@ module.exports = {
                 fields: fields,
               },
             ],
-          });
+          };
+
+          await i.update(pollResultMessage);
         });
 
         collector.on("end", async () => {
@@ -146,6 +162,7 @@ module.exports = {
             })
             .then(async (replyMessage) => {
               await replyMessage.reply(functions.randomSend("poll.ended"));
+              await replyMessage.channel.send(pollResultMessage);
             });
           await interaction.editReply(
             functions.randomSend({

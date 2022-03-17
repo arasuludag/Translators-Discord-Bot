@@ -42,10 +42,15 @@ async function addme(message) {
       });
 
       collector.on("collect", async () => {
-        const foundChannel = await functions.findChannel(
-          message,
-          functions.discordStyleProjectName(projectName)
-        );
+        let dProjectName;
+        try {
+          dProjectName = await functions.discordStyleProjectName(projectName);
+        } catch (error) {
+          await message.reply(functions.randomSend("enterProperName"));
+          return;
+        }
+
+        const foundChannel = await functions.findChannel(message, dProjectName);
         if (foundChannel) {
           foundChannel.permissionOverwrites.edit(message.author.id, {
             VIEW_CHANNEL: true,

@@ -11,7 +11,6 @@ const {
 } = require("./config.json");
 const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
-const { pronounRoleManager } = require("./pronounRoleManager");
 const { twitterStream } = require("./twitterStream");
 
 const myIntents = new Intents();
@@ -68,34 +67,6 @@ client.on("ready", () => {
   setInterval(presence, 1000 * 60 * 60);
 
   twitterStream(client);
-});
-
-client.on("messageReactionAdd", async (reaction, user) => {
-  // When a reaction is received, check if the structure is partial
-  if (reaction.partial) {
-    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-    try {
-      pronounRoleManager(reaction, user, true);
-    } catch (error) {
-      console.error("Something went wrong when fetching the message:", error);
-      // Return as `reaction.message.author` may be undefined/null
-      return;
-    }
-  }
-});
-
-client.on("messageReactionRemove", async (reaction, user) => {
-  // When a reaction is received, check if the structure is partial
-  if (reaction.partial) {
-    // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
-    try {
-      pronounRoleManager(reaction, user, false);
-    } catch (error) {
-      console.error("Something went wrong when fetching the message:", error);
-      // Return as `reaction.message.author` may be undefined/null
-      return;
-    }
-  }
 });
 
 // Sends a welcome message to newly joined users.
@@ -179,7 +150,7 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // Let the guild know about the crash.
-process.on("uncaughtException", async (error) => {
+process.on("uncaughtException", async (error, origin) => {
   await client.channels.cache
     .find(
       (channel) =>
@@ -190,9 +161,20 @@ process.on("uncaughtException", async (error) => {
     .find(
       (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
     )
-    .send(`There is a crash. Contact Aras about this.\n \n${error}`);
-  console.log(error);
-  process.exit(1);
+    .send(`Contact Aras about this.\n \n${error}\n \n ${origin}`);
+  console.log(error, origin);
+  // Nothing to mess up. So no need to exit.
+  // process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.log("Unhandled Rejection at: ", promise, "reason: ", reason);
+
+  client.channels.cache
+    .find(
+      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+    )
+    .send(`Contact Aras about this.\n \n${promise}\n \n ${reason}`);
 });
 
 client.login(token); // Login bot using token.

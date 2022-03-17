@@ -48,7 +48,14 @@ module.exports = {
 
   // Getting and turning project name into Discords channel format. Ex. 'Hede Hodo' into 'hede-hodo'
   discordStyleProjectName: (project) => {
-    return project.replace(/\s+/g, "-").toLowerCase();
+    const pName = project
+      .replace(/[@.,/#!?$%^+&*;:{}[\]=`~()<>"']/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+
+    if (pName.length < 1) throw "ChannelNameError";
+    return pName;
   },
 
   // Finds channel by name.

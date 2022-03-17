@@ -33,7 +33,7 @@ module.exports = {
         embeds: [
           {
             color: embedColor,
-            title: "Funfact!",
+            title: "Fun fact!",
             description: dataJSON.funfacts[random],
           },
         ],

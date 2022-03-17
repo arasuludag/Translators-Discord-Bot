@@ -4,6 +4,7 @@ const functions = require("../functions.js");
 const {
   projectChannelRequestsChannelID,
   threadType,
+  logsChannelID,
 } = require("../config.json");
 const { findChannelByID } = require("../functions.js");
 
@@ -24,8 +25,24 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    const projectName = functions.discordStyleProjectName(
-      interaction.options.getString("for")
+    let projectName;
+    try {
+      projectName = functions.discordStyleProjectName(
+        interaction.options.getString("for")
+      );
+    } catch (error) {
+      await interaction.reply(
+        functions.randomSend({
+          path: "enterProperName",
+          ephemeral: true,
+        })
+      );
+      return;
+    }
+
+    const logsChannel = await functions.findChannelByID(
+      interaction,
+      logsChannelID
     );
 
     // Is this a project?
@@ -55,7 +72,7 @@ module.exports = {
       await interaction.reply(
         functions.randomSend({
           path: "acceptThread",
-          value: {
+          values: {
             thread: projectName,
           },
           ephemeral: true,
@@ -122,6 +139,16 @@ module.exports = {
             console.error("Failed to send DM");
           });
 
+        await logsChannel.send(
+          functions.randomSend({
+            path: "buddyUpLog",
+            values: {
+              thread: thread.id,
+              user: interaction.user.id,
+            },
+          })
+        );
+
         return;
       }
 
@@ -149,6 +176,16 @@ module.exports = {
             .catch(() => {
               console.error("Failed to send DM");
             });
+
+          await logsChannel.send(
+            functions.randomSend({
+              path: "buddyUpLog",
+              values: {
+                thread: thread.id,
+                user: interaction.user.id,
+              },
+            })
+          );
 
           if (isProject) {
             await channel.send(

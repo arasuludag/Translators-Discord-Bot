@@ -30,6 +30,19 @@ module.exports = {
     const channelName = interaction.options.getString("project_name");
     const reason = interaction.options.getString("reason");
 
+    let projectName;
+    try {
+      projectName = functions.discordStyleProjectName(channelName);
+    } catch (error) {
+      await interaction.reply(
+        functions.randomSend({
+          path: "enterProperName",
+          ephemeral: true,
+        })
+      );
+      return;
+    }
+
     await interaction.user
       .send(
         functions.randomSend({
@@ -69,7 +82,7 @@ module.exports = {
           values: {
             user: interaction.user.id,
             projectName: channelName,
-            reason: reason ? `\nReason: ${reason}` : " ",
+            reason: reason ? `\nAdditional Info: ${reason}` : " ",
           },
           components: [acceptButton, rejectButton],
         })
@@ -92,7 +105,7 @@ module.exports = {
           if (i.customId === acceptButtonCustomID) {
             const foundChannel = await functions.findChannel(
               interaction,
-              functions.discordStyleProjectName(channelName)
+              projectName
             );
             if (foundChannel) {
               foundChannel.permissionOverwrites.edit(interaction.user.id, {

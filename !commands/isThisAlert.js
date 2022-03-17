@@ -44,9 +44,10 @@ async function isThisAlert(message) {
       let reacted = false;
 
       const filter = (i) =>
-        i.customId === yesButtonCustomID ||
-        noButtonCustomID ||
-        cancelButtonCustomID;
+        (i.customId === yesButtonCustomID ||
+          i.customId === noButtonCustomID ||
+          i.customId === cancelButtonCustomID) &&
+        i.user.id === message.author.id;
 
       const collector = replyMessage.channel.createMessageComponentCollector({
         filter,
@@ -133,7 +134,7 @@ async function isThisAlert(message) {
                       : undefined,
                 },
                 footer: {
-                  text: "Automatically relayed from and alert channel.",
+                  text: "Automatically relayed from an alert channel.",
                 },
               },
             ];

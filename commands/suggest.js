@@ -90,7 +90,7 @@ module.exports = {
         interaction.user
           .send(
             functions.randomSend({
-              path: "suggestion.suggestionRecieved",
+              path: "suggestion.suggestionReceived",
               values: {
                 suggestion: suggestion,
               },
@@ -122,7 +122,7 @@ module.exports = {
         interaction.user
           .send(
             functions.randomSend({
-              path: "suggestion.suggestionRecieved",
+              path: "suggestion.suggestionReceived",
               values: {
                 suggestion: suggestion,
               },
@@ -150,7 +150,7 @@ module.exports = {
         interaction.user
           .send(
             functions.randomSend({
-              path: "suggestion.suggestionRecieved",
+              path: "suggestion.suggestionReceived",
               values: {
                 suggestion: suggestion,
               },
@@ -177,7 +177,7 @@ module.exports = {
         interaction.user
           .send(
             functions.randomSend({
-              path: "suggestion.suggestionRecieved",
+              path: "suggestion.suggestionReceived",
               values: {
                 suggestion: suggestion,
               },

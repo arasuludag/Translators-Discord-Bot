@@ -1,9 +1,11 @@
 {
   "suggestion": {
-    "acquired": ["Suggestion aquired."],
-    "personSuggests": ["<@{{user}}> made a suggestion. {{suggestion}}"],
-    "suggestionRecieved": [
-      "We've received the following suggestion you submitted. We are going to get back to you as soon as possible: {{suggestion}}"
+    "acquired": ["Noted, thanks!"],
+    "personSuggests": [
+      "<@{{user}}> made the following suggestion:\n \n{{suggestion}}"
+    ],
+    "suggestionReceived": [
+      "I've forwarded your suggestion to the appropriate entity. Here is a copy of your message:\n \n{{suggestion}}"
     ]
   },
 
@@ -13,60 +15,75 @@
     ]
   },
 
-  "requestAcquired": ["Request Acquired.", "Got it.", "Understood."],
+  "requestAcquired": [
+    "Request received.",
+    "Got it.",
+    "Understood.",
+    "Roger that.",
+    "Sure.",
+    "Righto.",
+    "Okey-doke!",
+    "Aye, aye.",
+    "I'm on it.",
+    "Affirmative."
+  ],
 
-  "waitApproval": ["Wait for approval to access {{project}}"],
+  "waitApproval": [
+    "Please wait for approval to access the channel for {{project}}."
+  ],
 
   "addRequest": [
-    "<@{{user}}> wants to be added to {{projectName}}. React ✅ to approve. {{reason}}"
+    "<@{{user}}> wants to be added to {{projectName}}.\n \n {{reason}}"
   ],
 
   "channelExisted": [
-    "<#{{project}}> channel already existed. <@{{user}}> was added to the channel."
+    "There is already a channel called <#{{project}}>.\n <@{{user}}> has been added to the channel."
   ],
 
   "channelExisted_RA": [
-    "Channel already existed, added <@{{user}}> to <#{{project}}>!\n <@{{approved}}> approved."
+    "There is already a channel called <#{{project}}>.\n <@{{user}}> has been added to the channel.\n \n The request has been approved by <@{{approved}}>."
   ],
 
-  "userAddNotify": ["You have been added to <#{{project}}>!"],
+  "userAddNotify": ["You now have access to <#{{project}}>!"],
 
   "channelCreated": [
-    "<#{{createdChannel}}> channel was created. <@{{user}}> was added to the channel."
+    "<#{{createdChannel}}> channel has been created and <@{{user}}> has been added."
   ],
 
   "channelCreated_RA": [
-    "Channel created for <#{{createdChannel}}> and <@{{user}}> added!\n <@{{approved}}> approved."
+    "<#{{createdChannel}}> channel has been created and <@{{user}}> has been added by <@{{approved}}>."
   ],
 
   "requestAddRejected": [
-    "<@{{user}}>'s request rejected for {{channel}}!\n <@{{approved}}> rejected."
+    "<@{{user}}>'s request to join {{channel}} has been rejected by <@{{approved}}>."
   ],
 
   "requestAddRejectedDM": [
-    "Your request has been rejected for access to {{channel}}!"
+    "Your request to access the channel for {{channel}} has been rejected. Please check the spelling of the project name and if you have followed all of the PM's instructions upon assignment. Otherwise, you can contact our admins through the **/suggest other** command."
   ],
 
-  "channelCreatedWOAdd": ["Channel created for <#{{createdChannel}}>!"],
+  "channelCreatedWOAdd": [
+    "A channel for <#{{createdChannel}}> has been created!"
+  ],
 
   "isThere": {
     "yes": [
-      "Yes. There is <#{{foundChannel}}>. Would you like me to add you to <#{{foundChannel}}>."
+      "Yes. There is a channel called <#{{foundChannel}}>. Would you like to be added to it?"
     ],
-    "no": ["No. Would you like to create it?"]
+    "no": ["No. Would you like me to create one for you?"]
   },
 
   "addMePrompt": [
-    "Do you confirm that you work on {{projectName}} and want to be added to the channel? React this message with 👍 if YES."
+    "Do you confirm that you work on {{projectName}} and want to be added to the channel? React to this message with 👍 if YES."
   ],
-  "addMePromptEmpty": ["You have failed to enter a project name."],
+  "addMePromptEmpty": ["You haven't entered a project name."],
 
   "alert": {
     "message": [
-      "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for their target language:\n \n {{context}}"
+      "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for their target language:\n \n{{context}}"
     ],
     "messageTemplate": [
-      "<@{{user}}> wanted to let you know that they've just submitted the template QC for the following project:\n \n {{context}}"
+      "<@{{user}}> wanted to let you know that they've just submitted the template QC for the following project:\n \n{{context}}"
     ]
   },
 
@@ -74,50 +91,61 @@
 
   "reminder": {
     "help": [
-      "!remindme Subject | 01 Jan 2022 20:20 GMT or UTC+3 etc. | How long before I should remind? (In minutes) (Ex. 20)"
+      "!remindme Name of the event | 01 Jan 2022 20:20 GMT or UTC+3 etc. | How long before the event do you want to be reminded (In minutes) (Ex. 20) | #TargetChannel #OptionalSecondChannel"
     ],
-    "notADate": ["That is not a date. I am cancelling your request."],
-    "notAnInt": [
-      "Time reminded before is not an integer. I am cancelling your request."
+    "notADate": [
+      "That is not a date. Please try again using the following format:\n \n!remindme Name of the event | 01 Jan 2022 20:20 GMT or UTC+3 etc. | How long before the event do you want to be reminded (in minutes) (Ex. 20)? | #TargetChannel #OptionalSecondChannel ."
     ],
-    "minutesLeft": ["{{minutesBefore}} minutes left for {{remindText}}"],
-    "itsTime": ["It's time for {{remindText}}"],
+    "notAnInt": ["Please enter an integer. I am cancelling your request."],
+    "minutesLeft": [
+      "{{minutesBefore}} minute(s) left until:\n \n{{remindText}}"
+    ],
+    "itsTime": ["It's time for:\n \n{{remindText}}"],
     "enteredPastDate": [
-      "I wish I could travel back in time, but I'm not quite there yet. Please enter a date in the future."
+      "I wish I could travel back in time, but I'm not quite there yet. Please enter a date in the future.",
+      "Please enter a date in the future. My Tardis is in the shop.",
+      "Do I look like a DeLorean? Please enter a date in the future.",
+      "Please enter a date in the future. I have run out of Pym Particles.",
+      "Even though I am a robot, I have no ties to Skynet. Please enter a date in the future.",
+      "Our adventure through time has taken a most serious turn. Please enter a date in the future, and be excellent to each other."
     ],
     "initiated": [
-      "There's a new event coming up called '{{event}}' It's going to take place on {{time}}. You'll be reminded in this channel {{before}} minute(s) before the event. See you then ⌛!"
+      "There's a new event coming up called '{{event}}'. It's going to take place on {{time}}. You'll be reminded in this channel {{before}} minute(s) before the event. See you then! ⌛"
     ],
-    "canceled": ["{{event}} is cancelled."]
+
+    "canceled": ["{{event}} has been cancelled."]
   },
 
-  "add": {
-    "where": ["To where?"],
-    "addedPrompt": ["Added <@{{user}}> to <#{{channel}}>!"]
-  },
-
-  "requestCompleted": ["Done."],
+  "requestCompleted": ["Done.", "Handled.", "Mission accomplished."],
 
   "setup": {
     "request": [
-      "<@{{user}}> claims to have {{nickName}} as their full name and <@&{{role}}> as their target language.\nReact ✅ to approve."
+      "<@{{user}}> has set {{nickName}} as their full name and <@&{{role}}> as their target language.\n"
     ],
-    "accepted": ["<@{{user}}> accepted as {{nickName}} and <@&{{role}}>."],
-    "acceptedDM": ["You are accepted as {{nickName}} and {{role}}."],
-    "waitForApproveDM": ["Wait for approval as {{nickName}} and {{role}}."],
+    "accepted": [
+      "<@{{user}}> has been approved as {{nickName}}, a <@&{{role}}> linguist."
+    ],
+    "acceptedDM": [
+      "Your server profile has been set up. Your name is {{nickName}} and your target language is {{role}}."
+    ],
+    "waitForApproveDM": [
+      "I've received your request to set up your server profile as {{nickName}} and a {{role}} linguist, and sent it to our admins. Please wait for approval. If you made a typo, you can always change your name using the **/nick** command later on."
+    ],
     "error": [
-      "There's an error with your nickname probably due to being longer than 32 chracters. Contact mods about this."
+      "I encountered an issue changing your nickname. It's probably due to the name you entered being more than 32 characters. Either type in a name which has less than 32 characters (we know you're good at condensing, you're a subtitler!) or use the **/suggest other** command if the issue persists."
     ],
     "rejectedDM": [
-      "<@{{user}}> rejected as {{nickName}} and {{role}}.\nIt seems one of the details you entered is incorrect. Please go back to the reception channel and try /usersetup again."
+      "Hi, <@{{user}}>!\n \nIt seems like one of the details you have entered when setting up your user profile is incorrect. Please go back to the <#{{reception}}> channel and try **/usersetup** again."
     ],
-    "rejected": ["<@{{user}}> rejected as {{nickName}} and <@&{{role}}>."],
-    "afterApproval": "Hello again!\n \nThis is Sassy, your friendly bot. 🤖 \n \nYou now have access to the server! 🥳\n \nPlease feel free to browse; <#{{discord101}}> is a good channel to start from if you're completely new to Discord. If you're already familiar with Discord, maybe we could interest you in the <#{{channelindex}}> channel to see which channel is used for what, or you could check one of our linguists' reading speed manifesto in the <#{{readingspeed}}> channel, and read previous LM-Plint meeting recaps in the <#{{lmmeetingrecaps}}> channel.\n \nAlso, I come with a bunch of commands to help everyone make the best out of the server!\n \nTry /funfact command in the <#{{general}}> channel to learn a random fun fact about the server or its members.\n \nReach out to other subtitlers who speak a certain language for assistance by using the /available command in the <#{{globallinguisticsupport}}> channel and selecting the language you need.\n \nIf you're working on a project and want to collaborate with other people working on the same project, use /requestadd command in #project-channel-request and type in the exact name of the project you're working on to notify the admins, and wait for approval!\n \nAre you curious about what your colleagues think about a certain issue? Go to any relevant channel to your question and use the /poll command to conduct a poll.\n \nSaw a project in SASS and want to alert your colleagues to it? You can use the /alert command in any of the channels and choose whether it was a longform task or a supplemental task, enter however much information you have about the project, and I'll automatically direct your message to the <#{{sassalert}}> or <#{{supplementalalert}}> channel depending on what kind of task it was.\n \nAnd finally, if you have any suggestions about the Discord server, the issues you have in DTT that you'd like the Plint language managers to bring up during the meetings, a language or pool specific question or suggestion that you'd like to ask in your native language, or anything else, you can make suggestions using the /suggest command. As soon as you suggest something, you'll be sent a copy of your suggestion, and your suggestion will only be visible to you, and the admins or your language manager(s).\n \nYou can find all this information and more in the <#{{botcommands}}> channel.\n \nHappy subtitling!"
+    "rejected": [
+      "<@{{user}}> has been rejected as {{nickName}}, and a <@&{{role}}> linguist."
+    ],
+    "afterApproval": "Hello again!\n \nThis is Sassy, your friendly bot. 🤖 \n \nYou now have access to the server! 🥳\n \nPlease feel free to browse; <#{{discord101}}> is a good channel to start from if you're completely new to Discord. If you're already familiar with Discord, maybe we could interest you in the <#{{channelindex}}> channel to see which channel is used for what, or you could check one of our linguists' reading speed manifesto in the <#{{readingspeed}}> channel, and read previous LM-Plint meeting recaps in the <#{{lmmeetingrecaps}}> channel.\n \nAlso, I come with a bunch of commands to help everyone make the best out of the server!\n \nTry /funfact command in the <#{{general}}> channel to learn a random fun fact about the server or its members.\n \nReach out to other subtitlers who speak a certain language for assistance by using the /available command in the <#{{globallinguisticsupport}}> channel and selecting the language you need.\n \nIf you're working on a project and want to collaborate with other people working on the same project, you can use /buddyup to join a project thread or /requestadd to request to be added to a manually assigned project channel by following the instructions in my user manual or the bot-commands channel.\n \nAre you curious about what your colleagues think about a certain issue? Go to any relevant channel to your question and use the /poll command to conduct a poll.\n \nSaw a project in SASS and want to alert your colleagues to it? You can use the /alert command in any of the channels and choose whether it was a longform task or a supplemental task, enter however much information you have about the project, and I'll automatically direct your message to the <#{{sassalert}}> or <#{{supplementalalert}}> channel depending on what kind of task it was.\n \nAnd finally, if you have any suggestions about the Discord server, the issues you have in DTT that you'd like the Plint language managers to bring up during the meetings, a language or pool specific question or suggestion that you'd like to ask in your native language, or anything else, you can make suggestions using the /suggest command. As soon as you suggest something, you'll be sent a copy of your suggestion. Your suggestion will only be visible to you, and the admins or your language manager(s).\n \nYou can find all this information and more in the <#{{botcommands}}> channel.\n \nHappy subtitling!"
   },
 
   "poll": {
     "itself": [
-      "<@{{user}}> asks, {{pollText}}. \n 👍 for 'Yes' \n👎 for 'No' \n🤷 for 'Maybe' \n{{bulb}} \n \nThe owner should react ✅ after votes are collected."
+      "<@{{user}}> asks: \n \n{{pollText}} \n \n👍 for 'Yes' \n👎 for 'No' \n🤷 for 'Maybe' \n{{bulb}} \n \nThe conductor of the poll can react ✅ to close the poll."
     ],
     "close": [
       "I'm closing the poll. \n \n 👍   {{yes}} Yes \n👎    {{no}} No \n🤷    {{maybe}} Maybe\n{{optionalBulb}} {{bulb}}"
@@ -128,37 +156,35 @@
   },
 
   "welcome": {
-    "message": "Hello, subtitler! \n \nWelcome to the Plint DTT Discord server. I'm the server's bot, Sassy. 🤖\n \nRight now, you only have access to one channel called <#{{reception}}>. This is a waiting room for newcomers where they can set up their server profile and wait until an admin gives them access to the rest of the server.\n \nAll you have to do to setup your user profile is to go back to the reception channel and type /usersetup. Press space, enter your name when prompted, press tab, select your language from the list, and press enter.\n \nAfter that, you can sit back and relax until an admin responds to your request. Once this happens, your nickname in the server is going to be changed to 'Name - Target Language' automatically. You will receive another message from me letting you know that you can now access the server, and I'm going to provide you with more information about how to use Discord and the server rules.\n \nHappy subtitling!",
+    "message": "Hello, subtitler! \n \nWelcome to the Plint DTT Discord server. I'm the server's bot, Sassy. 🤖\n \nRight now, you only have access to one channel called `Reception`. This is a waiting room for newcomers where they can set up their server profile and wait until an admin gives them access to the rest of the server.\n \nAll you have to do to set up your user profile is to:\n \n✅  Go back to the <#{{reception}}> channel by clicking on the channel name here.\n ✅  Type `/usersetup`.\n✅  Press space and enter your name when prompted.\n✅  Press enter or tab and select your language from the list.\n✅  Press enter.\n \nIf your language is not listed there, please select @new language and wait for an admin to contact you for more details.\n \nAfter that, you can sit back and relax until an admin responds to your request. Once this happens, your nickname in the server is going to be automatically changed to the name you submitted.  You will receive another message from me letting you know that you can now access the server, and I'm going to provide you with more information about how to use Discord and the server rules.\n \nHappy subtitling!",
     "title": "Welcome!"
   },
 
   "addFunfact": {
-    "empty": ["You didn't write anything."],
-    "added": ["Added {{funfact}}."]
+    "empty": ["You didn't write anything, dummy."],
+    "added": ["Added: {{funfact}}."]
   },
 
-  "movedToArchive": ["<@{{user}}> moved <#{{channel}}> to archive."],
+  "movedToArchive": ["<@{{user}}> has archived <#{{channel}}>."],
   "notMovedToArchive": [
-    "<@{{user}}> rejected <@{{requestedUser}}>'s request to archive <#{{channel}}>"
+    "<@{{user}}> rejected <@{{requestedUser}}>'s request to archive <#{{channel}}>."
   ],
   "movedToWO_User": ["<#{{channel}}> has been archived."],
 
-  "movedFromArchive": ["<@{{user}}> unarchived <#{{channel}}>."],
+  "movedFromArchive": ["<@{{user}}> has unarchived <#{{channel}}>."],
   "notMovedFromArchive": [
-    "<@{{user}}> rejected <@{{requestedUser}}>'s request to unarchive <#{{channel}}>"
+    "<@{{user}}> rejected <@{{requestedUser}}>'s request to unarchive <#{{channel}}>."
   ],
   "movedFromWO_User": ["<#{{channel}}> has been unarchived."],
 
-  "isThisAlert": [
-    "Is this an alert? \n \n👍 Yes - Keep my message here.\n \n👎 No - Move my message to <#{{general}}>.\n \n❌ Cancel - On second thought, just delete my message."
-  ],
+  "isThisAlert": ["Is this an alert?"],
 
   "requestedArchive": [
-    "<@{{user}}> requested <#{{channel}}> to be archived. \n \nReason: {{reason}}"
+    "<@{{user}}> requested <#{{channel}}> to be archived. \n \n**Reason:** {{reason}}"
   ],
 
   "requestedUnArchive": [
-    "<@{{user}}> requested <#{{channel}}> to be unarchived. \n \nReason: {{reason}}"
+    "<@{{user}}> requested <#{{channel}}> to be unarchived. \n \n**Reason:** {{reason}}"
   ],
 
   "deletedMessages": [
@@ -166,15 +192,15 @@
   ],
 
   "messageMovedTo": [
-    "Hi, the following message you posted has been moved to <#{{channel}}>: {{message}} {{attachment}}"
+    "Hi, the following message you posted has been moved to <#{{channel}}>:\n \n{{message}} {{attachment}}"
   ],
 
   "messageCopiedTo": [
-    "Hi, the following message you posted has been also copied to <#{{channel}}>: {{message}} {{attachment}}"
+    "Hi, the following message you posted has been copied to <#{{channel}}>:\n \n{{message}} {{attachment}}"
   ],
 
   "removedFromChannel": [
-    "Removed <@{{user}}> from <#{{project}}>!\n <@{{approved}}> approved."
+    "<@{{user}}> has been removed from <#{{project}}> by <@{{approved}}>."
   ],
 
   "taggedBot": [
@@ -189,29 +215,34 @@
     "I am the chosen one.",
     "No, I wasn't translating, I swear!",
     "How about coffee first?",
-    "Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn."
+    "Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn.",
+    "Wubba lubba dub dub!",
+    "Go ahead, make my day.",
+    "You talkin' to me?",
+    "Of all the gin joints in all the world, you walk into mine.",
+    "Make me an offer I can't refuse."
   ],
 
-  "discordError": ["There was an error. Blame Discord for this."],
+  "discordError": ["There has been an error. Blame Discord for this."],
 
   "joinedServer": ["<@{{user}}> joined the server. Contact initiated 👽."],
   "leftServer": ["<@{{user}}> has left the server. Boooo!"],
 
-  "threadPrompt": [
-    "If there are more than 3 people working on this project, a channel is going to be created. \n \nUse /requestadd for that."
-  ],
-
   "setParentError": [
-    "There was an error about setting parent categories. \nI'm assuming you tried to create a thread, inside a thread, or used used some commands that were made for channels on a thread. Why would you even do that?"
+    "An error has occurred while setting parent categories. \nI assume you tried to create a thread inside a thread causing a 'threadception'; or entered a command that was meant to be used in a channel. Why would you even do that?"
   ],
 
   "threadCreated": [
     "A new thread called <#{{thread}}> has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
   ],
 
+  "acceptThread": ["Do you accept to create or join to {{thread}}?"],
+
+  "buddyUpLog": ["<@{{user}}> joined <#{{thread}}>."],
+
   "userPronounNotify": [
     "You will {{isAdd}} be called {{pronoun}} from now on."
   ],
 
-  "acceptThread": ["Do you accept to create or join to {{thread}}?"]
+  "enterProperName": ["The name you entered is somehow problematic."]
 }

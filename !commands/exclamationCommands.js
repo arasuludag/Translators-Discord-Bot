@@ -18,7 +18,6 @@ const { moveto } = require("./moveto");
 const { copyto } = require("./copyto");
 const { backupServer } = require("./backupServer");
 const { memory } = require("./memory");
-const { pronounMessage } = require("./pronounMessage");
 const { basicMessageChecking } = require("./basicMessageChecking");
 
 module.exports = {
@@ -132,11 +131,6 @@ module.exports = {
         // NodeJS Memory Stats
         case messageFirstWord === "!memory":
           await memory(message);
-          break;
-
-        // Send message to a channel as bot.
-        case messageFirstWord === "!pronounMessage":
-          await pronounMessage(message);
           break;
       }
 

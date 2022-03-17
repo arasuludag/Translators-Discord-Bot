@@ -4,13 +4,17 @@ const functions = require("../functions.js");
 
 async function isthere(message) {
   const logsChannel = await functions.findChannelByID(message, logsChannelID);
-  const projectName = message.content.substring(
-    message.content.indexOf(" ") + 1
-  );
-  const foundChannel = await functions.findChannel(
-    message,
-    functions.discordStyleProjectName(projectName)
-  );
+  let projectName;
+  try {
+    projectName = functions.discordStyleProjectName(
+      message.content.substring(message.content.indexOf(" ") + 1)
+    );
+  } catch (error) {
+    await message.reply(functions.randomSend("enterProperName"));
+    return;
+  }
+
+  const foundChannel = await functions.findChannel(message, projectName);
 
   const acceptButtonCustomID = "Accept" + message.id;
   const rejectButtonCustomID = "Reject" + message.id;
