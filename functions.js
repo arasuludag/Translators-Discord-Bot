@@ -54,7 +54,7 @@ module.exports = {
       .replace(/\s+/g, "-")
       .toLowerCase();
 
-    if (pName.length < 1) throw "ChannelNameError";
+    if (pName.replace(/-/g, "").length == 0) throw "ChannelNameError";
     return pName;
   },
 
