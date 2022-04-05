@@ -166,7 +166,9 @@ async function isThisAlert(message) {
       collector.on("end", async () => {
         if (!reacted) {
           await replyMessage.delete();
-          await message.delete();
+          await message.delete().catch(() => {
+            console.log("Delete error.");
+          });
         }
       });
     });

@@ -33,7 +33,7 @@
   ],
 
   "addRequest": [
-    "<@{{user}}> wants to be added to {{projectName}}.\n \n {{reason}}"
+    "<@{{user}}> wants to be added to {{projectName}}.\n \nAdditional Info: {{additionalInfo}}"
   ],
 
   "channelExisted": [
@@ -74,7 +74,7 @@
   },
 
   "addMePrompt": [
-    "Do you confirm that you work on {{projectName}} and want to be added to the channel? React to this message with 👍 if YES."
+    "Do you confirm that you work on {{projectName}} and want to be added to the channel? If this was a mistake, simply dismiss this message."
   ],
   "addMePromptEmpty": ["You haven't entered a project name."],
 

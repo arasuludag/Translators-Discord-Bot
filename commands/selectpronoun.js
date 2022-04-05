@@ -6,7 +6,7 @@ const { pronouns } = require("../config.json");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("selectpronoun")
-    .setDescription("What do you want to be called?"),
+    .setDescription("Please select your preferred pronouns."),
   async execute(interaction) {
     let options = [];
     pronouns.map((option, i) => {

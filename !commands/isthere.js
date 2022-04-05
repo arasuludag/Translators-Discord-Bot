@@ -56,6 +56,8 @@ async function isthere(message) {
         });
 
         collector.on("collect", async (i) => {
+          replyMessage.react("🍻");
+
           if (i.customId === acceptButtonCustomID) {
             await foundChannel.permissionOverwrites.edit(message.author.id, {
               VIEW_CHANNEL: true,
@@ -99,6 +101,8 @@ async function isthere(message) {
         });
 
         collector.on("collect", async (i) => {
+          replyMessage.react("🍻");
+
           if (i.customId === acceptButtonCustomID)
             await message.guild.channels
               .create(projectName, {

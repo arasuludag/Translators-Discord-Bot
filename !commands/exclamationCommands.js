@@ -124,7 +124,8 @@ module.exports = {
           break;
 
         // Backup the server.
-        case messageFirstWord === "!backup":
+        case messageFirstWord === "!backup" &&
+          message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
           await backupServer(message);
           break;
 

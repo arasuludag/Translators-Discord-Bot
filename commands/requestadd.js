@@ -19,7 +19,7 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption((option) =>
-      option.setName("reason").setDescription("Why?")
+      option.setName("additional_info").setDescription("Why?").setRequired(true)
     ),
   async execute(interaction) {
     const approvalChannel = functions.findChannel(
@@ -28,7 +28,7 @@ module.exports = {
     );
     const logsChannel = functions.findChannelByID(interaction, logsChannelID);
     const channelName = interaction.options.getString("project_name");
-    const reason = interaction.options.getString("reason");
+    const additionalInfo = interaction.options.getString("additional_info");
 
     let projectName;
     try {
@@ -82,7 +82,7 @@ module.exports = {
           values: {
             user: interaction.user.id,
             projectName: channelName,
-            reason: reason ? `\nAdditional Info: ${reason}` : " ",
+            additionalInfo: additionalInfo,
           },
           components: [acceptButton, rejectButton],
         })
