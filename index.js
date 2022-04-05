@@ -6,6 +6,7 @@ const { Client, Intents, Collection } = require("discord.js");
 const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
 const { twitterStream } = require("./twitterStream");
+const { deploy } = require("./deploy-commands");
 
 const myIntents = new Intents();
 myIntents.add(
@@ -56,6 +57,8 @@ client.on("ready", () => {
       ],
     });
   }
+
+  deploy();
 
   presence();
   setInterval(presence, 1000 * 60 * 60);
