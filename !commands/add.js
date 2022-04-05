@@ -1,8 +1,10 @@
-const { logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
 async function add(message) {
-  const logsChannel = await functions.findChannelByID(message, logsChannelID);
+  const logsChannel = await functions.findChannelByID(
+    message,
+    process.env.LOGSCHANNELID
+  );
 
   const mentionedChannel = message.mentions.channels;
   const mentionedMembersMap = message.mentions.members;

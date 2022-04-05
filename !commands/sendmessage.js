@@ -1,5 +1,3 @@
-const { embedColor } = require("../config.json");
-
 async function sendmessage(message) {
   const mentionedChannel = message.mentions.channels;
 
@@ -13,7 +11,7 @@ async function sendmessage(message) {
         .send({
           embeds: [
             {
-              color: embedColor,
+              color: process.env.EMBEDCOLOR,
               title: splitMessage[1],
               description: splitMessage[2],
             },

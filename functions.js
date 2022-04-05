@@ -1,6 +1,6 @@
+require("dotenv").config();
 const i18next = require("i18next");
 const translation = require("./data.json");
-const { embedColor } = require("./config.json");
 
 i18next.init({
   lng: "en",
@@ -35,7 +35,7 @@ module.exports = {
     return {
       embeds: [
         {
-          color: embedColor,
+          color: process.env.EMBEDCOLOR,
           title: title,
           description: description,
         },

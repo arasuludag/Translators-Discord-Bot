@@ -1,8 +1,10 @@
-const { projectsCategory, logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
 async function unarchive(message) {
-  const logsChannel = await functions.findChannelByID(message, logsChannelID);
+  const logsChannel = await functions.findChannelByID(
+    message,
+    process.env.LOGSCHANNELID
+  );
 
   if (message.channel.isThread()) {
     await message.author
@@ -13,7 +15,10 @@ async function unarchive(message) {
     return;
   }
 
-  const category = functions.findCategoryByName(message, projectsCategory);
+  const category = functions.findCategoryByName(
+    message,
+    process.env.PROJECTSCATEGORY
+  );
 
   message.channel
     .setParent(category.id, { lockPermissions: false })

@@ -1,9 +1,11 @@
 const { MessageButton, MessageActionRow, Permissions } = require("discord.js");
-const { projectsCategory, logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
 async function addme(message) {
-  const logsChannel = await functions.findChannelByID(message, logsChannelID);
+  const logsChannel = await functions.findChannelByID(
+    message,
+    process.env.LOGSCHANNELID
+  );
 
   const projectName = message.content.substring(
     message.content.indexOf(" ") + 1
@@ -83,7 +85,7 @@ async function addme(message) {
             .then(async (createdChannel) => {
               const category = await functions.findCategoryByName(
                 message,
-                projectsCategory
+                process.env.PROJECTSCATEGORY
               );
               await createdChannel.setParent(category.id);
 

@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions");
-const { pronouns } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,7 +8,7 @@ module.exports = {
     .setDescription("Please select your preferred pronouns."),
   async execute(interaction) {
     let options = [];
-    pronouns.map((option, i) => {
+    process.env.PRONOUNS.split(",").map((option, i) => {
       options[i] = new MessageActionRow().addComponents(
         new MessageButton()
           .setCustomId(option + "->" + interaction.id)

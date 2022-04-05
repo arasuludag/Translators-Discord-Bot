@@ -1,4 +1,3 @@
-const { modRole } = require("../config.json");
 const functions = require("../functions.js");
 const { announcement } = require("./announcement");
 const { remindme } = require("./remindme");
@@ -8,15 +7,12 @@ const { add } = require("./add");
 const { remove } = require("./remove");
 const { isthere } = require("./isthere");
 const { addme } = require("./addme");
-const { addfunfact } = require("./addfunfact");
-const { removefunfact } = require("./removefunfact");
 const { archive } = require("./archive");
 const { unarchive } = require("./unarchive");
 const { deleteBulk } = require("./deleteBulk");
 const { sendmessage } = require("./sendmessage");
 const { moveto } = require("./moveto");
 const { copyto } = require("./copyto");
-const { backupServer } = require("./backupServer");
 const { memory } = require("./memory");
 const { basicMessageChecking } = require("./basicMessageChecking");
 
@@ -27,7 +23,7 @@ module.exports = {
     let isMod = false;
     try {
       isMod = await message.member.roles.cache.some(
-        (role) => role.name === modRole
+        (role) => role.name === process.env.MODROLE
       );
     } catch (error) {
       await message.channel
@@ -83,15 +79,16 @@ module.exports = {
           await addme(message);
           break;
 
-        // Add a funfact to the JSON file.
-        case messageFirstWord === "!addfunfact":
-          await addfunfact(message);
-          break;
+        // Funfacts are disabled until I implement a database.
+        // // Add a funfact to the JSON file.
+        // case messageFirstWord === "!addfunfact":
+        //   await addfunfact(message);
+        //   break;
 
-        // Add a funfact to the JSON file.
-        case messageFirstWord === "!removefunfact":
-          await removefunfact(message);
-          break;
+        // // Add a funfact to the JSON file.
+        // case messageFirstWord === "!removefunfact":
+        //   await removefunfact(message);
+        //   break;
 
         // Archive the channel.
         case messageFirstWord === "!archive":
@@ -123,11 +120,11 @@ module.exports = {
           await copyto(message);
           break;
 
-        // Backup the server.
-        case messageFirstWord === "!backup" &&
-          message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
-          await backupServer(message);
-          break;
+        // Backup the server. Disabled for now.
+        // case messageFirstWord === "!backup" &&
+        //   message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
+        //   await backupServer(message);
+        //   break;
 
         // NodeJS Memory Stats
         case messageFirstWord === "!memory":

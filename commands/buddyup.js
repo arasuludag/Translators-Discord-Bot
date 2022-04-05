@@ -1,11 +1,7 @@
+require("dotenv").config();
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
-const {
-  projectChannelRequestsChannelID,
-  threadType,
-  logsChannelID,
-} = require("../config.json");
 const { findChannelByID } = require("../functions.js");
 
 module.exports = {
@@ -42,7 +38,7 @@ module.exports = {
 
     const logsChannel = await functions.findChannelByID(
       interaction,
-      logsChannelID
+      process.env.LOGSCHANNELID
     );
 
     // Is this a project?
@@ -100,7 +96,7 @@ module.exports = {
       if (isProject) {
         channel = await findChannelByID(
           interaction,
-          projectChannelRequestsChannelID
+          process.env.PROJECTCHANNELREQUESTSCHANNELID
         );
       } else {
         channel = await interaction.channel;
@@ -157,7 +153,7 @@ module.exports = {
         .create({
           name: projectName,
           autoArchiveDuration: "MAX",
-          type: isProject ? threadType : "GUILD_PUBLIC_THREAD",
+          type: isProject ? process.env.THREADTYPE : "GUILD_PUBLIC_THREAD",
           reason: "For a project.",
         })
         .then(async (thread) => {

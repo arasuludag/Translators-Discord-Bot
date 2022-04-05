@@ -1,6 +1,6 @@
+require("dotenv").config();
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
-const { globalLingSupportChannelID } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -19,7 +19,7 @@ module.exports = {
     );
 
     await functions
-      .findChannelByID(interaction, globalLingSupportChannelID)
+      .findChannelByID(interaction, process.env.GLOBALLINGSUPPORTCHANNELID)
       .send(
         functions.randomSend({
           path: "available.asking",

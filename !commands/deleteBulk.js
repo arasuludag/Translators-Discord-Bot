@@ -1,8 +1,10 @@
-const { logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
 async function deleteBulk(message) {
-  const logsChannel = await functions.findChannelByID(message, logsChannelID);
+  const logsChannel = await functions.findChannelByID(
+    message,
+    process.env.LOGSCHANNELID
+  );
   const howMany = parseInt(
     message.content.substring(message.content.indexOf(" ") + 1)
   );

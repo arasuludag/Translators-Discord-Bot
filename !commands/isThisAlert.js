@@ -1,11 +1,10 @@
-const { generalChannelID, embedColor } = require("../config.json");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 
 async function isThisAlert(message) {
   const generalChannel = await functions.findChannelByID(
     message,
-    generalChannelID
+    process.env.GENERALCHANNELID
   );
 
   const yesButtonCustomID = "Yes" + message.id;
@@ -80,7 +79,7 @@ async function isThisAlert(message) {
 
               repliedEmbed = [
                 {
-                  color: embedColor,
+                  color: process.env.EMBEDCOLOR,
                   author: {
                     name: mentionedUserNickname
                       ? mentionedUserNickname
@@ -118,7 +117,7 @@ async function isThisAlert(message) {
 
             const embedMessage = [
               {
-                color: embedColor,
+                color: process.env.EMBEDCOLOR,
                 author: {
                   name: userNickname ? userNickname : i.user.username,
                   icon_url: `https://cdn.discordapp.com/avatars/${i.user.id}/${i.user.avatar}.png?size=256`,

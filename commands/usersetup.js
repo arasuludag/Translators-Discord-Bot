@@ -2,21 +2,6 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
 const i18next = require("i18next");
-const {
-  awaitingApprovalsChannelName,
-  logsChannelID,
-  dttRoleName,
-  discord101ChannelID,
-  channelIndexChannelID,
-  readingSpeedChannelID,
-  lmMeetingRecapsChannelID,
-  generalChannelID,
-  globalLingSupportChannelID,
-  sassAlertChannelID,
-  suppAlertChannelID,
-  botCommandsChannelID,
-  embedColor,
-} = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,11 +22,11 @@ module.exports = {
   async execute(interaction) {
     const approvalChannel = await functions.findChannel(
       interaction,
-      awaitingApprovalsChannelName
+      process.env.AWAITINGAPPROVALSCHANNELNAME
     );
     const logsChannel = await functions.findChannelByID(
       interaction,
-      logsChannelID
+      process.env.LOGSCHANNELID
     );
     const nickName = interaction.options.getString("full_name");
     const role = interaction.options.getRole("target_language");
@@ -116,7 +101,7 @@ module.exports = {
             interaction.member.roles.add(role);
 
             const roleDTT = interaction.guild.roles.cache.find(
-              (r) => r.name === dttRoleName
+              (r) => r.name === process.env.DTTROLENAME
             );
             interaction.member.roles.add(roleDTT);
 
@@ -148,18 +133,19 @@ module.exports = {
               .send({
                 embeds: [
                   {
-                    color: embedColor,
+                    color: process.env.EMBEDCOLOR,
                     title: i18next.t("welcome.title"),
                     description: i18next.t("setup.afterApproval", {
-                      discord101: discord101ChannelID,
-                      channelindex: channelIndexChannelID,
-                      readingspeed: readingSpeedChannelID,
-                      lmmeetingrecaps: lmMeetingRecapsChannelID,
-                      general: generalChannelID,
-                      globallinguisticsupport: globalLingSupportChannelID,
-                      sassalert: sassAlertChannelID,
-                      supplementalalert: suppAlertChannelID,
-                      botcommands: botCommandsChannelID,
+                      discord101: process.env.DISCORD101CHANNELID,
+                      channelindex: process.env.CHANNELINDEXCHANNELID,
+                      readingspeed: process.env.READINGSPEEDCHANNELID,
+                      lmmeetingrecaps: process.env.LMMEETINGRECAPSCHANNELID,
+                      general: process.env.GENERALCHANNELID,
+                      globallinguisticsupport:
+                        process.env.GLOBALLINGSUPPORTCHANNELID,
+                      sassalert: process.env.SASSALERTCHANNELID,
+                      supplementalalert: process.env.SUPPALERTCHANNELID,
+                      botcommands: process.env.BOTCOMMANDSCHANNELID,
                     }),
                   },
                 ],

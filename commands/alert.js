@@ -1,6 +1,6 @@
+require("dotenv").config();
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
-const { sassAlertChannelID, suppAlertChannelID } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -45,7 +45,7 @@ module.exports = {
       case interaction.options.getSubcommand() === "longform": {
         const sassAlertChannel = functions.findChannelByID(
           interaction,
-          sassAlertChannelID
+          process.env.SASSALERTCHANNELID
         );
         if (interaction.options.getBoolean("template")) {
           sassAlertChannel.send(
@@ -76,7 +76,7 @@ module.exports = {
       case interaction.options.getSubcommand() === "supplemental": {
         const supplementalAlertChannel = functions.findChannelByID(
           interaction,
-          suppAlertChannelID
+          process.env.SUPPALERTCHANNELID
         );
         if (interaction.options.getBoolean("template")) {
           supplementalAlertChannel.send(

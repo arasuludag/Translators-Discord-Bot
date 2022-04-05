@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("channelinfo")
-    .setDescription("What's this channel is used for?"),
+    .setDescription("What is this channel used for?"),
   async execute(interaction) {
     await interaction
       .reply({

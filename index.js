@@ -1,14 +1,8 @@
+require("dotenv").config();
 const { readdirSync } = require("fs");
 const translation = require("./data.json");
 const i18next = require("i18next");
 const { Client, Intents, Collection } = require("discord.js");
-const {
-  token,
-  receptionChannelID,
-  generalChannelID,
-  logsChannelID,
-  embedColor,
-} = require("./config.json");
 const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
 const { twitterStream } = require("./twitterStream");
@@ -75,16 +69,16 @@ client.on("guildMemberAdd", (member) => {
     .send({
       embeds: [
         {
-          color: embedColor,
+          color: process.env.EMBEDCOLOR,
           title: i18next.t("welcome.title"),
           description: i18next.t("welcome.message", {
-            reception: receptionChannelID,
+            reception: process.env.RECEPTIONCHANNELID,
           }),
         },
       ],
     })
     .then(() => {
-      functions.findChannelByID(member, logsChannelID).send(
+      functions.findChannelByID(member, process.env.LOGSCHANNELID).send(
         functions.randomSend({
           path: "joinedServer",
           values: {
@@ -95,14 +89,14 @@ client.on("guildMemberAdd", (member) => {
     })
     .catch((error) => {
       functions
-        .findChannelByID(member, logsChannelID)
+        .findChannelByID(member, process.env.LOGSCHANNELID)
         .send(`Probably couldn't send DM to <@${member.id}> \n \n ${error}`);
     });
 });
 
 // Who left the server. Log it on the logs channel.
 client.on("guildMemberRemove", (member) => {
-  functions.findChannelByID(member, logsChannelID).send(
+  functions.findChannelByID(member, process.env.LOGSCHANNELID).send(
     functions.randomSend({
       path: "leftServer",
       values: {
@@ -154,12 +148,14 @@ process.on("uncaughtException", async (error, origin) => {
   await client.channels.cache
     .find(
       (channel) =>
-        channel.id === generalChannelID && channel.type == "GUILD_TEXT"
+        channel.id === process.env.GENERALCHANNELID &&
+        channel.type == "GUILD_TEXT"
     )
     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
   await client.channels.cache
     .find(
-      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+      (channel) =>
+        channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
     )
     .send(`Contact Aras about this.\n \n${error}\n \n ${origin}`);
   console.log(error, origin);
@@ -172,9 +168,10 @@ process.on("unhandledRejection", (reason, promise) => {
 
   client.channels.cache
     .find(
-      (channel) => channel.id === logsChannelID && channel.type == "GUILD_TEXT"
+      (channel) =>
+        channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
     )
     .send(`Contact Aras about this.\n \n${promise}\n \n ${reason}`);
 });
 
-client.login(token); // Login bot using token.
+client.login(process.env.TOKEN); // Login bot using token.

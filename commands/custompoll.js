@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
-const { embedColor } = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -72,7 +71,7 @@ module.exports = {
       .send({
         embeds: [
           {
-            color: embedColor,
+            color: process.env.EMBEDCOLOR,
             title: "Poll",
             author: {
               name: userNickname ? userNickname : interaction.user.username,
@@ -96,7 +95,7 @@ module.exports = {
         let pollResultMessage = {
           embeds: [
             {
-              color: embedColor,
+              color: process.env.EMBEDCOLOR,
               title: "Poll",
               author: {
                 name: userNickname ? userNickname : interaction.user.username,
@@ -140,7 +139,7 @@ module.exports = {
           pollResultMessage = {
             embeds: [
               {
-                color: embedColor,
+                color: process.env.EMBEDCOLOR,
                 title: "Poll",
                 author: {
                   name: userNickname ? userNickname : interaction.user.username,

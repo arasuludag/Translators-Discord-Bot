@@ -1,6 +1,5 @@
 require("dotenv").config();
 const { ETwitterStreamEvent, TwitterApi } = require("twitter-api-v2");
-const { twitterIDs, avtNewsChannelID } = require("./config.json");
 
 const client = new TwitterApi({
   appKey: process.env.TWITTER_CONSUMER_KEY,
@@ -11,17 +10,20 @@ const client = new TwitterApi({
 
 async function twitterStream(discordClient) {
   const newsChannel = await discordClient.channels.cache.find(
-    (channel) => channel.id === avtNewsChannelID
+    (channel) => channel.id === process.env.AVTNEWSCHANNELID
   );
 
   const stream = await client.v1.stream.getStream("statuses/filter.json", {
-    follow: twitterIDs,
+    follow: process.env.TWITTERIDS.split(","),
     filter_level: "low",
   });
 
   // Emitted on Tweet
   stream.on(ETwitterStreamEvent.Data, async (tweet) => {
-    if (tweet.user && twitterIDs.some((id) => tweet.user.id_str === id)) {
+    if (
+      tweet.user &&
+      process.env.TWITTERIDS.split(",").some((id) => tweet.user.id_str === id)
+    ) {
       // Twitter doesn't care about duplication. We should check for it.
       const sentBefore = await newsChannel.messages
         .fetch({ limit: 20 })

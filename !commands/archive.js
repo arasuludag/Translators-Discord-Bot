@@ -1,8 +1,10 @@
-const { archiveCategory, logsChannelID } = require("../config.json");
 const functions = require("../functions.js");
 
 async function archive(message) {
-  const logsChannel = await functions.findChannelByID(message, logsChannelID);
+  const logsChannel = await functions.findChannelByID(
+    message,
+    process.env.LOGSCHANNELID
+  );
 
   if (message.channel.isThread()) {
     await message.author
@@ -16,7 +18,7 @@ async function archive(message) {
   for await (let i of Array.from(Array(100).keys())) {
     const category = functions.findCategoryByName(
       message,
-      `${archiveCategory} ${i}🗑`
+      `${process.env.ARCHIVECATEGORY} ${i}🗑`
     );
     if (!category) continue;
 

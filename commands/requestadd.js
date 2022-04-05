@@ -1,11 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const { MessageButton, MessageActionRow } = require("discord.js");
 const functions = require("../functions.js");
-const {
-  projectsCategory,
-  awaitingApprovalsChannelName,
-  logsChannelID,
-} = require("../config.json");
 const { Permissions } = require("discord.js");
 
 module.exports = {
@@ -24,9 +19,12 @@ module.exports = {
   async execute(interaction) {
     const approvalChannel = functions.findChannel(
       interaction,
-      awaitingApprovalsChannelName
+      process.env.AWAITINGAPPROVALSCHANNELNAME
     );
-    const logsChannel = functions.findChannelByID(interaction, logsChannelID);
+    const logsChannel = functions.findChannelByID(
+      interaction,
+      process.env.LOGSCHANNELID
+    );
     const channelName = interaction.options.getString("project_name");
     const additionalInfo = interaction.options.getString("additional_info");
 
@@ -148,7 +146,7 @@ module.exports = {
                 .then(async (createdChannel) => {
                   const category = await functions.findCategoryByName(
                     interaction,
-                    projectsCategory
+                    process.env.PROJECTSCATEGORY
                   );
                   await createdChannel.setParent(category.id).catch((error) => {
                     logsChannel.send("Error. ", error);

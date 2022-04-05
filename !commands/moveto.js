@@ -1,4 +1,3 @@
-const { embedColor } = require("../config.json");
 const functions = require("../functions.js");
 
 async function moveto(message) {
@@ -17,7 +16,7 @@ async function moveto(message) {
       value.send({
         embeds: [
           {
-            color: embedColor,
+            color: process.env.EMBEDCOLOR,
             author: {
               name: mentionedUserNickname
                 ? mentionedUserNickname

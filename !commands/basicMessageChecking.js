@@ -1,4 +1,3 @@
-const { sassAlertChannelID, suppAlertChannelID } = require("../config.json");
 const functions = require("../functions.js");
 const { isThisAlert } = require("./isThisAlert");
 
@@ -8,8 +7,8 @@ async function basicMessageChecking(message, client) {
   if (!message.author.bot && !message.content.includes("http"))
     switch (true) {
       // Manages the alert channel by asking author if this is what they wanted.
-      case (message.channel.id === sassAlertChannelID ||
-        message.channel.id === suppAlertChannelID) &&
+      case (message.channel.id === process.env.SASSALERTCHANNELID ||
+        message.channel.id === process.env.SUPPALERTCHANNELID) &&
         message.attachments.size === 0:
         await isThisAlert(message);
         break;

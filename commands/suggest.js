@@ -1,10 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const functions = require("../functions.js");
-const {
-  suggestionChannelName,
-  langmanagerRole,
-  lmSuggestionChannelName,
-} = require("../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -63,11 +58,11 @@ module.exports = {
   async execute(interaction) {
     const suggestionChannel = functions.findChannel(
       interaction,
-      suggestionChannelName
+      process.env.SUGGESTIONCHANNELNAME
     );
     const lmSuggestionChannel = functions.findChannel(
       interaction,
-      lmSuggestionChannelName
+      process.env.LMSUGGESTIONCHANNELNAME
     );
 
     const suggestion = interaction.options.getString("suggestion");
@@ -105,7 +100,7 @@ module.exports = {
 
       case interaction.options.getSubcommand() === "lm_meetings": {
         const lm = await interaction.guild.roles.cache.find(
-          (r) => r.name === langmanagerRole
+          (r) => r.name === process.env.LANGMANAGERROLE
         );
         lmSuggestionChannel.send(
           functions.randomSend({
