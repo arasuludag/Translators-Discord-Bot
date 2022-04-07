@@ -155,7 +155,9 @@ async function isThisAlert(message) {
             }
 
             await replyMessage.delete();
-            await message.delete();
+            await message.delete().catch(() => {
+              console.log("Delete error.");
+            });
 
             return;
           }

@@ -4,7 +4,7 @@ const functions = require("../functions.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("suggest")
-    .setDescription("Make a suggestion to mods.")
+    .setDescription("Make a suggestion to admins.")
     .addSubcommand((subcommand) =>
       subcommand
         .setName("language_specific")

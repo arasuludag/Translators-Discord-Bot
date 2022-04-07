@@ -6,7 +6,7 @@ const { Permissions } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("requestadd")
-    .setDescription("Request mods to add you to a certain project channel.")
+    .setDescription("Request admins to add you to a certain project channel.")
     .addStringOption((option) =>
       option
         .setName("project_name")

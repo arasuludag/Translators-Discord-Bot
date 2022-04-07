@@ -4,6 +4,8 @@ const { remindme } = require("./remindme");
 const { stats } = require("./stats");
 const { list } = require("./list");
 const { add } = require("./add");
+const { addfunfact } = require("./addfunfact");
+const { removefunfact } = require("./removefunfact");
 const { remove } = require("./remove");
 const { isthere } = require("./isthere");
 const { addme } = require("./addme");
@@ -14,6 +16,7 @@ const { sendmessage } = require("./sendmessage");
 const { moveto } = require("./moveto");
 const { copyto } = require("./copyto");
 const { memory } = require("./memory");
+const { backupServer } = require("./backupServer");
 const { basicMessageChecking } = require("./basicMessageChecking");
 
 module.exports = {
@@ -79,16 +82,15 @@ module.exports = {
           await addme(message);
           break;
 
-        // Funfacts are disabled until I implement a database.
-        // // Add a funfact to the JSON file.
-        // case messageFirstWord === "!addfunfact":
-        //   await addfunfact(message);
-        //   break;
+        // Add a funfact to the JSON file.
+        case messageFirstWord === "!addfunfact":
+          await addfunfact(message);
+          break;
 
-        // // Add a funfact to the JSON file.
-        // case messageFirstWord === "!removefunfact":
-        //   await removefunfact(message);
-        //   break;
+        // Add a funfact to the JSON file.
+        case messageFirstWord === "!removefunfact":
+          await removefunfact(message);
+          break;
 
         // Archive the channel.
         case messageFirstWord === "!archive":
@@ -121,10 +123,10 @@ module.exports = {
           break;
 
         // Backup the server. Disabled for now.
-        // case messageFirstWord === "!backup" &&
-        //   message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
-        //   await backupServer(message);
-        //   break;
+        case messageFirstWord === "!backup" &&
+          message.member.permissionsIn(message.channel).has("ADMINISTRATOR"):
+          await backupServer(message);
+          break;
 
         // NodeJS Memory Stats
         case messageFirstWord === "!memory":

@@ -141,8 +141,6 @@ module.exports = {
                       readingspeed: process.env.READINGSPEEDCHANNELID,
                       lmmeetingrecaps: process.env.LMMEETINGRECAPSCHANNELID,
                       general: process.env.GENERALCHANNELID,
-                      globallinguisticsupport:
-                        process.env.GLOBALLINGSUPPORTCHANNELID,
                       sassalert: process.env.SASSALERTCHANNELID,
                       supplementalalert: process.env.SUPPALERTCHANNELID,
                       botcommands: process.env.BOTCOMMANDSCHANNELID,

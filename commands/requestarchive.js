@@ -6,7 +6,7 @@ const { findCategoryByName } = require("../functions.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("requestarchive")
-    .setDescription("Ask the mods to archive this channel.")
+    .setDescription("Ask the admins to archive this channel.")
     .addStringOption((option) =>
       option.setName("reason").setDescription("Why?").setRequired(true)
     ),
