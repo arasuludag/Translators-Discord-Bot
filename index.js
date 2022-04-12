@@ -133,7 +133,7 @@ client.on("interactionCreate", async (interaction) => {
     console.error(error);
     return interaction.reply({
       content:
-        "There was an error while executing this command! Contact mods if it persists.",
+        "There was an error while executing this command! Contact admins if it persists.",
       ephemeral: true,
     });
   }
