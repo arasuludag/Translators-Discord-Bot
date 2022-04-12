@@ -33,10 +33,9 @@ async function moveto(message) {
               : undefined,
             image: {
               url:
-                attachment[0] &&
-                (attachment[0].name.includes(".jpg") ||
-                  attachment[0].name.includes(".png") ||
-                  attachment[0].name.includes(".gif"))
+                attachment[0]?.name.includes(".jpg") ||
+                attachment[0]?.name.includes(".png") ||
+                attachment[0]?.name.includes(".gif")
                   ? attachment[0].url
                   : undefined,
             },

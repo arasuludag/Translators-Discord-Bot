@@ -10,7 +10,7 @@ async function addme(message) {
   const projectName = message.content.substring(
     message.content.indexOf(" ") + 1
   );
-  if (projectName === "!addme") {
+  if (projectName.startsWith("!")) {
     await message.reply(functions.randomSend({ path: "addMePromptEmpty" }));
     return;
   }

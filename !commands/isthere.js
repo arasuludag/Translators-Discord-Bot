@@ -6,15 +6,17 @@ async function isthere(message) {
     message,
     process.env.LOGSCHANNELID
   );
-  let projectName;
-  try {
-    projectName = functions.discordStyleProjectName(
-      message.content.substring(message.content.indexOf(" ") + 1)
-    );
-  } catch (error) {
+
+  if (
+    message.content.substring(message.content.indexOf(" ") + 1).startsWith("!")
+  ) {
     await message.reply(functions.randomSend("enterProperName"));
     return;
   }
+
+  const projectName = functions.discordStyleProjectName(
+    message.content.substring(message.content.indexOf(" ") + 1)
+  );
 
   const foundChannel = await functions.findChannel(message, projectName);
 

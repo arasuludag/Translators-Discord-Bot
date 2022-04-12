@@ -111,14 +111,7 @@ client.on("guildMemberRemove", (member) => {
 
 // For ! commands and funny replies.
 client.on("messageCreate", async (message) => {
-  try {
-    await commands(message, client);
-  } catch (error) {
-    console.error(error);
-    return message.reply(
-      "There was an error while executing this command! Contact mods if it persists."
-    );
-  }
+  await commands(message, client);
 });
 
 // If there's an error. Log it.
@@ -160,7 +153,9 @@ process.on("uncaughtException", async (error, origin) => {
       (channel) =>
         channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
     )
-    .send(`Contact Aras about this.\n \n${error}\n \n ${origin}`);
+    .send(
+      `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n${error}\n \n ${origin}`
+    );
   console.log(error, origin);
   // Nothing to mess up. So no need to exit.
   // process.exit(1);
@@ -174,7 +169,9 @@ process.on("unhandledRejection", (reason, promise) => {
       (channel) =>
         channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
     )
-    .send(`Contact Aras about this.\n \n${promise}\n \n ${reason}`);
+    .send(
+      `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n ${reason}`
+    );
 });
 
 client.login(process.env.TOKEN); // Login bot using token.

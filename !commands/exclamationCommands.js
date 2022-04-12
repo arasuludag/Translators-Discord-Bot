@@ -1,4 +1,3 @@
-const functions = require("../functions.js");
 const { announcement } = require("./announcement");
 const { remindme } = require("./remindme");
 const { stats } = require("./stats");
@@ -21,24 +20,20 @@ const { basicMessageChecking } = require("./basicMessageChecking");
 
 module.exports = {
   commands: async (message, client) => {
-    // Discord caused a crash by sending a non-existent message that doesn't have a role attribute and that caused a crash.
-    // So that's why.
     let isMod = false;
-    try {
-      isMod = await message.member.roles.cache.some(
-        (role) => role.name === process.env.MODROLE
-      );
-    } catch (error) {
-      await message.channel
-        .send(functions.randomSend({ path: "discordError" }))
-        .catch((error) => {
-          console.log(error);
-        });
-      return;
-    }
+    let messageFirstWord;
+    let command = false;
 
-    // Extracts the first word of message to check for commands later.
-    const messageFirstWord = message.content.split(" ")[0];
+    // Let's save some bandwith and CPU.
+    if (message.content.startsWith("!")) {
+      command = true;
+      isMod = await message.member.roles.cache.some(
+        (role) => role.id === process.env.MODROLEID
+      );
+
+      // Extracts the first word of message to check for commands later.
+      messageFirstWord = message.content.split(" ")[0];
+    }
 
     if (isMod)
       switch (true) {
@@ -134,6 +129,6 @@ module.exports = {
           break;
       }
 
-    await basicMessageChecking(message, client);
+    if (!command) await basicMessageChecking(message, client);
   },
 };

@@ -66,6 +66,7 @@ module.exports = {
           filter,
           time: timeLimit,
           idle: timeLimit ? undefined : 86400000,
+          dispose: true,
         });
 
         collector.on("collect", (reaction) => {
@@ -88,6 +89,26 @@ module.exports = {
 
             case "✅":
               collector.stop();
+          }
+        });
+
+        collector.on("remove", (reaction) => {
+          switch (reaction.emoji.name) {
+            case "👍":
+              thumbsUp--;
+              break;
+
+            case "👎":
+              thumbsDown--;
+              break;
+
+            case "🤷":
+              maybe--;
+              break;
+
+            case "💡":
+              optionalBulb--;
+              break;
           }
         });
 

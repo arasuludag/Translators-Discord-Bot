@@ -70,7 +70,7 @@
     "yes": [
       "Yes. There is a channel called <#{{foundChannel}}>. Would you like to be added to it?"
     ],
-    "no": ["No. Would you like me to create one for you?"]
+    "no": ["No. Would you like me to create that channel for you?"]
   },
 
   "addMePrompt": [
