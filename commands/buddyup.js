@@ -103,7 +103,7 @@ module.exports = {
       }
 
       // If someone tries to create thread under a thread, return.
-      if (channel.isThread()) {
+      if (channel.isThread() || channel.type === "GUILD_VOICE") {
         // If someone tries to create a thread, under a thread.
         interaction.user
           .send(functions.randomSend("setParentError"))

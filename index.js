@@ -5,7 +5,6 @@ const i18next = require("i18next");
 const { Client, Intents, Collection } = require("discord.js");
 const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
-const { twitterStream } = require("./twitterStream");
 const { deploy } = require("./deploy-commands");
 
 const myIntents = new Intents();
@@ -43,7 +42,7 @@ i18next.init({
 });
 
 // When we are ready, emit this.
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}!`);
 
   function presence() {
@@ -58,12 +57,10 @@ client.on("ready", () => {
     });
   }
 
+  presence();
   deploy();
 
-  presence();
   setInterval(presence, 1000 * 60 * 60);
-
-  twitterStream(client);
 });
 
 // Sends a welcome message to newly joined users.

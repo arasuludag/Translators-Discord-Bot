@@ -128,6 +128,10 @@
     "acceptedDM": [
       "Your server profile has been set up. Your name is {{nickName}} and your target language is {{role}}."
     ],
+    "newLang": ["New language role has been created."],
+    "newLangDM": [
+      "Hello again! 🤖 \n \nIt seems you're the first subtitler from your language pool to join us here, so an admin is going to have to set up a new language for you!\nPlease wait for an admin to contact you, which shouldn't take long. ⌛ \n \nSassy,\nYour friendly bot"
+    ],
     "waitForApproveDM": [
       "I've received your request to set up your server profile as {{nickName}} and a {{role}} linguist, and sent it to our admins. Please wait for approval. If you made a typo, you can always change your name using the **/nick** command later on."
     ],
@@ -140,7 +144,7 @@
     "rejected": [
       "<@{{user}}> has been rejected as {{nickName}}, and a <@&{{role}}> linguist."
     ],
-    "afterApproval": "Hello again!\n \nThis is Sassy, your friendly bot. 🤖 \n \nYou now have access to the server! 🥳\n \nPlease feel free to browse; <#{{discord101}}> is a good channel to start from if you're completely new to Discord. If you're already familiar with Discord, maybe we could interest you in the <#{{channelindex}}> channel to see which channel is used for what, or you could check one of our linguists' reading speed manifesto in the <#{{readingspeed}}> channel, and read previous LM-Plint meeting recaps in the <#{{lmmeetingrecaps}}> channel.\n \nAlso, I come with a bunch of commands to help everyone make the best out of the server!\n \nTry /funfact command to learn a random fun fact about the server or its members.\n \nReach out to other subtitlers who speak a certain language for assistance by using the /available command and selecting the language you need.\n \nIf you're working on a project and want to collaborate with other people working on the same project, you can use /buddyup to join a project thread or /requestadd to request to be added to a manually assigned project channel by following the instructions in the bot-commands channel.\n \nAre you curious about what your colleagues think about a certain issue? Go to any relevant channel to your question and use the /poll command to conduct a simple poll.\n \nSaw a project in SASS and want to alert your colleagues to it? You can use the /alert command in any of the channels and choose whether it was a longform task or a supplemental task, enter however much information you have about the project, and I'll automatically direct your message to the <#{{sassalert}}> or <#{{supplementalalert}}> channel depending on what kind of task it was.\n \nAnd finally, if you have any suggestions about the Discord server, the issues you have in DTT that you'd like the Plint language managers to bring up during the meetings, a language or pool specific question or suggestion that you'd like to ask in your native language, or anything else, you can make suggestions or send inquiries using the /suggest command.\n \nYou can find all this information and more in the <#{{botcommands}}> channel.\n \nHappy subtitling!"
+    "afterApproval": "Hello again!\n \nThis is Sassy, your friendly bot. 🤖 \n \nYou now have access to the server! 🥳\n \nPlease feel free to browse; <#{{discord101}}> is a good channel to start from if you're completely new to Discord. If you're already familiar with Discord, maybe we could interest you in the <#{{channelindex}}> channel to see which channel is used for what, or you could check one of our linguists' reading speed manifesto in the <#{{readingspeed}}> channel, and read previous LM-Plint meeting recaps in the <#{{lmmeetingrecaps}}> channel.\n \nAlso, I come with a bunch of commands to help everyone make the best out of the server!\n \nTry `/funfact` command to learn a random fun fact about the server or its members.\n \nReach out to other subtitlers who speak a certain language for assistance by using the `/available` command and selecting the language you need.\n \nIf you're working on a project and want to collaborate with other people working on the same project, you can use `/buddyup` to join a project thread or `/requestadd` to request to be added to a manually assigned project channel by following the instructions in the bot-commands channel.\n \nAre you curious about what your colleagues think about a certain issue? Go to any relevant channel to your question and use the `/poll` command to conduct a simple poll.\n \nSaw a project in SASS and want to alert your colleagues to it? You can use the `/alert` command in any of the channels and choose whether it was a longform task or a supplemental task, enter however much information you have about the project, and I'll automatically direct your message to the <#{{sassalert}}> or <#{{supplementalalert}}> channel depending on what kind of task it was.\n \nAnd finally, if you have any suggestions about the Discord server, the issues you have in DTT that you'd like the Plint language managers to bring up during the meetings, a language or pool specific question or suggestion that you'd like to ask in your native language, or anything else, you can make suggestions or send inquiries using the `/suggest` command.\n \nYou can find all this information and more in the <#{{botcommands}}> channel.\n \nHappy subtitling!"
   },
 
   "poll": {
@@ -229,7 +233,7 @@
   "leftServer": ["<@{{user}}> has left the server. Boooo!"],
 
   "setParentError": [
-    "An error has occurred while setting parent categories. \nI assume you tried to create a thread inside a thread causing a 'threadception'; or entered a command that was meant to be used in a channel. Why would you even do that?"
+    "An error has occurred while setting parent categories. \nI assume you tried to create a thread inside a thread causing a 'threadception'; or entered a command that was meant to be used in a channel. Why would you even do that, you silly goose? 🤭"
   ],
 
   "threadCreated": [
@@ -240,9 +244,12 @@
 
   "buddyUpLog": ["<@{{user}}> joined <#{{thread}}>."],
 
-  "userPronounNotify": [
-    "You will {{isAdd}} be called {{pronoun}} from now on."
-  ],
+  "userPronounNotify": {
+    "registered": [
+      "Thank you! Your pronouns have been registered as {{pronoun}}."
+    ],
+    "removed": ["Thank you! {{pronoun}} has been removed from your profile."]
+  },
 
   "enterProperName": ["The name you entered is somehow problematic."]
 }

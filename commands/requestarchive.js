@@ -37,8 +37,8 @@ module.exports = {
       })
     );
 
-    const acceptButtonCustomID = "Accept" + interaction.id;
-    const rejectButtonCustomID = "Reject" + interaction.id;
+    const acceptButtonCustomID = "Accept " + interaction.id;
+    const rejectButtonCustomID = "Reject " + interaction.id;
 
     const acceptButton = new MessageActionRow().addComponents(
       new MessageButton()
@@ -66,8 +66,7 @@ module.exports = {
         })
       )
       .then((replyMessage) => {
-        const filter = (i) =>
-          i.customId === acceptButtonCustomID || rejectButtonCustomID;
+        const filter = (i) => interaction.id === i.customId.split(" ")[1];
 
         const collector = replyMessage.channel.createMessageComponentCollector({
           filter,

@@ -5,6 +5,7 @@ const { list } = require("./list");
 const { add } = require("./add");
 const { addfunfact } = require("./addfunfact");
 const { removefunfact } = require("./removefunfact");
+const { listfunfacts } = require("./listfunfacts");
 const { remove } = require("./remove");
 const { isthere } = require("./isthere");
 const { addme } = require("./addme");
@@ -85,6 +86,11 @@ module.exports = {
         // Add a funfact to the JSON file.
         case messageFirstWord === "!removefunfact":
           await removefunfact(message);
+          break;
+
+        // List all funfacts as a message.
+        case messageFirstWord === "!listfunfacts":
+          await listfunfacts(message);
           break;
 
         // Archive the channel.

@@ -48,8 +48,8 @@ module.exports = {
       functions.randomSend({ path: "requestAcquired", ephemeral: true })
     );
 
-    const acceptButtonCustomID = "Accept" + interaction.id;
-    const rejectButtonCustomID = "Reject" + interaction.id;
+    const acceptButtonCustomID = "Accept " + interaction.id;
+    const rejectButtonCustomID = "Reject " + interaction.id;
 
     const acceptButton = new MessageActionRow().addComponents(
       new MessageButton()
@@ -77,8 +77,7 @@ module.exports = {
         })
       )
       .then((replyMessage) => {
-        const filter = (i) =>
-          i.customId === acceptButtonCustomID || rejectButtonCustomID;
+        const filter = (i) => interaction.id === i.customId.split(" ")[1];
 
         const collector = replyMessage.channel.createMessageComponentCollector({
           filter,
@@ -151,6 +150,33 @@ module.exports = {
               .catch(() => {
                 console.error("Failed to send DM");
               });
+            if (role.name === "new language") {
+              logsChannel.send(
+                functions.randomSend({
+                  path: "setup.newLang",
+                  values: {
+                    user: interaction.user.id,
+                    nickName: nickName,
+                    role: role.id,
+                  },
+                })
+              );
+
+              interaction.user
+                .send(
+                  functions.randomSend({
+                    path: "setup.newLangDM",
+                    values: {
+                      user: interaction.user.id,
+                      nickName: nickName,
+                      role: role.name,
+                    },
+                  })
+                )
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
+            }
           } else {
             logsChannel.send(
               functions.randomSend({
@@ -168,8 +194,7 @@ module.exports = {
                   path: "setup.rejectedDM",
                   values: {
                     user: interaction.user.id,
-                    nickName: nickName,
-                    role: role.name,
+                    reception: process.env.RECEPTIONCHANNELID,
                   },
                 })
               )

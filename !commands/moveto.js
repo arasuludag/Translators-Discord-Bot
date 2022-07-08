@@ -11,12 +11,25 @@ async function moveto(message) {
       (a) => a.user === mentionedUser
     ).nickname;
 
+    const commands = message.content.split(" ");
+    let noDM = false;
+
+    for (let i in commands) {
+      if (commands[i] === "noDM") noDM = true;
+    }
+
     const channelMovedTo = message.mentions.channels;
     channelMovedTo.map((value) => {
       value.send({
         embeds: [
           {
             color: process.env.EMBEDCOLOR,
+            title: repliedMessage.reference
+              ? "Jump to replied message"
+              : undefined,
+            url: repliedMessage.reference
+              ? `https://discord.com/channels/${repliedMessage.guild.id}/${repliedMessage.channel.id}/${repliedMessage.reference.messageId}`
+              : undefined,
             author: {
               name: mentionedUserNickname
                 ? mentionedUserNickname
@@ -28,9 +41,6 @@ async function moveto(message) {
               : repliedMessage.embeds[0]
               ? repliedMessage.embeds[0].description
               : ".",
-            title: repliedMessage.embeds[0]
-              ? repliedMessage.embeds[0].title
-              : undefined,
             image: {
               url:
                 attachment[0]?.name.includes(".jpg") ||
@@ -56,20 +66,21 @@ async function moveto(message) {
             : undefined,
       });
 
-      mentionedUser
-        .send(
-          functions.randomSend({
-            path: "messageMovedTo",
-            values: {
-              message: repliedMessage.content,
-              channel: value.id,
-              attachment: attachment[0] ? attachment[0].url : " ",
-            },
-          })
-        )
-        .catch(() => {
-          console.error("Failed to send DM");
-        });
+      if (!noDM)
+        mentionedUser
+          .send(
+            functions.randomSend({
+              path: "messageMovedTo",
+              values: {
+                message: repliedMessage.content,
+                channel: value.id,
+                attachment: attachment[0] ? attachment[0].url : " ",
+              },
+            })
+          )
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
     });
 
     await repliedMessage.delete();

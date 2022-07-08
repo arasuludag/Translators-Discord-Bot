@@ -54,19 +54,33 @@ module.exports = {
           }
 
           function notify(pronoun) {
-            i.user
-              .send(
-                functions.randomSend({
-                  path: "userPronounNotify",
-                  values: {
-                    pronoun: pronoun,
-                    isAdd: isAdd ? "" : "not",
-                  },
-                })
-              )
-              .catch(() => {
-                console.error("Failed to send DM");
-              });
+            if (isAdd) {
+              i.user
+                .send(
+                  functions.randomSend({
+                    path: "userPronounNotify.registered",
+                    values: {
+                      pronoun: pronoun,
+                    },
+                  })
+                )
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
+            } else {
+              i.user
+                .send(
+                  functions.randomSend({
+                    path: "userPronounNotify.removed",
+                    values: {
+                      pronoun: pronoun,
+                    },
+                  })
+                )
+                .catch(() => {
+                  console.error("Failed to send DM");
+                });
+            }
           }
           roleManager(i.customId.split("->")[0]);
 

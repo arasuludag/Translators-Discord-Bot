@@ -20,8 +20,8 @@ async function isthere(message) {
 
   const foundChannel = await functions.findChannel(message, projectName);
 
-  const acceptButtonCustomID = "Accept" + message.id;
-  const rejectButtonCustomID = "Reject" + message.id;
+  const acceptButtonCustomID = "Accept " + message.id;
+  const rejectButtonCustomID = "Reject " + message.id;
 
   const acceptButton = new MessageActionRow().addComponents(
     new MessageButton()
@@ -49,8 +49,7 @@ async function isthere(message) {
       )
       .then((replyMessage) => {
         const filter = (i) =>
-          (i.customId === acceptButtonCustomID ||
-            i.customId === rejectButtonCustomID) &&
+          message.id === i.customId.split(" ")[1] &&
           i.user.id === message.author.id;
 
         const collector = replyMessage.channel.createMessageComponentCollector({

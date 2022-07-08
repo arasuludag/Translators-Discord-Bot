@@ -14,7 +14,9 @@ async function basicMessageChecking(message, client) {
         break;
 
       // After this point, it's only for fun.
-      case message.mentions.has(client.user) && !message.mentions.everyone:
+      case message.mentions.has(client.user) &&
+        !message.mentions.everyone &&
+        !message.content.includes("/"):
         message
           .reply(functions.randomSend({ path: "taggedBot" }))
           .then((replyMessage) => {
