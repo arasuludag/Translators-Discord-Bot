@@ -1,5 +1,5 @@
 const functions = require("../functions.js");
-const { isThisAlert } = require("./isThisAlert");
+// const { isThisAlert } = require("./isThisAlert");
 
 async function basicMessageChecking(message, client) {
   const lowerCaseMessage = message.content.toLowerCase();
@@ -10,7 +10,7 @@ async function basicMessageChecking(message, client) {
       case (message.channel.id === process.env.SASSALERTCHANNELID ||
         message.channel.id === process.env.SUPPALERTCHANNELID) &&
         message.attachments.size === 0:
-        await isThisAlert(message);
+        // await isThisAlert(message);
         break;
 
       // After this point, it's only for fun.

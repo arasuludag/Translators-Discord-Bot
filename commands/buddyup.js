@@ -56,7 +56,7 @@ module.exports = {
     if (isProject) {
       await interaction.reply(
         functions.randomSend({
-          path: "addMePrompt",
+          path: "addMePromptThread",
           values: {
             projectName: projectName,
           },
@@ -188,7 +188,7 @@ module.exports = {
               functions.randomSend({
                 path: "threadCreated",
                 values: {
-                  thread: thread.id,
+                  thread: thread.name,
                   user: interaction.user.id,
                 },
               })

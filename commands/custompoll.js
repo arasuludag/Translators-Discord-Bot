@@ -151,7 +151,9 @@ module.exports = {
             ],
           };
 
-          await i.update(pollResultMessage);
+          await i.update(pollResultMessage).catch(() => {
+            console.log("Custom poll message update failed.");
+          });
         });
 
         collector.on("end", async () => {

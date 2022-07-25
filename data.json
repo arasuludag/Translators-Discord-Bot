@@ -76,6 +76,9 @@
   "addMePrompt": [
     "Do you confirm that you work on {{projectName}} and want to be added to the channel? If this was a mistake, simply dismiss this message."
   ],
+  "addMePromptThread": [
+    "Do you confirm that you work on {{projectName}} and want to be added to the thread? If this was a mistake, simply dismiss this message."
+  ],
   "addMePromptEmpty": ["You haven't entered a project name."],
 
   "alert": {
@@ -237,7 +240,7 @@
   ],
 
   "threadCreated": [
-    "A new thread called <#{{thread}}> has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
+    "A new thread called \"{{thread}}\" has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
   ],
 
   "acceptThread": ["Do you accept to create or join to {{thread}}?"],

@@ -46,7 +46,7 @@ module.exports = {
         functions.randomSend({
           path: "waitApproval",
           values: {
-            project: channelName,
+            project: projectName,
           },
         })
       )
@@ -79,7 +79,7 @@ module.exports = {
           path: "addRequest",
           values: {
             user: interaction.user.id,
-            projectName: channelName,
+            projectName: projectName,
             additionalInfo: additionalInfo,
           },
           components: [acceptButton, rejectButton],
@@ -133,7 +133,7 @@ module.exports = {
                 });
             } else {
               interaction.guild.channels
-                .create(channelName, {
+                .create(projectName, {
                   type: "GUILD_TEXT",
                   permissionOverwrites: [
                     {
@@ -191,7 +191,7 @@ module.exports = {
               functions.randomSend({
                 path: "requestAddRejected",
                 values: {
-                  channel: channelName,
+                  channel: projectName,
                   user: interaction.user.id,
                   approved: i.user.id,
                 },
@@ -202,7 +202,7 @@ module.exports = {
                 functions.randomSend({
                   path: "requestAddRejectedDM",
                   values: {
-                    channel: channelName,
+                    channel: projectName,
                   },
                 })
               )
