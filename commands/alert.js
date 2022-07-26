@@ -39,6 +39,14 @@ module.exports = {
         )
     ),
   async execute(interaction) {
+    let languageRole = "their target language";
+    for (const [id, role] of interaction.member.roles.cache) {
+      if (role.icon) {
+        languageRole = `<@&${id}>`;
+        break;
+      }
+    }
+
     const alertText = await interaction.options.getString("alert_text");
 
     switch (true) {
@@ -60,11 +68,13 @@ module.exports = {
           );
           break;
         }
-        sassAlertChannel.send(
+
+        await sassAlertChannel.send(
           functions.randomSend({
             path: "alert.message",
             values: {
               user: interaction.user.id,
+              role: languageRole,
               context: alertText,
             },
             title: "🚨 Alert!",
@@ -91,11 +101,12 @@ module.exports = {
           );
           break;
         }
-        supplementalAlertChannel.send(
+        await supplementalAlertChannel.send(
           functions.randomSend({
             path: "alert.message",
             values: {
               user: interaction.user.id,
+              role: languageRole,
               context: alertText,
             },
             title: "🚨 Alert!",

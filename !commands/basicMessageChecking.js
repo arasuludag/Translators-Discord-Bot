@@ -54,6 +54,10 @@ async function basicMessageChecking(message, client) {
         );
         break;
 
+      case lowerCaseMessage.includes("man ass"):
+        message.react("🍑");
+        break;
+
       case message.content === "Hmm.":
         message.reply(
           "https://c.tenor.com/SY861GLwsiUAAAAM/the-witcher-geralt.gif"

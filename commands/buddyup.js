@@ -103,7 +103,7 @@ module.exports = {
       }
 
       // If someone tries to create thread under a thread, return.
-      if (channel.isThread() || channel.type === "GUILD_VOICE") {
+      if (channel.isThread() || !channel.type === "GUILD_TEXT") {
         // If someone tries to create a thread, under a thread.
         interaction.user
           .send(functions.randomSend("setParentError"))
@@ -114,12 +114,22 @@ module.exports = {
       }
 
       // Find thread.
-      const thread = await channel.threads.cache.find(
+      let thread = await channel.threads.cache.find(
         (x) => x.name === projectName
       );
 
+      // If thread cannot be found, look at the archived ones.
+      if (!thread) {
+        let archivedThreads = await interaction.channel.threads.fetchArchived();
+        thread = await archivedThreads.threads.find(
+          (x) => x.name === projectName
+        );
+      }
+
       // If thread exists, add the person.
       if (thread) {
+        await thread.setArchived(false); // unarchive if archived.
+
         await thread.members.add(interaction.user.id);
 
         await interaction.user

@@ -83,7 +83,7 @@
 
   "alert": {
     "message": [
-      "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for their target language:\n \n{{context}}"
+      "<@{{user}}> wanted to let you know that the project with following details appeared in SASS for {{role}}:\n \n{{context}}"
     ],
     "messageTemplate": [
       "<@{{user}}> wanted to let you know that they've just submitted the template QC for the following project:\n \n{{context}}"
