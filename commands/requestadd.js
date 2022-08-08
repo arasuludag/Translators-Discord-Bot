@@ -73,13 +73,15 @@ module.exports = {
         .setStyle("DANGER")
     );
 
+    const foundChannel = await functions.findChannel(interaction, projectName);
+
     await approvalChannel
       .send(
         functions.randomSend({
           path: "addRequest",
           values: {
             user: interaction.user.id,
-            projectName: projectName,
+            projectName: foundChannel ? `<#${foundChannel.id}>` : projectName,
             additionalInfo: additionalInfo,
           },
           components: [acceptButton, rejectButton],
@@ -100,10 +102,6 @@ module.exports = {
           replyMessage.react("🍻");
 
           if (i.customId === acceptButtonCustomID) {
-            const foundChannel = await functions.findChannel(
-              interaction,
-              projectName
-            );
             if (foundChannel) {
               foundChannel.permissionOverwrites.edit(interaction.user.id, {
                 VIEW_CHANNEL: true,
@@ -140,6 +138,10 @@ module.exports = {
                       id: interaction.guild.id,
                       deny: [Permissions.FLAGS.VIEW_CHANNEL],
                     },
+                    {
+                      id: interaction.user.id,
+                      allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                    },
                   ],
                 })
                 .then(async (createdChannel) => {
@@ -147,10 +149,15 @@ module.exports = {
                     interaction,
                     process.env.PROJECTSCATEGORY
                   );
-                  await createdChannel.setParent(category.id).catch((error) => {
-                    logsChannel.send("Error. ", error);
-                  });
+                  await createdChannel
+                    .setParent(category.id, { lockPermissions: false })
+                    .catch((error) => {
+                      logsChannel.send(
+                        "Error: Setting the category of channel. \n " + error
+                      );
+                    });
 
+                  // I'm editing permission for the second time because Discord can be buggy.
                   await createdChannel.permissionOverwrites.edit(
                     interaction.user.id,
                     {

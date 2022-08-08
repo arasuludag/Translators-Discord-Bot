@@ -120,7 +120,8 @@ module.exports = {
 
       // If thread cannot be found, look at the archived ones.
       if (!thread) {
-        let archivedThreads = await interaction.channel.threads.fetchArchived();
+        let archivedThreads =
+          await interaction.channel.threads?.fetchArchived();
         thread = await archivedThreads.threads.find(
           (x) => x.name === projectName
         );

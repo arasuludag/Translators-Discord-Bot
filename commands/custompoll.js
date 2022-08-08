@@ -165,13 +165,17 @@ module.exports = {
               await replyMessage.reply(functions.randomSend("poll.ended"));
               await replyMessage.channel.send(pollResultMessage);
             });
-          await interaction.editReply(
-            functions.randomSend({
-              path: "poll.ended",
-              ephemeral: true,
-              components: [],
-            })
-          );
+          await interaction
+            .editReply(
+              functions.randomSend({
+                path: "poll.ended",
+                ephemeral: true,
+                components: [],
+              })
+            )
+            .catch(() => {
+              console.log("Custom poll ephemeral message edit failed.");
+            });
         });
       });
   },
