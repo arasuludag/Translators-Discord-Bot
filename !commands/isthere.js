@@ -126,7 +126,13 @@ async function isthere(message) {
                   message,
                   process.env.PROJECTSCATEGORY
                 );
-                await createdChannel.setParent(category.id);
+                await createdChannel
+                  .setParent(category.id, { lockPermissions: false })
+                  .catch((error) => {
+                    logsChannel.send(
+                      "Error: Setting the category of channel. \n " + error
+                    );
+                  });
 
                 await createdChannel.permissionOverwrites.edit(
                   message.author.id,

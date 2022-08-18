@@ -94,11 +94,11 @@ module.exports = {
             );
 
             interaction.channel
-              .setParent(category.id, {
-                lockPermissions: false,
-              })
+              .setParent(category.id, { lockPermissions: false })
               .catch((error) => {
-                i.user.send("Error", error);
+                logsChannel.send(
+                  "Error: Setting the category of channel. \n " + error
+                );
               });
 
             await interaction.channel.send(

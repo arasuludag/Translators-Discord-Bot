@@ -73,7 +73,7 @@ module.exports = {
         .setStyle("DANGER")
     );
 
-    const foundChannel = await functions.findChannel(interaction, projectName);
+    let foundChannel = await functions.findChannel(interaction, projectName);
 
     await approvalChannel
       .send(
@@ -102,6 +102,13 @@ module.exports = {
           replyMessage.react("🍻");
 
           if (i.customId === acceptButtonCustomID) {
+            // I'm double checking because if the channel didn't exist when the request was made,
+            // it doesn't mean that it still doesn't exist when someone approves the request.
+            foundChannel = await functions.findChannel(
+              interaction,
+              projectName
+            );
+
             if (foundChannel) {
               foundChannel.permissionOverwrites.edit(interaction.user.id, {
                 VIEW_CHANNEL: true,

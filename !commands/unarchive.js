@@ -23,7 +23,7 @@ async function unarchive(message) {
   message.channel
     .setParent(category.id, { lockPermissions: false })
     .catch((error) => {
-      message.author.send("Error", error);
+      logsChannel.send("Error: Setting the category of channel. \n " + error);
     });
 
   await message.channel.send(
