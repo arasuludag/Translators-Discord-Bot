@@ -1,7 +1,7 @@
 # translators-discord-bot
 A Discord bot using NodeJS and DiscordJS.
 
-More than 35 commands. Requestadd for exaple:
+More than 35 commands. /requestadd for exaple:
 
 User makes the request.
 
