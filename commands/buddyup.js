@@ -122,7 +122,7 @@ module.exports = {
       if (!thread) {
         let archivedThreads =
           await interaction.channel.threads?.fetchArchived();
-        thread = await archivedThreads.threads.find(
+        thread = await archivedThreads?.threads.find(
           (x) => x.name === projectName
         );
       }
