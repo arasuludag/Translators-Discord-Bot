@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageButton, MessageActionRow } = require("discord.js");
+const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -43,11 +43,11 @@ module.exports = {
 
     let options = [];
     splitMessage.map((option, i) => {
-      options[i] = new MessageActionRow().addComponents(
-        new MessageButton()
+      options[i] = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
           .setCustomId(i + " " + interaction.id)
           .setLabel(option)
-          .setStyle("PRIMARY")
+          .setStyle("Primary")
       );
     });
 
@@ -55,11 +55,11 @@ module.exports = {
       (a) => a.user === interaction.user
     ).nickname;
 
-    const endButton = new MessageActionRow().addComponents(
-      new MessageButton()
+    const endButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
         .setCustomId("End " + interaction.id)
         .setLabel("End Poll")
-        .setStyle("DANGER")
+        .setStyle("Danger")
     );
 
     await interaction.reply({

@@ -16,7 +16,7 @@ async function add(message) {
         mentionedChannel.map(async (valueChannel, keyChannel) => {
           try {
             await valueChannel.permissionOverwrites.edit(key, {
-              VIEW_CHANNEL: true,
+              ViewChannel: true,
             });
           } catch (error) {
             await message.author

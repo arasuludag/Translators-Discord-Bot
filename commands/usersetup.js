@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageButton, MessageActionRow } = require("discord.js");
+const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 const i18next = require("i18next");
 
@@ -51,17 +51,17 @@ module.exports = {
     const acceptButtonCustomID = "Accept " + interaction.id;
     const rejectButtonCustomID = "Reject " + interaction.id;
 
-    const acceptButton = new MessageActionRow().addComponents(
-      new MessageButton()
+    const acceptButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
         .setCustomId(acceptButtonCustomID)
         .setLabel("Approve")
-        .setStyle("SUCCESS")
+        .setStyle("Success")
     );
-    const rejectButton = new MessageActionRow().addComponents(
-      new MessageButton()
+    const rejectButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
         .setCustomId(rejectButtonCustomID)
         .setLabel("Reject")
-        .setStyle("DANGER")
+        .setStyle("Danger")
     );
 
     await approvalChannel

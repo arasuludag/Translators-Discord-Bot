@@ -240,7 +240,7 @@
   ],
 
   "threadCreated": [
-    "A new thread called \"{{thread}}\" has been created upon <@{{user}}>'s request. If you're working on the same project, `/buddyup` now!"
+    "A new thread called \"{{thread}}\" has been created upon <@{{user}}>'s request. If you're working on the same project, use the command `/addme sass` now!"
   ],
 
   "acceptThread": ["Do you accept to create or join to {{thread}}?"],
@@ -254,5 +254,9 @@
     "removed": ["Thank you! {{pronoun}} has been removed from your profile."]
   },
 
-  "enterProperName": ["The name you entered is somehow problematic."]
+  "enterProperName": ["The name you entered is somehow problematic."],
+
+  "noBuddyUpInProjectsChannel": [
+    "You can't use `/buddyup` in this channel. If this is a project, try `/addme sass`."
+  ]
 }

@@ -1,8 +1,7 @@
 require("dotenv").config();
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageButton, MessageActionRow } = require("discord.js");
+const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
-const { findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,14 +12,20 @@ module.exports = {
         .setName("for")
         .setDescription("Maybe for a project?")
         .setRequired(true)
-    )
-    .addBooleanOption((option) =>
-      option
-        .setName("is_this_a_project")
-        .setDescription("Yes or No")
-        .setRequired(true)
     ),
   async execute(interaction) {
+    // People shouldn't be able to use buddyip in projects channel.
+    // There is /addme sass for that.
+    if (interaction.channel === process.env.PROJECTCHANNELREQUESTSCHANNELID) {
+      await interaction.reply(
+        functions.randomSend({
+          path: "noBuddyUpInProjectsChannel",
+          ephemeral: true,
+        })
+      );
+      return;
+    }
+
     let projectName;
     try {
       projectName = functions.discordStyleProjectName(
@@ -41,41 +46,24 @@ module.exports = {
       process.env.LOGSCHANNELID
     );
 
-    // Is this a project?
-    const isProject = await interaction.options.getBoolean("is_this_a_project");
-
     // Create the button. Button needs a custom ID.
-    const button = new MessageActionRow().addComponents(
-      new MessageButton()
+    const button = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
         .setCustomId(interaction.user + interaction.id)
         .setLabel("Confirm")
-        .setStyle("SUCCESS")
+        .setStyle("Success")
     );
 
-    // If project, show the addmepromt, if not accept thread joining promt.
-    if (isProject) {
-      await interaction.reply(
-        functions.randomSend({
-          path: "addMePromptThread",
-          values: {
-            projectName: projectName,
-          },
-          ephemeral: true,
-          components: [button],
-        })
-      );
-    } else {
-      await interaction.reply(
-        functions.randomSend({
-          path: "acceptThread",
-          values: {
-            thread: projectName,
-          },
-          ephemeral: true,
-          components: [button],
-        })
-      );
-    }
+    await interaction.reply(
+      functions.randomSend({
+        path: "acceptThread",
+        values: {
+          thread: projectName,
+        },
+        ephemeral: true,
+        components: [button],
+      })
+    );
 
     const filter = (i) => i.customId === interaction.user + interaction.id;
 
@@ -91,19 +79,10 @@ module.exports = {
         functions.randomSend({ path: "requestAcquired", components: [] })
       );
 
-      // If project, pass projects channel, if not, current channel.
-      let channel;
-      if (isProject) {
-        channel = await findChannelByID(
-          interaction,
-          process.env.PROJECTCHANNELREQUESTSCHANNELID
-        );
-      } else {
-        channel = await interaction.channel;
-      }
+      const channel = await interaction.channel;
 
       // If someone tries to create thread under a thread, return.
-      if (channel.isThread() || !channel.type === "GUILD_TEXT") {
+      if (channel.isThread() || !channel.type === 0) {
         // If someone tries to create a thread, under a thread.
         interaction.user
           .send(functions.randomSend("setParentError"))
@@ -163,9 +142,8 @@ module.exports = {
       await channel.threads
         .create({
           name: projectName,
-          autoArchiveDuration: "MAX",
-          type: isProject ? process.env.THREADTYPE : "GUILD_PUBLIC_THREAD",
-          reason: "For a project.",
+          autoArchiveDuration: 10080,
+          type: 11,
         })
         .then(async (thread) => {
           if (thread.joinable) await thread.join();
@@ -193,18 +171,6 @@ module.exports = {
               },
             })
           );
-
-          if (isProject) {
-            await channel.send(
-              functions.randomSend({
-                path: "threadCreated",
-                values: {
-                  thread: thread.name,
-                  user: interaction.user.id,
-                },
-              })
-            );
-          }
         });
     });
   },

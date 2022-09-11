@@ -1,4 +1,8 @@
-const { MessageButton, MessageActionRow, Permissions } = require("discord.js");
+const {
+  ButtonBuilder,
+  ActionRowBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 const functions = require("../functions.js");
 
 async function isthere(message) {
@@ -23,17 +27,17 @@ async function isthere(message) {
   const acceptButtonCustomID = "Accept " + message.id;
   const rejectButtonCustomID = "Reject " + message.id;
 
-  const acceptButton = new MessageActionRow().addComponents(
-    new MessageButton()
+  const acceptButton = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(acceptButtonCustomID)
       .setLabel("Yes")
-      .setStyle("SUCCESS")
+      .setStyle("Success")
   );
-  const rejectButton = new MessageActionRow().addComponents(
-    new MessageButton()
+  const rejectButton = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(rejectButtonCustomID)
       .setLabel("No")
-      .setStyle("DANGER")
+      .setStyle("Danger")
   );
 
   if (foundChannel) {
@@ -63,7 +67,7 @@ async function isthere(message) {
 
           if (i.customId === acceptButtonCustomID) {
             await foundChannel.permissionOverwrites.edit(message.author.id, {
-              VIEW_CHANNEL: true,
+              ViewChannel: true,
             });
 
             logsChannel.send(
@@ -108,16 +112,17 @@ async function isthere(message) {
 
           if (i.customId === acceptButtonCustomID)
             await message.guild.channels
-              .create(projectName, {
-                type: "GUILD_TEXT",
+              .create({
+                name: projectName,
+                type: 0,
                 permissionOverwrites: [
                   {
                     id: message.guild.id,
-                    deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                    deny: [PermissionFlagsBits.ViewChannel],
                   },
                   {
                     id: message.author.id,
-                    allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                    allow: [PermissionFlagsBits.ViewChannel],
                   },
                 ],
               })
@@ -133,13 +138,6 @@ async function isthere(message) {
                       "Error: Setting the category of channel. \n " + error
                     );
                   });
-
-                await createdChannel.permissionOverwrites.edit(
-                  message.author.id,
-                  {
-                    VIEW_CHANNEL: true,
-                  }
-                );
 
                 logsChannel.send(
                   functions.randomSend({

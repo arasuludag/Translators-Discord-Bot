@@ -1,4 +1,4 @@
-const { MessageButton, MessageActionRow } = require("discord.js");
+const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 
 async function isThisAlert(message) {
@@ -11,24 +11,24 @@ async function isThisAlert(message) {
   const noButtonCustomID = "No" + message.id;
   const cancelButtonCustomID = "Cancel" + message.id;
 
-  const yesButton = new MessageActionRow().addComponents(
-    new MessageButton()
+  const yesButton = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(yesButtonCustomID)
       .setLabel("Yes - Keep my message here.")
-      .setStyle("SUCCESS")
+      .setStyle("Success")
   );
-  const noButton = new MessageActionRow().addComponents(
-    new MessageButton()
+  const noButton = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(noButtonCustomID)
       .setLabel(`No - Move my message to ${followupChannel.name}.`)
-      .setStyle("DANGER")
+      .setStyle("Danger")
   );
 
-  const cancelButton = new MessageActionRow().addComponents(
-    new MessageButton()
+  const cancelButton = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(cancelButtonCustomID)
       .setLabel("Cancel - On second thought, just delete my message.")
-      .setStyle("DANGER")
+      .setStyle("Danger")
   );
 
   message

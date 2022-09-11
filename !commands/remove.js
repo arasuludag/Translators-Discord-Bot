@@ -16,7 +16,7 @@ async function remove(message) {
         mentionedChannel.map(async (valueChannel, keyChannel) => {
           try {
             await valueChannel.permissionOverwrites.edit(key, {
-              VIEW_CHANNEL: false,
+              ViewChannel: false,
             });
           } catch (error) {
             await message.author

@@ -2,22 +2,26 @@ require("dotenv").config();
 const { readdirSync } = require("fs");
 const translation = require("./data.json");
 const i18next = require("i18next");
-const { Client, Intents, Collection } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  Partials,
+  Collection,
+} = require("discord.js");
 const { commands } = require("./!commands/exclamationCommands");
 const functions = require("./functions");
 const { deploy } = require("./deploy-commands");
 
-const myIntents = new Intents();
-myIntents.add(
-  Intents.FLAGS.GUILDS,
-  Intents.FLAGS.GUILD_MESSAGES,
-  Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-  Intents.FLAGS.GUILD_MEMBERS,
-  Intents.FLAGS.GUILD_PRESENCES
-);
 const client = new Client({
-  intents: myIntents,
-  partials: ["MESSAGE", "CHANNEL", "REACTION"],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
 client.commands = new Collection();
@@ -141,14 +145,13 @@ process.on("uncaughtException", async (error, origin) => {
   await client.channels.cache
     .find(
       (channel) =>
-        channel.id === process.env.GENERALCHANNELID &&
-        channel.type == "GUILD_TEXT"
+        channel.id === process.env.GENERALCHANNELID && channel.type === 0
     )
     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
   await client.channels.cache
     .find(
       (channel) =>
-        channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
+        channel.id === process.env.LOGSCHANNELID && channel.type === 0
     )
     .send(
       `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n${error}\n \n ${origin}`
@@ -164,7 +167,7 @@ process.on("unhandledRejection", (reason, promise) => {
   client.channels.cache
     .find(
       (channel) =>
-        channel.id === process.env.LOGSCHANNELID && channel.type == "GUILD_TEXT"
+        channel.id === process.env.LOGSCHANNELID && channel.type === 0
     )
     .send(
       `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n ${reason}`

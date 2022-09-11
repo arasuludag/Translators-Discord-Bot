@@ -1,4 +1,8 @@
-const { MessageButton, MessageActionRow, Permissions } = require("discord.js");
+const {
+  ButtonBuilder,
+  ActionRowBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 const functions = require("../functions.js");
 
 async function addme(message) {
@@ -15,11 +19,11 @@ async function addme(message) {
     return;
   }
 
-  const button = new MessageActionRow().addComponents(
-    new MessageButton()
+  const button = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
       .setCustomId(message.user + message.id)
       .setLabel("Confirm")
-      .setStyle("SUCCESS")
+      .setStyle("Success")
   );
 
   await message
@@ -55,7 +59,7 @@ async function addme(message) {
         const foundChannel = await functions.findChannel(message, dProjectName);
         if (foundChannel) {
           foundChannel.permissionOverwrites.edit(message.author.id, {
-            VIEW_CHANNEL: true,
+            ViewChannel: true,
           });
 
           logsChannel.send(
@@ -69,16 +73,17 @@ async function addme(message) {
           );
         } else {
           await message.guild.channels
-            .create(projectName, {
-              type: "GUILD_TEXT",
+            .create({
+              name: projectName,
+              type: 0,
               permissionOverwrites: [
                 {
                   id: message.guild.id,
-                  deny: [Permissions.FLAGS.VIEW_CHANNEL],
+                  deny: [PermissionFlagsBits.ViewChannel],
                 },
                 {
                   id: message.author.id,
-                  allow: [Permissions.FLAGS.VIEW_CHANNEL],
+                  allow: [PermissionFlagsBits.ViewChannel],
                 },
               ],
             })
@@ -95,13 +100,6 @@ async function addme(message) {
                   );
                 });
 
-              await createdChannel.permissionOverwrites.edit(
-                message.author.id,
-                {
-                  VIEW_CHANNEL: true,
-                }
-              );
-
               logsChannel.send(
                 functions.randomSend({
                   path: "channelCreated",
@@ -111,10 +109,10 @@ async function addme(message) {
                   },
                 })
               );
-            })
-            .catch((error) => {
-              message.reply("Error.", error);
             });
+          // .catch((error) => {
+          //   message.reply("Error.", error);
+          // });
         }
       });
       collector.on("end", () => {

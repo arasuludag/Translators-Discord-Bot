@@ -65,21 +65,21 @@ module.exports = {
   // Finds channel by name.
   findChannel: (message, channelName) => {
     return message.guild.channels.cache.find(
-      (channel) => channel.name === channelName && channel.type == "GUILD_TEXT"
+      (channel) => channel.name === channelName && channel.type === 0
     );
   },
 
   // Finds channel by ID.
   findChannelByID: (message, channelID) => {
     return message.guild.channels.cache.find(
-      (channel) => channel.id === channelID && channel.type == "GUILD_TEXT"
+      (channel) => channel.id === channelID && channel.type === 0
     );
   },
 
   // Find category by name.
   findCategoryByName: (message, channelName) => {
     return message.guild.channels.cache.find(
-      (c) => c.name == channelName && c.type == "GUILD_CATEGORY"
+      (c) => c.name == channelName && c.type === 4
     );
   },
 };

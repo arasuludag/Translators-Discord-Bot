@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageButton, MessageActionRow } = require("discord.js");
+const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions");
 
 module.exports = {
@@ -9,11 +9,11 @@ module.exports = {
   async execute(interaction) {
     let options = [];
     process.env.PRONOUNS.split(",").map((option, i) => {
-      options[i] = new MessageActionRow().addComponents(
-        new MessageButton()
+      options[i] = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
           .setCustomId(option + "->" + interaction.id)
           .setLabel(option)
-          .setStyle("PRIMARY")
+          .setStyle("Primary")
       );
     });
 
