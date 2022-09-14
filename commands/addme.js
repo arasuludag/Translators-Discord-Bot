@@ -63,75 +63,54 @@ module.exports = {
         return;
       }
 
-      await interaction.user
-        .send(
-          functions.randomSend({
-            path: "waitApproval",
-            values: {
-              project: projectName,
-            },
-          })
-        )
-        .catch(() => {
-          console.error("Failed to send DM");
-        });
-      await interaction.reply(
-        functions.randomSend({ path: "requestAcquired", ephemeral: true })
+      const isMod = await interaction.member.roles.cache.some(
+        (role) => role.id === process.env.MODROLEID
       );
 
-      const acceptButtonCustomID = "Accept " + interaction.id;
-      const rejectButtonCustomID = "Reject " + interaction.id;
+      if (isMod) {
+        const button = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(interaction.user + interaction.id)
+            .setLabel("Confirm")
+            .setStyle("Success")
+        );
 
-      const acceptButton = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(acceptButtonCustomID)
-          .setLabel("Approve")
-          .setStyle("Success")
-      );
-      const rejectButton = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(rejectButtonCustomID)
-          .setLabel("Reject")
-          .setStyle("Danger")
-      );
+        await interaction
+          .reply(
+            functions.randomSend({
+              path: "addMePrompt",
+              values: {
+                projectName: projectName,
+              },
+              components: [button],
+              ephemeral: true,
+            })
+          )
+          .then(() => {
+            const filter = (i) =>
+              i.customId === interaction.user + interaction.id &&
+              i.user.id === interaction.user.id;
 
-      let foundChannel = await functions.findChannel(interaction, projectName);
+            const collector =
+              interaction.channel.createMessageComponentCollector({
+                filter,
+                max: 1,
+                time: 300000,
+              });
 
-      await approvalChannel
-        .send(
-          functions.randomSend({
-            path: "addRequest",
-            values: {
-              user: interaction.user.id,
-              projectName: foundChannel ? `<#${foundChannel.id}>` : projectName,
-              additionalInfo: additionalInfo,
-            },
-            components: [acceptButton, rejectButton],
-          })
-        )
-        .then((replyMessage) => {
-          const filter = (i) => interaction.id === i.customId.split(" ")[1];
+            collector.on("collect", async (i) => {
+              i.update(
+                functions.randomSend({
+                  path: "requestAcquired",
+                  ephemeral: true,
+                  components: [],
+                })
+              );
 
-          const collector =
-            replyMessage.channel.createMessageComponentCollector({
-              filter,
-              max: 1,
-            });
-
-          collector.on("collect", async (i) => {
-            await i.update({
-              components: [],
-            });
-            replyMessage.react("🍻");
-
-            if (i.customId === acceptButtonCustomID) {
-              // I'm double checking because if the channel didn't exist when the request was made,
-              // it doesn't mean that it still doesn't exist when someone approves the request.
-              foundChannel = await functions.findChannel(
+              const foundChannel = await functions.findChannel(
                 interaction,
                 projectName
               );
-
               if (foundChannel) {
                 foundChannel.permissionOverwrites.edit(interaction.user.id, {
                   ViewChannel: true,
@@ -139,28 +118,15 @@ module.exports = {
 
                 logsChannel.send(
                   functions.randomSend({
-                    path: "channelExisted_RA",
+                    path: "channelExisted",
                     values: {
                       user: interaction.user.id,
                       project: foundChannel.id,
-                      approved: i.user.id,
                     },
                   })
                 );
-                interaction.user
-                  .send(
-                    functions.randomSend({
-                      path: "userAddNotify",
-                      values: {
-                        project: foundChannel.id,
-                      },
-                    })
-                  )
-                  .catch(() => {
-                    console.error("Failed to send DM");
-                  });
               } else {
-                interaction.guild.channels
+                await interaction.guild.channels
                   .create({
                     name: projectName,
                     type: 0,
@@ -190,58 +156,204 @@ module.exports = {
 
                     logsChannel.send(
                       functions.randomSend({
-                        path: "channelCreated_RA",
+                        path: "channelCreated",
                         values: {
                           createdChannel: createdChannel.id,
                           user: interaction.user.id,
-                          approved: i.user.id,
                         },
                       })
                     );
-                    interaction.user
-                      .send(
-                        functions.randomSend({
-                          path: "userAddNotify",
-                          values: {
-                            user: interaction.user.id,
-                            project: createdChannel,
-                          },
-                        })
-                      )
-                      .catch(() => {
-                        console.error("Failed to send DM");
-                      });
-                  })
-                  .catch((error) => {
-                    logsChannel.send("Error. ", error);
                   });
               }
-            } else {
-              logsChannel.send(
-                functions.randomSend({
-                  path: "requestAddRejected",
-                  values: {
-                    channel: projectName,
-                    user: interaction.user.id,
-                    approved: i.user.id,
-                  },
-                })
-              );
-              interaction.user
-                .send(
+            });
+          });
+      } else {
+        await interaction.user
+          .send(
+            functions.randomSend({
+              path: "waitApproval",
+              values: {
+                project: projectName,
+              },
+            })
+          )
+          .catch(() => {
+            console.error("Failed to send DM");
+          });
+        await interaction.reply(
+          functions.randomSend({ path: "requestAcquired", ephemeral: true })
+        );
+
+        const acceptButtonCustomID = "Accept " + interaction.id;
+        const rejectButtonCustomID = "Reject " + interaction.id;
+
+        const acceptButton = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(acceptButtonCustomID)
+            .setLabel("Approve")
+            .setStyle("Success")
+        );
+        const rejectButton = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(rejectButtonCustomID)
+            .setLabel("Reject")
+            .setStyle("Danger")
+        );
+
+        let foundChannel = await functions.findChannel(
+          interaction,
+          projectName
+        );
+
+        await approvalChannel
+          .send(
+            functions.randomSend({
+              path: "addRequest",
+              values: {
+                user: interaction.user.id,
+                projectName: foundChannel
+                  ? `<#${foundChannel.id}>`
+                  : projectName,
+                additionalInfo: additionalInfo,
+              },
+              components: [acceptButton, rejectButton],
+            })
+          )
+          .then((replyMessage) => {
+            const filter = (i) => interaction.id === i.customId.split(" ")[1];
+
+            const collector =
+              replyMessage.channel.createMessageComponentCollector({
+                filter,
+                max: 1,
+              });
+
+            collector.on("collect", async (i) => {
+              await i.update({
+                components: [],
+              });
+              replyMessage.react("🍻");
+
+              if (i.customId === acceptButtonCustomID) {
+                // I'm double checking because if the channel didn't exist when the request was made,
+                // it doesn't mean that it still doesn't exist when someone approves the request.
+                foundChannel = await functions.findChannel(
+                  interaction,
+                  projectName
+                );
+
+                if (foundChannel) {
+                  foundChannel.permissionOverwrites.edit(interaction.user.id, {
+                    ViewChannel: true,
+                  });
+
+                  logsChannel.send(
+                    functions.randomSend({
+                      path: "channelExisted_RA",
+                      values: {
+                        user: interaction.user.id,
+                        project: foundChannel.id,
+                        approved: i.user.id,
+                      },
+                    })
+                  );
+                  interaction.user
+                    .send(
+                      functions.randomSend({
+                        path: "userAddNotify",
+                        values: {
+                          project: foundChannel.id,
+                        },
+                      })
+                    )
+                    .catch(() => {
+                      console.error("Failed to send DM");
+                    });
+                } else {
+                  interaction.guild.channels
+                    .create({
+                      name: projectName,
+                      type: 0,
+                      permissionOverwrites: [
+                        {
+                          id: interaction.guild.id,
+                          deny: [PermissionFlagsBits.ViewChannel],
+                        },
+                        {
+                          id: interaction.user.id,
+                          allow: [PermissionFlagsBits.ViewChannel],
+                        },
+                      ],
+                    })
+                    .then(async (createdChannel) => {
+                      const category = await functions.findCategoryByName(
+                        interaction,
+                        process.env.PROJECTSCATEGORY
+                      );
+                      await createdChannel
+                        .setParent(category.id, { lockPermissions: false })
+                        .catch((error) => {
+                          logsChannel.send(
+                            "Error: Setting the category of channel. \n " +
+                              error
+                          );
+                        });
+
+                      logsChannel.send(
+                        functions.randomSend({
+                          path: "channelCreated_RA",
+                          values: {
+                            createdChannel: createdChannel.id,
+                            user: interaction.user.id,
+                            approved: i.user.id,
+                          },
+                        })
+                      );
+                      interaction.user
+                        .send(
+                          functions.randomSend({
+                            path: "userAddNotify",
+                            values: {
+                              user: interaction.user.id,
+                              project: createdChannel,
+                            },
+                          })
+                        )
+                        .catch(() => {
+                          console.error("Failed to send DM");
+                        });
+                    })
+                    .catch((error) => {
+                      logsChannel.send("Error. ", error);
+                    });
+                }
+              } else {
+                logsChannel.send(
                   functions.randomSend({
-                    path: "requestAddRejectedDM",
+                    path: "requestAddRejected",
                     values: {
                       channel: projectName,
+                      user: interaction.user.id,
+                      approved: i.user.id,
                     },
                   })
-                )
-                .catch(() => {
-                  console.error("Failed to send DM");
-                });
-            }
+                );
+                interaction.user
+                  .send(
+                    functions.randomSend({
+                      path: "requestAddRejectedDM",
+                      values: {
+                        channel: projectName,
+                      },
+                    })
+                  )
+                  .catch(() => {
+                    console.error("Failed to send DM");
+                  });
+              }
+            });
           });
-        });
+      }
     } else {
       let projectName;
       try {
