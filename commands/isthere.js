@@ -106,6 +106,7 @@ module.exports = {
           functions.randomSend({
             path: "isThere.no",
             components: [acceptButton, rejectButton],
+            ephemeral: true,
           })
         )
         .then(() => {
