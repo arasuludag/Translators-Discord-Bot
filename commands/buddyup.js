@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 
@@ -12,7 +12,8 @@ module.exports = {
         .setName("for")
         .setDescription("Maybe for a project?")
         .setRequired(true)
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     // People shouldn't be able to use buddyip in projects channel.
     // There is /addme sass for that.

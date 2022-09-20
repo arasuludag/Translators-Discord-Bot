@@ -1,11 +1,12 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const fs = require("fs");
 const { findChannel, randomSend } = require("../functions");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("funfact")
-    .setDescription("A funfact."),
+    .setDescription("A funfact.")
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const zenChannel = await findChannel(
       interaction,

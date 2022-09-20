@@ -2,7 +2,6 @@ const { add } = require("./add");
 const { remove } = require("./remove");
 const { moveto } = require("./moveto");
 const { copyto } = require("./copyto");
-const { memory } = require("./memory");
 const { basicMessageChecking } = require("./basicMessageChecking");
 
 module.exports = {
@@ -22,7 +21,7 @@ module.exports = {
       messageFirstWord = message.content.split(" ")[0];
     }
 
-    if (isMod)
+    if (isMod && command)
       switch (true) {
         // Adds several users to several channels. !add username username channelname channelname
         case messageFirstWord === "!add":
@@ -42,11 +41,6 @@ module.exports = {
         // Copy message to another channel.
         case messageFirstWord === "!copyto":
           await copyto(message);
-          break;
-
-        // NodeJS Memory Stats
-        case messageFirstWord === "!memory":
-          await memory(message);
           break;
       }
 

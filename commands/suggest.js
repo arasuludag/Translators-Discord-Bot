@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -54,7 +54,8 @@ module.exports = {
             .setDescription("Your suggestion.")
             .setRequired(true)
         )
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const suggestionChannel = functions.findChannel(
       interaction,

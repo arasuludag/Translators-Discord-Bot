@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -10,7 +10,8 @@ module.exports = {
     )
     .addRoleOption((option) =>
       option.setName("language").setDescription("A language").setRequired(true)
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const role = interaction.options.getRole("language");
 

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 const { findCategoryByName } = require("../functions.js");
@@ -9,7 +9,8 @@ module.exports = {
     .setDescription("Ask the admins to unarchive this channel.")
     .addStringOption((option) =>
       option.setName("reason").setDescription("Why?").setRequired(true)
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const reasonText = interaction.options.getString("reason");
 

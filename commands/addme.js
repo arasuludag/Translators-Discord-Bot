@@ -36,7 +36,8 @@ module.exports = {
             .setDescription("Name of the project. Beware of typos!")
             .setRequired(true)
         )
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     if (interaction.options.getSubcommand() === "manual") {
       const approvalChannel = functions.findChannel(

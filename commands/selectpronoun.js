@@ -1,11 +1,12 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("selectpronoun")
-    .setDescription("Please select your preferred pronouns."),
+    .setDescription("Please select your preferred pronouns.")
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     let options = [];
     process.env.PRONOUNS.split(",").map((option, i) => {

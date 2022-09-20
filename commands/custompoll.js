@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const functions = require("../functions.js");
 
@@ -23,7 +23,8 @@ module.exports = {
       option
         .setName("time_limit")
         .setDescription("When should the poll close? (In minutes)")
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
 

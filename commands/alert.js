@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -37,7 +37,8 @@ module.exports = {
             .setName("template")
             .setDescription("Is this a template QC you've submitted?")
         )
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     let languageRole = "their target language";
     for (const [id, role] of interaction.member.roles.cache) {

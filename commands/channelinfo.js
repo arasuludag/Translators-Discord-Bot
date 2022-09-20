@@ -1,9 +1,10 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("channelinfo")
-    .setDescription("What is this channel used for?"),
+    .setDescription("What is this channel used for?")
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     await interaction
       .reply({

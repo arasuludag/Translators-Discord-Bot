@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -18,7 +18,8 @@ module.exports = {
     )
     .addStringOption((option) =>
       option.setName("bulb_option").setDescription("An optional option.")
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     const timeLimit = interaction.options.getInteger("time_limit") * 60 * 1000;
 
