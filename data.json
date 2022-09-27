@@ -236,7 +236,7 @@
   "leftServer": ["<@{{user}}> has left the server. Boooo!"],
 
   "setParentError": [
-    "An error has occurred while setting parent categories. \nI assume you tried to create a thread inside a thread causing a 'threadception'; or entered a command that was meant to be used in a channel. Why would you even do that, you silly goose? 🤭"
+    "An error has occurred related to threads and channels. \nI assume you tried to create a thread inside a thread causing a 'threadception'; or entered a command that was meant to be used in a channel. Why would you even do that, you silly goose? 🤭"
   ],
 
   "threadCreated": [
