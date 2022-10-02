@@ -50,7 +50,7 @@ module.exports = {
   discordStyleProjectName: (project) => {
     const pName = project
       .replace(
-        /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$£€%&()*+,./:;<=>?@[\]^`{|}~]/g,
+        /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$£€%&()*+,./:;<=>?@[\]^`{|}~¡¿]/g,
         ""
       )
       .trim()
