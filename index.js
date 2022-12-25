@@ -140,38 +140,38 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// Let the guild know about the crash.
-process.on("uncaughtException", async (error, origin) => {
-  await client.channels.cache
-    .find(
-      (channel) =>
-        channel.id === process.env.GENERALCHANNELID && channel.type === 0
-    )
-    .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
-  await client.channels.cache
-    .find(
-      (channel) =>
-        channel.id === process.env.LOGSCHANNELID && channel.type === 0
-    )
-    .send(
-      `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n${error}\n \n ${origin}`
-    );
-  console.log(error, origin);
-  // Nothing to mess up. So no need to exit.
-  // process.exit(1);
-});
+// // Let the guild know about the crash.
+// process.on("uncaughtException", async (error, origin) => {
+//   await client.channels.cache
+//     .find(
+//       (channel) =>
+//         channel.id === process.env.GENERALCHANNELID && channel.type === 0
+//     )
+//     .send("https://c.tenor.com/FZfzOwrrJWsAAAAC/janet-the-good-place.gif");
+//   await client.channels.cache
+//     .find(
+//       (channel) =>
+//         channel.id === process.env.LOGSCHANNELID && channel.type === 0
+//     )
+//     .send(
+//       `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n${error}\n \n ${origin}`
+//     );
+//   console.log(error, origin);
+//   // Nothing to mess up. So no need to exit.
+//   // process.exit(1);
+// });
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.log("Unhandled Rejection at: ", promise, "reason: ", reason);
+// process.on("unhandledRejection", (reason, promise) => {
+//   console.log("Unhandled Rejection at: ", promise, "reason: ", reason);
 
-  client.channels.cache
-    .find(
-      (channel) =>
-        channel.id === process.env.LOGSCHANNELID && channel.type === 0
-    )
-    .send(
-      `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n ${reason}`
-    );
-});
+//   client.channels.cache
+//     .find(
+//       (channel) =>
+//         channel.id === process.env.LOGSCHANNELID && channel.type === 0
+//     )
+//     .send(
+//       `<@&${process.env.MODROLEID}> Contact Aras about this.\n \n ${reason}`
+//     );
+// });
 
 client.login(process.env.TOKEN); // Login bot using token.

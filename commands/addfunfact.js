@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const functions = require("../functions.js");
+const { replyEmbed } = require("../customSend.js");
 const fs = require("fs");
 
 module.exports = {
@@ -32,15 +32,13 @@ module.exports = {
             json,
             "utf8",
             async () => {
-              await interaction.reply(
-                functions.randomSend({
-                  path: "addFunfact.added",
-                  ephemeral: true,
-                  values: {
-                    funfact: funfact,
-                  },
-                })
-              );
+              await replyEmbed(interaction, {
+                path: "addFunfact.added",
+                ephemeral: true,
+                values: {
+                  funfact: funfact,
+                },
+              });
             }
           ); // Write it back.
         }

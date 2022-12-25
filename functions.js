@@ -1,16 +1,5 @@
 require("dotenv").config();
 const i18next = require("i18next");
-const translation = require("./data.json");
-
-i18next.init({
-  lng: "en",
-  preload: true,
-  resources: {
-    en: {
-      translation,
-    },
-  },
-});
 
 module.exports = {
   // Selects a random text from a JSON array.
