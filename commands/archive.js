@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { sendEmbed, replyEmbed } = require("../customSend.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -14,11 +15,7 @@ module.exports = {
     );
 
     if (interaction.channel.isThread()) {
-      await interaction.author
-        .send(functions.randomSend({ path: "setParentError" }))
-        .catch(() => {
-          console.error("Failed to send DM");
-        });
+      await sendEmbed(interaction.user, { path: "setParentError" });
       return;
     }
 
@@ -41,27 +38,24 @@ module.exports = {
       if (isOkay) break;
     }
 
-    await interaction.channel.send(
-      functions.randomSend({
-        path: "movedToWO_User",
-        values: {
-          channel: interaction.channel.id,
-        },
-      })
-    );
+    await sendEmbed(interaction.channel, {
+      path: "movedToWO_User",
+      values: {
+        channel: interaction.channel.id,
+      },
+    });
 
-    await logsChannel.send(
-      functions.randomSend({
-        path: "movedToArchive",
-        values: {
-          user: interaction.user.id,
-          channel: interaction.channel.id,
-        },
-      })
-    );
+    await sendEmbed(logsChannel, {
+      path: "movedToArchive",
+      values: {
+        user: interaction.user.id,
+        channel: interaction.channel.id,
+      },
+    });
 
-    await interaction.reply(
-      functions.randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, {
+      path: "requestAcquired",
+      ephemeral: true,
+    });
   },
 };

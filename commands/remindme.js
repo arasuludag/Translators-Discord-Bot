@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const functions = require("../functions.js");
+const { replyEmbed, sendEmbed } = require("../customSend.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,65 +40,56 @@ module.exports = {
     const remindBefore = interaction.options.getInteger("remind_before");
 
     if (isNaN(unixTimeWhen)) {
-      return interaction.reply(
-        functions.randomSend({ path: "reminder.notADate", ephemeral: true })
-      );
+      return replyEmbed(interaction, {
+        path: "reminder.notADate",
+        ephemeral: true,
+      });
     }
 
     const differenceBetween = unixTimeWhen - Date.now();
     if (differenceBetween < 0) {
-      return interaction.reply(
-        functions.randomSend({
-          path: "reminder.enteredPastDate",
-          ephemeral: true,
-        })
-      );
+      return replyEmbed(interaction, {
+        path: "reminder.enteredPastDate",
+        ephemeral: true,
+      });
     }
 
-    await interaction.reply(
-      functions.randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
 
     let timeLeftTimeout = [];
     let timeCameTimeout = [];
 
-    const reminderMessage = await mentionedChannel.send(
-      functions.randomSend({
-        path: "reminder.initiated",
-        values: {
-          event: remindText,
-          time: `<t:${unixTimeWhen / 1000}> (<t:${unixTimeWhen / 1000}:R>)`,
-          before: remindBefore,
-        },
-        content: "@everyone",
-      })
-    );
+    const reminderMessage = await sendEmbed(mentionedChannel, {
+      path: "reminder.initiated",
+      values: {
+        event: remindText,
+        time: `<t:${unixTimeWhen / 1000}> (<t:${unixTimeWhen / 1000}:R>)`,
+        before: remindBefore,
+      },
+      content: "@everyone",
+    });
 
     timeLeftTimeout[0] = setTimeout(
       () =>
-        mentionedChannel.send(
-          functions.randomSend({
-            path: "reminder.minutesLeft",
-            values: {
-              minutesBefore: remindBefore,
-              remindText: remindText,
-            },
-            content: "@everyone",
-          })
-        ),
+        sendEmbed(mentionedChannel, {
+          path: "reminder.minutesLeft",
+          values: {
+            minutesBefore: remindBefore,
+            remindText: remindText,
+          },
+          content: "@everyone",
+        }),
       differenceBetween - remindBefore * 60 * 1000
     );
     timeCameTimeout[1] = setTimeout(
       () =>
-        mentionedChannel.send(
-          functions.randomSend({
-            path: "reminder.itsTime",
-            values: {
-              remindText: remindText,
-            },
-            content: "@everyone",
-          })
-        ),
+        sendEmbed(mentionedChannel, {
+          path: "reminder.itsTime",
+          values: {
+            remindText: remindText,
+          },
+          content: "@everyone",
+        }),
       differenceBetween
     );
 
@@ -121,14 +112,12 @@ module.exports = {
       clearTimeout(timeLeftTimeout[0]);
       clearTimeout(timeCameTimeout[1]);
 
-      await mentionedChannel.send(
-        functions.randomSend({
-          path: "reminder.canceled",
-          values: {
-            event: remindText,
-          },
-        })
-      );
+      await sendEmbed(mentionedChannel, {
+        path: "reminder.canceled",
+        values: {
+          event: remindText,
+        },
+      });
     });
   },
 };

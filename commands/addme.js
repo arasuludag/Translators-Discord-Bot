@@ -33,7 +33,7 @@ module.exports = {
         .setDescription("Add yourself to a certain project thread.")
         .addStringOption((option) =>
           option
-            .setName("for")
+            .setName("project_name")
             .setDescription("Name of the project. Beware of typos!")
             .setRequired(true)
         )
@@ -55,6 +55,8 @@ module.exports = {
         path: "enterProperName",
         ephemeral: true,
       });
+
+      console.log(channelName, projectName);
       return;
     }
 

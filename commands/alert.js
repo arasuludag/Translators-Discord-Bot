@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { sendEmbed, replyEmbed } = require("../customSend.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -57,30 +58,26 @@ module.exports = {
           process.env.SASSALERTCHANNELID
         );
         if (interaction.options.getBoolean("template")) {
-          sassAlertChannel.send(
-            functions.randomSend({
-              path: "alert.messageTemplate",
-              values: {
-                user: interaction.user.id,
-                context: alertText,
-              },
-              title: "🚨 Alert - TEMPLATE QC!",
-            })
-          );
+          sendEmbed(sassAlertChannel, {
+            path: "alert.messageTemplate",
+            values: {
+              user: interaction.user.id,
+              context: alertText,
+            },
+            title: "🚨 Alert - TEMPLATE QC!",
+          });
           break;
         }
 
-        await sassAlertChannel.send(
-          functions.randomSend({
-            path: "alert.message",
-            values: {
-              user: interaction.user.id,
-              role: languageRole,
-              context: alertText,
-            },
-            title: "🚨 Alert!",
-          })
-        );
+        await sendEmbed(sassAlertChannel, {
+          path: "alert.message",
+          values: {
+            user: interaction.user.id,
+            role: languageRole,
+            context: alertText,
+          },
+          title: "🚨 Alert!",
+        });
         break;
       }
 
@@ -90,35 +87,29 @@ module.exports = {
           process.env.SUPPALERTCHANNELID
         );
         if (interaction.options.getBoolean("template")) {
-          supplementalAlertChannel.send(
-            functions.randomSend({
-              path: "alert.messageTemplate",
-              values: {
-                user: interaction.user.id,
-                context: alertText,
-              },
-              title: "🚨 Alert - TEMPLATE QC!",
-            })
-          );
-          break;
-        }
-        await supplementalAlertChannel.send(
-          functions.randomSend({
-            path: "alert.message",
+          sendEmbed(supplementalAlertChannel, {
+            path: "alert.messageTemplate",
             values: {
               user: interaction.user.id,
-              role: languageRole,
               context: alertText,
             },
-            title: "🚨 Alert!",
-          })
-        );
+            title: "🚨 Alert - TEMPLATE QC!",
+          });
+          break;
+        }
+        await sendEmbed(supplementalAlertChannel, {
+          path: "alert.message",
+          values: {
+            user: interaction.user.id,
+            role: languageRole,
+            context: alertText,
+          },
+          title: "🚨 Alert!",
+        });
         break;
       }
     }
 
-    interaction.reply(
-      functions.randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
   },
 };

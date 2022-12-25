@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
-const functions = require("../functions");
+const { sendEmbed } = require("../customSend");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -56,31 +56,19 @@ module.exports = {
 
           function notify(pronoun) {
             if (isAdd) {
-              i.user
-                .send(
-                  functions.randomSend({
-                    path: "userPronounNotify.registered",
-                    values: {
-                      pronoun: pronoun,
-                    },
-                  })
-                )
-                .catch(() => {
-                  console.error("Failed to send DM");
-                });
+              sendEmbed(i.user, {
+                path: "userPronounNotify.registered",
+                values: {
+                  pronoun: pronoun,
+                },
+              });
             } else {
-              i.user
-                .send(
-                  functions.randomSend({
-                    path: "userPronounNotify.removed",
-                    values: {
-                      pronoun: pronoun,
-                    },
-                  })
-                )
-                .catch(() => {
-                  console.error("Failed to send DM");
-                });
+              sendEmbed(i.user, {
+                path: "userPronounNotify.removed",
+                values: {
+                  pronoun: pronoun,
+                },
+              });
             }
           }
           roleManager(i.customId.split("->")[0]);

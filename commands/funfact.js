@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const fs = require("fs");
-const { findChannel, randomSend } = require("../functions");
+const { findChannel } = require("../functions");
+const { replyEmbed } = require("../customSend.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,9 +14,7 @@ module.exports = {
       process.env.ZENCHANNELNAME
     );
 
-    await interaction.reply(
-      randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
 
     const data = () =>
       fs.readFileSync(require.resolve("../funfacts.json"), {

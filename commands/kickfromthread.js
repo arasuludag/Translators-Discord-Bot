@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const functions = require("../functions.js");
+const { replyEmbed } = require("../customSend.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,15 +14,14 @@ module.exports = {
     const user = interaction.options.getUser("user");
 
     if (!interaction.channel.isThread()) {
-      await interaction.reply(
-        functions.randomSend({ path: "setParentError", ephemeral: true })
-      );
+      await replyEmbed(interaction, {
+        path: "setParentError",
+        ephemeral: true,
+      });
       return;
     }
     await interaction.channel.members.remove(user.id);
 
-    await interaction.reply(
-      functions.randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
   },
 };

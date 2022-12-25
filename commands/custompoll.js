@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
+const { getEmbed, replyEmbed } = require("../customSend.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -163,12 +164,12 @@ module.exports = {
               components: [],
             })
             .then(async (replyMessage) => {
-              await replyMessage.reply(functions.randomSend("poll.ended"));
+              await replyEmbed(replyMessage, "poll.ended");
               await replyMessage.channel.send(pollResultMessage);
             });
           await interaction
             .editReply(
-              functions.randomSend({
+              getEmbed({
                 path: "poll.ended",
                 ephemeral: true,
                 components: [],

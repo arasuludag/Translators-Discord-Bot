@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const functions = require("../functions.js");
+const { sendEmbed, replyEmbed } = require("../customSend.js");
+const { findChannel } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -57,11 +58,11 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
-    const suggestionChannel = functions.findChannel(
+    const suggestionChannel = findChannel(
       interaction,
       process.env.SUGGESTIONCHANNELNAME
     );
-    const lmSuggestionChannel = functions.findChannel(
+    const lmSuggestionChannel = findChannel(
       interaction,
       process.env.LMSUGGESTIONCHANNELNAME
     );
@@ -71,31 +72,23 @@ module.exports = {
     switch (true) {
       case interaction.options.getSubcommand() === "language_specific": {
         const role = interaction.options.getRole("language");
-        lmSuggestionChannel.send(
-          functions.randomSend({
-            path: "suggestion.personSuggests",
-            values: {
-              user: interaction.user.id,
-              suggestion: role.toString() + " " + suggestion,
-            },
-            title: "Language Spesific Suggestion",
-            content: role.toString(),
-          })
-        );
+        sendEmbed(lmSuggestionChannel, {
+          path: "suggestion.personSuggests",
+          values: {
+            user: interaction.user.id,
+            suggestion: role.toString() + " " + suggestion,
+          },
+          title: "Language Spesific Suggestion",
+          content: role.toString(),
+        });
 
-        interaction.user
-          .send(
-            functions.randomSend({
-              path: "suggestion.suggestionReceived",
-              values: {
-                suggestion: suggestion,
-              },
-              title: "Language Spesific Suggestion",
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(interaction.user, {
+          path: "suggestion.suggestionReceived",
+          values: {
+            suggestion: suggestion,
+          },
+          title: "Language Spesific Suggestion",
+        });
         break;
       }
 
@@ -103,94 +96,71 @@ module.exports = {
         const lm = await interaction.guild.roles.cache.find(
           (r) => r.name === process.env.LANGMANAGERROLE
         );
-        lmSuggestionChannel.send(
-          functions.randomSend({
-            path: "suggestion.personSuggests",
-            values: {
-              user: interaction.user.id,
-              suggestion: lm.toString() + " " + suggestion,
-            },
-            title: "LM Meeting Suggestion",
-            content: lm.toString(),
-          })
-        );
+        sendEmbed(lmSuggestionChannel, {
+          path: "suggestion.personSuggests",
+          values: {
+            user: interaction.user.id,
+            suggestion: lm.toString() + " " + suggestion,
+          },
+          title: "LM Meeting Suggestion",
+          content: lm.toString(),
+        });
 
-        interaction.user
-          .send(
-            functions.randomSend({
-              path: "suggestion.suggestionReceived",
-              values: {
-                suggestion: suggestion,
-              },
-              title: "LM Meeting Suggestion",
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(interaction.user, {
+          path: "suggestion.suggestionReceived",
+          values: {
+            suggestion: suggestion,
+          },
+          title: "LM Meeting Suggestion",
+        });
         break;
       }
 
       case interaction.options.getSubcommand() === "discord":
-        suggestionChannel.send(
-          functions.randomSend({
-            path: "suggestion.personSuggests",
-            values: {
-              user: interaction.user.id,
-              suggestion: suggestion,
-            },
-            title: "Discord Suggestion",
-          })
-        );
+        sendEmbed(suggestionChannel, {
+          path: "suggestion.personSuggests",
+          values: {
+            user: interaction.user.id,
+            suggestion: suggestion,
+          },
+          title: "Discord Suggestion",
+        });
 
-        interaction.user
-          .send(
-            functions.randomSend({
-              path: "suggestion.suggestionReceived",
-              values: {
-                suggestion: suggestion,
-              },
-              title: "Discord Suggestion",
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(interaction.user, {
+          path: "suggestion.suggestionReceived",
+          values: {
+            suggestion: suggestion,
+          },
+          title: "Discord Suggestion",
+        });
         break;
 
       case interaction.options.getSubcommand() === "other":
-        suggestionChannel.send(
-          functions.randomSend({
-            path: "suggestion.personSuggests",
-            values: {
-              user: interaction.user.id,
-              suggestion: suggestion,
-            },
-            title: "Other Suggestion",
-          })
-        );
+        sendEmbed(suggestionChannel, {
+          path: "suggestion.personSuggests",
+          values: {
+            user: interaction.user.id,
+            suggestion: suggestion,
+          },
+          title: "Other Suggestion",
+        });
 
-        interaction.user
-          .send(
-            functions.randomSend({
-              path: "suggestion.suggestionReceived",
-              values: {
-                suggestion: suggestion,
-              },
-              title: "Other Suggestion",
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(interaction.user, {
+          path: "suggestion.suggestionReceived",
+          values: {
+            suggestion: suggestion,
+          },
+          title: "Other Suggestion",
+        });
         break;
 
       default:
         break;
     }
 
-    await interaction.reply(
-      functions.randomSend({ path: "suggestion.acquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, {
+      path: "suggestion.acquired",
+      ephemeral: true,
+    });
   },
 };

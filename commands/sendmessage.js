@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const functions = require("../functions.js");
+const { replyEmbed } = require("../customSend.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,8 +37,6 @@ module.exports = {
       })
       .catch(console.error);
 
-    await interaction.reply(
-      functions.randomSend({ path: "requestAcquired", ephemeral: true })
-    );
+    await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
   },
 };

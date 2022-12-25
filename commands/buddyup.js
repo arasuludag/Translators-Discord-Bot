@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
+const { replyEmbed, updateEmbed, sendEmbed } = require("../customSend.js");
 const functions = require("../functions.js");
 
 module.exports = {
@@ -18,12 +19,10 @@ module.exports = {
     // People shouldn't be able to use buddyip in projects channel.
     // There is /addme sass for that.
     if (interaction.channel === process.env.PROJECTCHANNELREQUESTSCHANNELID) {
-      await interaction.reply(
-        functions.randomSend({
-          path: "noBuddyUpInProjectsChannel",
-          ephemeral: true,
-        })
-      );
+      await replyEmbed(interaction, {
+        path: "noBuddyUpInProjectsChannel",
+        ephemeral: true,
+      });
       return;
     }
 
@@ -33,12 +32,10 @@ module.exports = {
         interaction.options.getString("for")
       );
     } catch (error) {
-      await interaction.reply(
-        functions.randomSend({
-          path: "enterProperName",
-          ephemeral: true,
-        })
-      );
+      await replyEmbed(interaction, {
+        path: "enterProperName",
+        ephemeral: true,
+      });
       return;
     }
 
@@ -55,16 +52,14 @@ module.exports = {
         .setStyle("Success")
     );
 
-    await interaction.reply(
-      functions.randomSend({
-        path: "acceptThread",
-        values: {
-          thread: projectName,
-        },
-        ephemeral: true,
-        components: [button],
-      })
-    );
+    await replyEmbed(interaction, {
+      path: "acceptThread",
+      values: {
+        thread: projectName,
+      },
+      ephemeral: true,
+      components: [button],
+    });
 
     const filter = (i) => i.customId === interaction.user + interaction.id;
 
@@ -76,20 +71,14 @@ module.exports = {
 
     collector.on("collect", async (i) => {
       // Changes the message to acknowledge button press.
-      await i.update(
-        functions.randomSend({ path: "requestAcquired", components: [] })
-      );
+      await updateEmbed(i, { path: "requestAcquired", components: [] });
 
       const channel = await interaction.channel;
 
       // If someone tries to create thread under a thread, return.
       if (channel.isThread() || !channel.type === 0) {
         // If someone tries to create a thread, under a thread.
-        interaction.user
-          .send(functions.randomSend("setParentError"))
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(interaction.user, "setParentError");
         return;
       }
 
@@ -113,28 +102,20 @@ module.exports = {
 
         await thread.members.add(interaction.user.id);
 
-        await interaction.user
-          .send(
-            functions.randomSend({
-              path: "userAddNotify",
-              values: {
-                project: thread.id,
-              },
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        await sendEmbed(interaction.user, {
+          path: "userAddNotify",
+          values: {
+            project: thread.id,
+          },
+        });
 
-        await logsChannel.send(
-          functions.randomSend({
-            path: "buddyUpLog",
-            values: {
-              thread: thread.id,
-              user: interaction.user.id,
-            },
-          })
-        );
+        await sendEmbed(logsChannel, {
+          path: "buddyUpLog",
+          values: {
+            thread: thread.id,
+            user: interaction.user.id,
+          },
+        });
 
         return;
       }
@@ -150,28 +131,20 @@ module.exports = {
           if (thread.joinable) await thread.join();
           await thread.members.add(interaction.user.id);
 
-          await interaction.user
-            .send(
-              functions.randomSend({
-                path: "userAddNotify",
-                values: {
-                  project: thread.id,
-                },
-              })
-            )
-            .catch(() => {
-              console.error("Failed to send DM");
-            });
+          await sendEmbed(interaction.user, {
+            path: "userAddNotify",
+            values: {
+              project: thread.id,
+            },
+          });
 
-          await logsChannel.send(
-            functions.randomSend({
-              path: "buddyUpLog",
-              values: {
-                thread: thread.id,
-                user: interaction.user.id,
-              },
-            })
-          );
+          await sendEmbed(logsChannel, {
+            path: "buddyUpLog",
+            values: {
+              thread: thread.id,
+              user: interaction.user.id,
+            },
+          });
         });
     });
   },
