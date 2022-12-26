@@ -6,7 +6,7 @@ const { replyEmbed } = require("../customSend");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("removefunfact")
-    .setDescription("Remove all funfacts that has this string in.")
+    .setDescription("[ADMIN] Remove all funfacts that has this string in.")
     .addStringOption((option) =>
       option
         .setName("funfact")

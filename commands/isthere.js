@@ -6,12 +6,17 @@ const {
   ActionRowBuilder,
 } = require("discord.js");
 const { updateEmbed, sendEmbed, replyEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
+const {
+  findChannelByID,
+  discordStyleProjectName,
+  findChannel,
+  findCategoryByName,
+} = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("isthere")
-    .setDescription("Is there a channel named X?")
+    .setDescription("[ADMIN] Is there a channel named X?")
     .addStringOption((option) =>
       option
         .setName("channel")
@@ -22,14 +27,14 @@ module.exports = {
   async execute(interaction) {
     const channel = interaction.options.getString("channel");
 
-    const logsChannel = await functions.findChannelByID(
+    const logsChannel = await findChannelByID(
       interaction,
       process.env.LOGSCHANNELID
     );
 
-    const projectName = functions.discordStyleProjectName(channel);
+    const projectName = discordStyleProjectName(channel);
 
-    const foundChannel = await functions.findChannel(interaction, projectName);
+    const foundChannel = await findChannel(interaction, projectName);
 
     const acceptButtonCustomID = "Accept " + interaction.id;
     const rejectButtonCustomID = "Reject " + interaction.id;
@@ -129,7 +134,7 @@ module.exports = {
                 ],
               })
               .then(async (createdChannel) => {
-                const category = await functions.findCategoryByName(
+                const category = await findCategoryByName(
                   interaction,
                   process.env.PROJECTSCATEGORY
                 );

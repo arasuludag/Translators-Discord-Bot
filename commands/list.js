@@ -4,7 +4,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("list")
-    .setDescription("List people assigned this role.")
+    .setDescription("[ADMIN] List people assigned this role.")
     .addRoleOption((option) =>
       option.setName("role").setDescription("Which role?").setRequired(true)
     )

@@ -1,8 +1,11 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const { replyEmbed, sendEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
-const { findCategoryByName } = require("../functions.js");
+const {
+  findCategoryByName,
+  findChannelByID,
+  findChannel,
+} = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,11 +20,11 @@ module.exports = {
 
     await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
 
-    const approvalChannel = await functions.findChannel(
+    const approvalChannel = await findChannel(
       interaction,
       process.env.AWAITINGAPPROVALSCHANNELNAME
     );
-    const logsChannel = await functions.findChannelByID(
+    const logsChannel = await findChannelByID(
       interaction,
       process.env.LOGSCHANNELID
     );

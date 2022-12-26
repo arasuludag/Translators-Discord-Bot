@@ -1,4 +1,4 @@
-const functions = require("../functions.js");
+const { sendEmbed } = require("../customSend");
 
 async function copyto(message) {
   if (message.reference && message.mentions.channels) {
@@ -67,20 +67,14 @@ async function copyto(message) {
       });
 
       if (!noDM)
-        mentionedUser
-          .send(
-            functions.randomSend({
-              path: "messageCopiedTo",
-              values: {
-                message: repliedMessage.content,
-                channel: value.id,
-                attachment: attachment[0] ? attachment[0].url : " ",
-              },
-            })
-          )
-          .catch(() => {
-            console.error("Failed to send DM");
-          });
+        sendEmbed(mentionedUser, {
+          path: "messageCopiedTo",
+          values: {
+            message: repliedMessage.content,
+            channel: value.id,
+            attachment: attachment[0] ? attachment[0].url : " ",
+          },
+        });
     });
 
     await message.delete();

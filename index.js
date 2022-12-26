@@ -9,8 +9,9 @@ const {
   Collection,
 } = require("discord.js");
 const { commands } = require("./!commands/exclamationCommands");
-const functions = require("./functions");
+const { findChannelByID } = require("./functions");
 const { deploy } = require("./deploy-commands");
+const { sendEmbed } = require("./customSend");
 
 const client = new Client({
   intents: [
@@ -82,32 +83,28 @@ client.on("guildMemberAdd", (member) => {
       ],
     })
     .then(() => {
-      functions.findChannelByID(member, process.env.LOGSCHANNELID).send(
-        functions.randomSend({
-          path: "joinedServer",
-          values: {
-            user: member.id,
-          },
-        })
-      );
+      sendEmbed(findChannelByID(member, process.env.LOGSCHANNELID), {
+        path: "joinedServer",
+        values: {
+          user: member.id,
+        },
+      });
     })
     .catch((error) => {
-      functions
-        .findChannelByID(member, process.env.LOGSCHANNELID)
-        .send(`Probably couldn't send DM to <@${member.id}> \n \n ${error}`);
+      findChannelByID(member, process.env.LOGSCHANNELID).send(
+        `Probably couldn't send DM to <@${member.id}> \n \n ${error}`
+      );
     });
 });
 
 // Who left the server. Log it on the logs channel.
 client.on("guildMemberRemove", (member) => {
-  functions.findChannelByID(member, process.env.LOGSCHANNELID).send(
-    functions.randomSend({
-      path: "leftServer",
-      values: {
-        user: member.id,
-      },
-    })
-  );
+  sendEmbed(findChannelByID(member, process.env.LOGSCHANNELID), {
+    path: "leftServer",
+    values: {
+      user: member.id,
+    },
+  });
 });
 
 // For ! commands and funny replies.

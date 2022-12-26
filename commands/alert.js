@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { sendEmbed, replyEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
+const { findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -53,7 +53,7 @@ module.exports = {
 
     switch (true) {
       case interaction.options.getSubcommand() === "longform": {
-        const sassAlertChannel = functions.findChannelByID(
+        const sassAlertChannel = findChannelByID(
           interaction,
           process.env.SASSALERTCHANNELID
         );
@@ -82,7 +82,7 @@ module.exports = {
       }
 
       case interaction.options.getSubcommand() === "supplemental": {
-        const supplementalAlertChannel = functions.findChannelByID(
+        const supplementalAlertChannel = findChannelByID(
           interaction,
           process.env.SUPPALERTCHANNELID
         );

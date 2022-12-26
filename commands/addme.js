@@ -1,6 +1,14 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
-const functions = require("../functions.js");
+const {
+  SlashCommandBuilder,
+  ButtonBuilder,
+  ActionRowBuilder,
+} = require("discord.js");
+const {
+  findChannelByID,
+  discordStyleProjectName,
+  findChannel,
+  findCategoryByName,
+} = require("../functions.js");
 const { PermissionFlagsBits } = require("discord.js");
 const { replyEmbed, sendEmbed, updateEmbed } = require("../customSend.js");
 
@@ -40,16 +48,13 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
-    const logsChannel = functions.findChannelByID(
-      interaction,
-      process.env.LOGSCHANNELID
-    );
+    const logsChannel = findChannelByID(interaction, process.env.LOGSCHANNELID);
     const channelName = interaction.options.getString("project_name");
     const additionalInfo = interaction.options.getString("additional_info");
 
     let projectName;
     try {
-      projectName = functions.discordStyleProjectName(channelName);
+      projectName = discordStyleProjectName(channelName);
     } catch (error) {
       await replyEmbed(interaction, {
         path: "enterProperName",
@@ -73,7 +78,7 @@ module.exports = {
         (role) => role.id === process.env.MODROLEID
       );
 
-      if (!isMod) {
+      if (isMod) {
         await replyEmbed(interaction, {
           path: "addMePrompt",
           values: {
@@ -101,10 +106,7 @@ module.exports = {
               components: [],
             });
 
-            const foundChannel = await functions.findChannel(
-              interaction,
-              projectName
-            );
+            const foundChannel = await findChannel(interaction, projectName);
             if (foundChannel) {
               foundChannel.permissionOverwrites.edit(interaction.user.id, {
                 ViewChannel: true,
@@ -134,7 +136,7 @@ module.exports = {
                   ],
                 })
                 .then(async (createdChannel) => {
-                  const category = await functions.findCategoryByName(
+                  const category = await findCategoryByName(
                     interaction,
                     process.env.PROJECTSCATEGORY
                   );
@@ -158,7 +160,7 @@ module.exports = {
           });
         });
       } else {
-        const approvalChannel = functions.findChannel(
+        const approvalChannel = findChannel(
           interaction,
           process.env.AWAITINGAPPROVALSCHANNELNAME
         );
@@ -191,10 +193,7 @@ module.exports = {
             .setStyle("Danger")
         );
 
-        let foundChannel = await functions.findChannel(
-          interaction,
-          projectName
-        );
+        let foundChannel = await findChannel(interaction, projectName);
 
         await sendEmbed(approvalChannel, {
           path: "addRequest",
@@ -222,10 +221,7 @@ module.exports = {
             if (i.customId === acceptButtonCustomID) {
               // I'm double checking because if the channel didn't exist when the request was made,
               // it doesn't mean that it still doesn't exist when someone approves the request.
-              foundChannel = await functions.findChannel(
-                interaction,
-                projectName
-              );
+              foundChannel = await findChannel(interaction, projectName);
 
               if (foundChannel) {
                 foundChannel.permissionOverwrites.edit(interaction.user.id, {
@@ -263,7 +259,7 @@ module.exports = {
                     ],
                   })
                   .then(async (createdChannel) => {
-                    const category = await functions.findCategoryByName(
+                    const category = await findCategoryByName(
                       interaction,
                       process.env.PROJECTSCATEGORY
                     );
@@ -337,7 +333,7 @@ module.exports = {
         // Changes the message to acknowledge button press.
         await updateEmbed(i, { path: "requestAcquired", components: [] });
 
-        const channel = await functions.findChannelByID(
+        const channel = await findChannelByID(
           interaction,
           process.env.PROJECTCHANNELREQUESTSCHANNELID
         );

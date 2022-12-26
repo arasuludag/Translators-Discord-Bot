@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const { getEmbed, replyEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -35,9 +34,7 @@ module.exports = {
       .filter((n) => n);
 
     if (splitMessage.length > 5) {
-      await interaction.reply(
-        functions.randomSend({ path: "poll.tooMany", ephemeral: true })
-      );
+      await replyEmbed(interaction, { path: "poll.tooMany", ephemeral: true });
       return;
     }
 

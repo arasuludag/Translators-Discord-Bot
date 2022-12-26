@@ -1,5 +1,6 @@
-const functions = require("../functions.js");
 // const { isThisAlert } = require("./isThisAlert");
+
+const { replyEmbed } = require("../customSend");
 
 async function basicMessageChecking(message, client) {
   const lowerCaseMessage = message.content.toLowerCase();
@@ -17,29 +18,27 @@ async function basicMessageChecking(message, client) {
       case message.mentions.has(client.user) &&
         !message.mentions.everyone &&
         !message.content.includes("/"):
-        message
-          .reply(functions.randomSend({ path: "taggedBot" }))
-          .then((replyMessage) => {
-            if (
-              replyMessage.embeds[0].description === "Speak, friend, and enter."
-            ) {
-              const filter = (m) => {
-                return m.content.toLowerCase().includes("mellon") === true;
-              };
+        replyEmbed(message, "taggedBot").then((replyMessage) => {
+          if (
+            replyMessage.embeds[0].description === "Speak, friend, and enter."
+          ) {
+            const filter = (m) => {
+              return m.content.toLowerCase().includes("mellon") === true;
+            };
 
-              const collector = message.channel.createMessageCollector({
-                filter,
-                time: 60000,
-                max: 1,
-              });
+            const collector = message.channel.createMessageCollector({
+              filter,
+              time: 60000,
+              max: 1,
+            });
 
-              collector.on("collect", async (reaction) => {
-                await reaction.reply(
-                  "https://tenor.com/view/lord-of-the-rings-gandalf-indeed-gif-18505269"
-                );
-              });
-            }
-          });
+            collector.on("collect", async (reaction) => {
+              await reaction.reply(
+                "https://tenor.com/view/lord-of-the-rings-gandalf-indeed-gif-18505269"
+              );
+            });
+          }
+        });
         break;
 
       case message.content === "Hello there!":

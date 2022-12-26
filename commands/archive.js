@@ -1,15 +1,15 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { sendEmbed, replyEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
+const { findCategoryByName, findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("archive")
-    .setDescription("Archive this channel.")
+    .setDescription("[ADMIN] Archive this channel.")
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
-    const logsChannel = await functions.findChannelByID(
+    const logsChannel = await findChannelByID(
       interaction,
       process.env.LOGSCHANNELID
     );
@@ -20,7 +20,7 @@ module.exports = {
     }
 
     for await (let i of Array.from(Array(100).keys())) {
-      const category = functions.findCategoryByName(
+      const category = findCategoryByName(
         interaction,
         `${process.env.ARCHIVECATEGORY} ${i}🗑`
       );

@@ -5,7 +5,7 @@ const { replyEmbed } = require("../customSend.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("sendmessage")
-    .setDescription("Send a message to a particular channel as Sassy.")
+    .setDescription("[ADMIN] Send a message to a particular channel as Sassy.")
     .addStringOption((option) =>
       option
         .setName("message")

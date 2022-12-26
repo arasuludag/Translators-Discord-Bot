@@ -5,7 +5,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("backupserver")
-    .setDescription("Backup the server.")
+    .setDescription("[ADMIN] Backup the server.")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   async execute(interaction) {
     backup.setStorageFolder(__dirname + "/backups/");

@@ -1,40 +1,4 @@
-require("dotenv").config();
-const i18next = require("i18next");
-
 module.exports = {
-  // Selects a random text from a JSON array.
-  randomSend: (
-    params,
-    {
-      path = params.path ? params.path : params,
-      values = params.values ? params.values : {},
-      title = params.title,
-      content = params.content,
-      components = params.components,
-      ephemeral = params.ephemeral,
-    } = {}
-  ) => {
-    values.returnObjects = true;
-    values.interpolation = { escapeValue: false };
-
-    const description = i18next.t(path, values)[
-      Math.floor(Math.random() * i18next.t(path, values).length)
-    ];
-
-    return {
-      embeds: [
-        {
-          color: process.env.EMBEDCOLOR,
-          title: title,
-          description: description,
-        },
-      ],
-      content: content,
-      components: components,
-      ephemeral: ephemeral,
-    };
-  },
-
   // Getting and turning project name into Discords channel format. Ex. 'Hede Hodo' into 'hede-hodo'
   discordStyleProjectName: (project) => {
     const pName = project

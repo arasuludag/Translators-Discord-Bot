@@ -5,7 +5,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("listfunfacts")
-    .setDescription("List funfacts. ALL OF THEM!")
+    .setDescription("[ADMIN] List funfacts. ALL OF THEM!")
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
     const data = () =>

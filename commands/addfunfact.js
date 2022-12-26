@@ -6,7 +6,7 @@ const fs = require("fs");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("addfunfact")
-    .setDescription("Add a funfact to the list.")
+    .setDescription("[ADMIN] Add a funfact to the list.")
     .addStringOption((option) =>
       option
         .setName("funfact")

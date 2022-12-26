@@ -4,7 +4,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("stats")
-    .setDescription("Server member stats.")
+    .setDescription("[ADMIN] Server member stats.")
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
     let memberCountMessage = "";

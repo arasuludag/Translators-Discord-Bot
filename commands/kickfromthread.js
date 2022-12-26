@@ -5,7 +5,9 @@ const { replyEmbed } = require("../customSend.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("kickfromthread")
-    .setDescription("Kick someone from the thread you use this command on.")
+    .setDescription(
+      "[ADMIN] Kick someone from the thread you use this command on."
+    )
     .addUserOption((option) =>
       option.setName("user").setDescription("Who?").setRequired(true)
     )

@@ -2,7 +2,7 @@ require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const { replyEmbed, updateEmbed, sendEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
+const { discordStyleProjectName, findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -28,7 +28,7 @@ module.exports = {
 
     let projectName;
     try {
-      projectName = functions.discordStyleProjectName(
+      projectName = discordStyleProjectName(
         interaction.options.getString("for")
       );
     } catch (error) {
@@ -39,7 +39,7 @@ module.exports = {
       return;
     }
 
-    const logsChannel = await functions.findChannelByID(
+    const logsChannel = await findChannelByID(
       interaction,
       process.env.LOGSCHANNELID
     );

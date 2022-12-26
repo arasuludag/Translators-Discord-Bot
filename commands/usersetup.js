@@ -1,5 +1,8 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  ButtonBuilder,
+  ActionRowBuilder,
+} = require("discord.js");
 const { findChannel, findChannelByID } = require("../functions.js");
 const i18next = require("i18next");
 const { sendEmbed, replyEmbed } = require("../customSend.js");

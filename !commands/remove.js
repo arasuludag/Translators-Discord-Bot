@@ -1,10 +1,8 @@
-const functions = require("../functions.js");
+const { sendEmbed } = require("../customSend");
+const { findChannelByID } = require("../functions");
 
 async function remove(message) {
-  const logsChannel = await functions.findChannelByID(
-    message,
-    process.env.LOGSCHANNELID
-  );
+  const logsChannel = await findChannelByID(message, process.env.LOGSCHANNELID);
 
   const mentionedChannel = message.mentions.channels;
   const mentionedMembersMap = message.mentions.members;
@@ -19,24 +17,18 @@ async function remove(message) {
               ViewChannel: false,
             });
           } catch (error) {
-            await message.author
-              .send(functions.randomSend("setParentError"))
-              .catch(() => {
-                console.error("Failed to send DM");
-              });
+            await sendEmbed(message.author, "setParentError");
             return;
           }
 
-          await logsChannel.send(
-            functions.randomSend({
-              path: "removedFromChannel",
-              values: {
-                user: value.user.id,
-                project: keyChannel,
-                approved: message.author.id,
-              },
-            })
-          );
+          await sendEmbed(logsChannel, {
+            path: "removedFromChannel",
+            values: {
+              user: value.user.id,
+              project: keyChannel,
+              approved: message.author.id,
+            },
+          });
         });
       });
     message.delete();

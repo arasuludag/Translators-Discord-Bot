@@ -5,7 +5,7 @@ const { replyEmbed, sendEmbed } = require("../customSend.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("remindme")
-    .setDescription("Set a reminder.")
+    .setDescription("[ADMIN] Set a reminder.")
     .addStringOption((option) =>
       option
         .setName("for_what")

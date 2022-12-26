@@ -1,12 +1,12 @@
 require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const { replyEmbed } = require("../customSend.js");
-const functions = require("../functions.js");
+const { replyEmbed, sendEmbed } = require("../customSend.js");
+const { findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("delete")
-    .setDescription("ADMIN Delete X messages from above.")
+    .setDescription("[ADMIN] Delete X messages from above.")
     .addIntegerOption((option) =>
       option
         .setName("how_many")
@@ -17,7 +17,7 @@ module.exports = {
   async execute(interaction) {
     const howMany = interaction.options.getInteger("how_many");
 
-    const logsChannel = await functions.findChannelByID(
+    const logsChannel = await findChannelByID(
       interaction,
       process.env.LOGSCHANNELID
     );
@@ -30,16 +30,14 @@ module.exports = {
         .bulkDelete(howMany)
         .then(
           async (messages) =>
-            await logsChannel.send(
-              functions.randomSend({
-                path: "deletedMessages",
-                values: {
-                  user: interaction.user.id,
-                  channel: interaction.channel.id,
-                  howMany: messages.size,
-                },
-              })
-            )
+            await sendEmbed(logsChannel, {
+              path: "deletedMessages",
+              values: {
+                user: interaction.user.id,
+                channel: interaction.channel.id,
+                howMany: messages.size,
+              },
+            })
         )
         .catch(async (error) => {
           await interaction.reply({

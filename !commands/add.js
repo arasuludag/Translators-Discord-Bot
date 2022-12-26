@@ -1,10 +1,8 @@
-const functions = require("../functions.js");
+const { sendEmbed } = require("../customSend.js");
+const { findChannelByID } = require("../functions.js");
 
 async function add(message) {
-  const logsChannel = await functions.findChannelByID(
-    message,
-    process.env.LOGSCHANNELID
-  );
+  const logsChannel = await findChannelByID(message, process.env.LOGSCHANNELID);
 
   const mentionedChannel = message.mentions.channels;
   const mentionedMembersMap = message.mentions.members;
@@ -19,36 +17,24 @@ async function add(message) {
               ViewChannel: true,
             });
           } catch (error) {
-            await message.author
-              .send(functions.randomSend("setParentError"))
-              .catch(() => {
-                console.error("Failed to send DM");
-              });
+            await sendEmbed(message.author, "setParentError");
             return;
           }
 
-          await logsChannel.send(
-            functions.randomSend({
-              path: "channelExisted_RA",
-              values: {
-                user: value.user.id,
-                project: keyChannel,
-                approved: message.author.id,
-              },
-            })
-          );
-          await value.user
-            .send(
-              functions.randomSend({
-                path: "userAddNotify",
-                values: {
-                  project: keyChannel,
-                },
-              })
-            )
-            .catch(() => {
-              console.error("Failed to send DM");
-            });
+          await sendEmbed(logsChannel, {
+            path: "channelExisted_RA",
+            values: {
+              user: value.user.id,
+              project: keyChannel,
+              approved: message.author.id,
+            },
+          });
+          await sendEmbed(value.user, {
+            path: "userAddNotify",
+            values: {
+              project: keyChannel,
+            },
+          });
         });
       });
     message.delete();

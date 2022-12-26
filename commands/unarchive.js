@@ -6,7 +6,7 @@ const { findCategoryByName, findChannelByID } = require("../functions.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("unarchive")
-    .setDescription("Unarchive this channel.")
+    .setDescription("[ADMIN] Unarchive this channel.")
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
     const logsChannel = await findChannelByID(
