@@ -1,4 +1,3 @@
-require("dotenv").config();
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { replyEmbed } = require("../customSend.js");
 

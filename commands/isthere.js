@@ -1,4 +1,3 @@
-require("dotenv").config();
 const {
   SlashCommandBuilder,
   PermissionFlagsBits,
@@ -150,7 +149,14 @@ module.exports = {
                   path: "channelCreated",
                   values: {
                     createdChannel: createdChannel.id,
+                  },
+                });
+
+                sendEmbed(logsChannel, {
+                  path: "channelExisted",
+                  values: {
                     user: interaction.user.id,
+                    project: createdChannel.id,
                   },
                 });
               })

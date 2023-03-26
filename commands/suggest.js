@@ -25,28 +25,6 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
-        .setName("lm_meetings")
-        .setDescription("LM Meetings suggestion")
-        .addStringOption((option) =>
-          option
-            .setName("suggestion")
-            .setDescription("Your suggestion.")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("discord")
-        .setDescription("Suggestion about the channel.")
-        .addStringOption((option) =>
-          option
-            .setName("suggestion")
-            .setDescription("Your suggestion.")
-            .setRequired(true)
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
         .setName("other")
         .setDescription("Any other suggestions.")
         .addStringOption((option) =>
@@ -91,49 +69,6 @@ module.exports = {
         });
         break;
       }
-
-      case interaction.options.getSubcommand() === "lm_meetings": {
-        const lm = await interaction.guild.roles.cache.find(
-          (r) => r.name === process.env.LANGMANAGERROLE
-        );
-        sendEmbed(lmSuggestionChannel, {
-          path: "suggestion.personSuggests",
-          values: {
-            user: interaction.user.id,
-            suggestion: lm.toString() + " " + suggestion,
-          },
-          title: "LM Meeting Suggestion",
-          content: lm.toString(),
-        });
-
-        sendEmbed(interaction.user, {
-          path: "suggestion.suggestionReceived",
-          values: {
-            suggestion: suggestion,
-          },
-          title: "LM Meeting Suggestion",
-        });
-        break;
-      }
-
-      case interaction.options.getSubcommand() === "discord":
-        sendEmbed(suggestionChannel, {
-          path: "suggestion.personSuggests",
-          values: {
-            user: interaction.user.id,
-            suggestion: suggestion,
-          },
-          title: "Discord Suggestion",
-        });
-
-        sendEmbed(interaction.user, {
-          path: "suggestion.suggestionReceived",
-          values: {
-            suggestion: suggestion,
-          },
-          title: "Discord Suggestion",
-        });
-        break;
 
       case interaction.options.getSubcommand() === "other":
         sendEmbed(suggestionChannel, {

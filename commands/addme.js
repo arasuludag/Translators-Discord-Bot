@@ -60,8 +60,6 @@ module.exports = {
         path: "enterProperName",
         ephemeral: true,
       });
-
-      console.log(channelName, projectName);
       return;
     }
 
@@ -94,11 +92,11 @@ async function manualAdd(
   logsChannel,
   additionalInfo
 ) {
-  const isMod = await interaction.member.roles.cache.some(
-    (role) => role.id === process.env.MODROLEID
+  const isPlint = await interaction.member.roles.cache.some(
+    (role) => role.name === "Plint"
   );
 
-  if (isMod) {
+  if (isPlint) {
     await replyEmbed(interaction, {
       path: "addMePrompt",
       values: {
@@ -170,7 +168,14 @@ async function manualAdd(
                 path: "channelCreated",
                 values: {
                   createdChannel: createdChannel.id,
+                },
+              });
+
+              sendEmbed(logsChannel, {
+                path: "channelExisted",
+                values: {
                   user: interaction.user.id,
+                  project: createdChannel.id,
                 },
               });
             });
@@ -195,19 +200,33 @@ async function manualAdd(
       ephemeral: true,
     });
 
-    const acceptButtonCustomID = "Accept " + interaction.id;
-    const rejectButtonCustomID = "Reject " + interaction.id;
+    const acceptButtonID = "Accept " + interaction.id;
+    const rejectPNButtonID = "RejectPN " + interaction.id;
+    const rejectAIButtonID = "RejectAI " + interaction.id;
+    const rejectNWPButtonID = "RejectNWP " + interaction.id;
 
     const acceptButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(acceptButtonCustomID)
+        .setCustomId(acceptButtonID)
         .setLabel("Approve")
         .setStyle("Success")
     );
-    const rejectButton = new ActionRowBuilder().addComponents(
+    const rejectPNButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(rejectButtonCustomID)
-        .setLabel("Reject")
+        .setCustomId(rejectPNButtonID)
+        .setLabel("Reject - Project Name")
+        .setStyle("Danger")
+    );
+    const rejectAIButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(rejectAIButtonID)
+        .setLabel("Reject - Additional Info")
+        .setStyle("Danger")
+    );
+    const rejectNWPButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(rejectNWPButtonID)
+        .setLabel("Reject - Not Working on the Project")
         .setStyle("Danger")
     );
 
@@ -220,7 +239,12 @@ async function manualAdd(
         projectName: foundChannel ? `<#${foundChannel.id}>` : projectName,
         additionalInfo: additionalInfo,
       },
-      components: [acceptButton, rejectButton],
+      components: [
+        acceptButton,
+        rejectPNButton,
+        rejectAIButton,
+        rejectNWPButton,
+      ],
     }).then((replyMessage) => {
       const filter = (i) => interaction.id === i.customId.split(" ")[1];
 
@@ -235,7 +259,7 @@ async function manualAdd(
         });
         replyMessage.react("🍻");
 
-        if (i.customId === acceptButtonCustomID) {
+        if (i.customId === acceptButtonID) {
           // I'm double checking because if the channel didn't exist when the request was made,
           // it doesn't mean that it still doesn't exist when someone approves the request.
           foundChannel = await findChannel(interaction, projectName);
@@ -292,7 +316,14 @@ async function manualAdd(
                   path: "channelCreated_RA",
                   values: {
                     createdChannel: createdChannel.id,
+                  },
+                });
+
+                sendEmbed(logsChannel, {
+                  path: "channelExisted_RA",
+                  values: {
                     user: interaction.user.id,
+                    project: createdChannel.id,
                     approved: i.user.id,
                   },
                 });
@@ -310,18 +341,39 @@ async function manualAdd(
               });
           }
         } else {
+          let reason = "";
+
+          switch (i.customId) {
+            case rejectPNButtonID:
+              reason = "Project Name";
+              break;
+
+            case rejectAIButtonID:
+              reason = "Additional Info";
+              break;
+
+            case rejectNWPButtonID:
+              reason = "Not Working on the Project";
+              break;
+
+            default:
+              break;
+          }
+
           sendEmbed(logsChannel, {
             path: "requestAddRejected",
             values: {
               channel: projectName,
               user: interaction.user.id,
               approved: i.user.id,
+              reason: reason,
             },
           });
           sendEmbed(interaction.user, {
             path: "requestAddRejectedDM",
             values: {
               channel: projectName,
+              reason: reason,
             },
           });
         }

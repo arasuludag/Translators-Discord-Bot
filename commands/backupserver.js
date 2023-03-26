@@ -1,4 +1,3 @@
-require("dotenv").config();
 const backup = require("discord-backup");
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 

@@ -36,30 +36,24 @@
     "<@{{user}}> wants to be added to {{projectName}}.\n \nAdditional Info: {{additionalInfo}}"
   ],
 
-  "channelExisted": [
-    "There is already a channel called <#{{project}}>.\n <@{{user}}> has been added to the channel."
-  ],
+  "channelExisted": ["<@{{user}}> has been added to <#{{project}}>."],
 
   "channelExisted_RA": [
-    "There is already a channel called <#{{project}}>.\n <@{{user}}> has been added to the channel.\n \n The request has been approved by <@{{approved}}>."
+    "<@{{user}}> has been added to <#{{project}}>.\n \n The request has been approved by <@{{approved}}>."
   ],
 
   "userAddNotify": ["You now have access to <#{{project}}>!"],
 
-  "channelCreated": [
-    "<#{{createdChannel}}> channel has been created and <@{{user}}> has been added."
-  ],
+  "channelCreated": ["<#{{createdChannel}}> channel has been created."],
 
-  "channelCreated_RA": [
-    "<#{{createdChannel}}> channel has been created and <@{{user}}> has been added by <@{{approved}}>."
-  ],
+  "channelCreated_RA": ["<#{{createdChannel}}> channel has been created."],
 
   "requestAddRejected": [
-    "<@{{user}}>'s request to join {{channel}} has been rejected by <@{{approved}}>."
+    "<@{{user}}>'s request to join {{channel}} has been rejected by <@{{approved}}>. \n Reason: {{reason}}"
   ],
 
   "requestAddRejectedDM": [
-    "Your request to access the channel for {{channel}} has been rejected. Please check the spelling of the project name and if you have followed all of the PM's instructions upon assignment. Otherwise, you can contact our admins through the **/suggest other** command."
+    "Your request to access the channel for {{channel}} has been rejected. \n Reason: {{reason}}"
   ],
 
   "channelCreatedWOAdd": [
