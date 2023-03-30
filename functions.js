@@ -37,4 +37,9 @@ module.exports = {
       (c) => c.name == channelName && c.type === 4
     );
   },
+
+  // Finds channel by ID.
+  findUserByID: (client, userID) => {
+    return client.users.fetch(userID);
+  },
 };

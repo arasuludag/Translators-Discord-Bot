@@ -45,7 +45,8 @@ module.exports = {
     await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
 
     const acceptButtonCustomID = "Accept " + interaction.id;
-    const rejectButtonCustomID = "Reject " + interaction.id;
+    const rejectNameButtonCustomID = "RejectName " + interaction.id;
+    const rejectTLButtonCustomID = "RejectTL " + interaction.id;
 
     const acceptButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -53,10 +54,16 @@ module.exports = {
         .setLabel("Approve")
         .setStyle("Success")
     );
-    const rejectButton = new ActionRowBuilder().addComponents(
+    const rejectNameButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(rejectButtonCustomID)
-        .setLabel("Reject")
+        .setCustomId(rejectNameButtonCustomID)
+        .setLabel("Reject - Name")
+        .setStyle("Danger")
+    );
+    const rejectTargetLangButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(rejectTLButtonCustomID)
+        .setLabel("Reject - Target Language")
         .setStyle("Danger")
     );
 
@@ -67,7 +74,7 @@ module.exports = {
         nickName: nickName,
         role: role.id,
       },
-      components: [acceptButton, rejectButton],
+      components: [acceptButton, rejectNameButton, rejectTargetLangButton],
     }).then((replyMessage) => {
       const filter = (i) => interaction.id === i.customId.split(" ")[1];
 
@@ -77,10 +84,10 @@ module.exports = {
       });
 
       collector.on("collect", async (i) => {
-        await i.update({
-          components: [],
-        });
-        replyMessage.react("🍻");
+        // await i.update({
+        //   components: [],
+        // });
+        // replyMessage.react("🍻");
         if (i.customId === acceptButtonCustomID) {
           interaction.member.setNickname(nickName).catch(() => {
             sendEmbed(interaction.user, "setup.error");
@@ -150,12 +157,28 @@ module.exports = {
             });
           }
         } else {
+          let rejectInfo = "";
+
+          switch (i.customId) {
+            case rejectNameButtonCustomID:
+              rejectInfo = "name";
+              break;
+
+            case rejectTLButtonCustomID:
+              rejectInfo = "target language";
+              break;
+
+            default:
+              break;
+          }
+
           sendEmbed(logsChannel, {
             path: "setup.rejected",
             values: {
               user: interaction.user.id,
               nickName: nickName,
               role: role.id,
+              reason: rejectInfo,
             },
           });
           sendEmbed(interaction.user, {
@@ -163,9 +186,12 @@ module.exports = {
             values: {
               user: interaction.user.id,
               reception: process.env.RECEPTIONCHANNELID,
+              reason: rejectInfo,
             },
           });
         }
+
+        await i.message.delete();
       });
     });
   },

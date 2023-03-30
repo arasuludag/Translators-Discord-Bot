@@ -254,10 +254,10 @@ async function manualAdd(
       });
 
       collector.on("collect", async (i) => {
-        await i.update({
-          components: [],
-        });
-        replyMessage.react("🍻");
+        // await i.update({
+        //   components: [],
+        // });
+        // replyMessage.react("🍻");
 
         if (i.customId === acceptButtonID) {
           // I'm double checking because if the channel didn't exist when the request was made,
@@ -275,6 +275,7 @@ async function manualAdd(
                 user: interaction.user.id,
                 project: foundChannel.id,
                 approved: i.user.id,
+                additionalInfo: additionalInfo,
               },
             });
             sendEmbed(interaction.user, {
@@ -313,7 +314,7 @@ async function manualAdd(
                   });
 
                 sendEmbed(logsChannel, {
-                  path: "channelCreated_RA",
+                  path: "channelCreated",
                   values: {
                     createdChannel: createdChannel.id,
                   },
@@ -325,6 +326,7 @@ async function manualAdd(
                     user: interaction.user.id,
                     project: createdChannel.id,
                     approved: i.user.id,
+                    additionalInfo: additionalInfo,
                   },
                 });
 
@@ -345,15 +347,18 @@ async function manualAdd(
 
           switch (i.customId) {
             case rejectPNButtonID:
-              reason = "Project Name";
+              reason =
+                "Please make sure you've entered the correct **project name** and try again.";
               break;
 
             case rejectAIButtonID:
-              reason = "Additional Info";
+              reason =
+                "Please make sure you've entered the correct **additional info** and try again.";
               break;
 
             case rejectNWPButtonID:
-              reason = "Not Working on the Project";
+              reason =
+                "We were unable to confirm your name on this project. If you are assigned to the project and think this is an error, please contact /help so it can be fixed.";
               break;
 
             default:
@@ -377,6 +382,8 @@ async function manualAdd(
             },
           });
         }
+
+        await i.message.delete();
       });
     });
   }
@@ -408,13 +415,6 @@ async function sassAdd(interaction, projectName, button, logsChannel) {
       interaction,
       process.env.PROJECTCHANNELREQUESTSCHANNELID
     );
-
-    // If someone tries to create thread under a thread, return.
-    if (channel.isThread() || !channel.type === 0) {
-      // If someone tries to create a thread, under a thread.
-      sendEmbed(interaction.user, "setParentError");
-      return;
-    }
 
     // Find thread.
     let thread = await channel.threads.cache.find(
@@ -459,7 +459,7 @@ async function sassAdd(interaction, projectName, button, logsChannel) {
         name: projectName,
         autoArchiveDuration: 10080,
         type: process.env.THREADTYPE,
-        reason: "For " + interaction.options.getString("for"),
+        reason: "For " + interaction.options.getString("project_name"),
       })
       .then(async (thread) => {
         if (thread.joinable) await thread.join();
@@ -483,7 +483,7 @@ async function sassAdd(interaction, projectName, button, logsChannel) {
         await sendEmbed(channel, {
           path: "threadCreated",
           values: {
-            thread: interaction.options.getString("for"),
+            thread: interaction.options.getString("project_name"),
             user: interaction.user.id,
           },
         });

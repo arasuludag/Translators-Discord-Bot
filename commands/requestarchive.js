@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  ChannelType,
+} = require("discord.js");
 const { ButtonBuilder, ActionRowBuilder } = require("discord.js");
 const { replyEmbed, sendEmbed } = require("../customSend.js");
 const {
@@ -18,7 +22,19 @@ module.exports = {
   async execute(interaction) {
     const reasonText = interaction.options.getString("reason");
 
-    await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
+    if (
+      !interaction.channel.type === ChannelType.GuildText ||
+      interaction.channel.isThread()
+    )
+      return await replyEmbed(interaction, {
+        path: "setParentError",
+        ephemeral: true,
+      });
+
+    await replyEmbed(interaction, {
+      path: "requestAcquired",
+      ephemeral: true,
+    });
 
     const approvalChannel = await findChannel(
       interaction,
