@@ -302,6 +302,7 @@ async function manualAdd(
                     user: interaction.user.id,
                     project: createdChannel.id,
                     approved: i.user.id,
+                    additionalInfo: additionalInfo,
                   },
                 });
 
