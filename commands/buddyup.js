@@ -198,13 +198,6 @@ async function sassAdd(interaction, projectName, button, logsChannel) {
       process.env.PROJECTCHANNELREQUESTSCHANNELID
     );
 
-    // If someone tries to create thread under a thread, return.
-    if (channel.isThread() || !channel.type === 0) {
-      // If someone tries to create a thread, under a thread.
-      sendEmbed(interaction.user, "setParentError");
-      return;
-    }
-
     // Find thread.
     let thread = await channel.threads.cache.find(
       (x) => x.name === projectName
