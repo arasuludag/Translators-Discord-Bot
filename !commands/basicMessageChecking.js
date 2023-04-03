@@ -56,7 +56,7 @@ async function basicMessageChecking(message, client) {
         !message.content.includes("/"):
         replyEmbed(message, { path: "taggedBot" }).then((replyMessage) => {
           if (
-            replyMessage.embeds[0].description === "Speak, friend, and enter."
+            replyMessage.embeds[0]?.description === "Speak, friend, and enter."
           ) {
             const filter = (m) => {
               return m.content.toLowerCase().includes("mellon") === true;

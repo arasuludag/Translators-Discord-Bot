@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const { replyEmbed } = require("../customSend.js");
+const { replyEmbed, sendEmbed } = require("../customSend.js");
+const { findChannelByID } = require("../functions");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -19,12 +20,16 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
-    const user = interaction.options.getUser("user");
+    const logsChannel = await findChannelByID(
+      interaction,
+      process.env.LOGSCHANNELID
+    );
 
+    const user = interaction.options.getUser("user");
     const message = interaction.options.getString("message");
     const title = interaction.options.getString("title");
 
-    user
+    await user
       .send({
         embeds: [
           {
@@ -35,6 +40,14 @@ module.exports = {
         ],
       })
       .catch(console.error);
+
+    sendEmbed(logsChannel, {
+      path: "userSentDMtoUser",
+      values: {
+        sendingUserID: interaction.user.id,
+        recievingUserID: user.id,
+      },
+    });
 
     await replyEmbed(interaction, { path: "requestAcquired", ephemeral: true });
   },

@@ -33,19 +33,19 @@
   ],
 
   "addRequest": [
-    "<@{{user}}> wants to be added to {{projectName}}.\n \nAdditional Info: {{additionalInfo}}"
+    "<@{{user}}> wants to be added to {{projectChannel}}.\n \n**Project Name:** {{projectName}} \n**Additional Info:** {{additionalInfo}}"
   ],
 
   "channelExisted": ["<@{{user}}> has been added to <#{{project}}>."],
 
   "channelExisted_RA": [
-    "<@{{user}}> has been added to <#{{project}}>.\n \n The request has been approved by <@{{approved}}>. \n \nAdditional Info: {{additionalInfo}}"
+    "<@{{user}}> has been added to <#{{project}}>.\n \n The request has been approved by <@{{approved}}>.\n \n**Project Name:** {{projectName}} \n**Additional Info:** {{additionalInfo}}"
   ],
 
   "userAddNotify": ["You now have access to <#{{project}}>!"],
 
   "channelCreated": [
-    "<#{{createdChannel}}> channel has been created upon request."
+    "<#{{createdChannel}}> channel has been created upon request. \n \n**Project Name:** {{projectName}}"
   ],
 
   "requestAddRejected": [
@@ -262,5 +262,9 @@
     "requestAcquired": [
       "We've received your request for assistance. One of our admins will get back to you as soon as possible!\n \nPlease find a copy of your message below: \n \n{{text}}"
     ]
-  }
+  },
+
+  "userSentDMtoUser": [
+    "<@{{sendingUserID}}> sent <@{{recievingUserID}}> a private message using `/dm`."
+  ]
 }

@@ -56,7 +56,7 @@ module.exports = {
             user: interaction.user.id,
             suggestion: role.toString() + " " + suggestion,
           },
-          title: "Language Spesific Suggestion",
+          title: "Language Specific Suggestion",
           content: role.toString(),
         });
 
@@ -65,7 +65,7 @@ module.exports = {
           values: {
             suggestion: suggestion,
           },
-          title: "Language Spesific Suggestion",
+          title: "Language Specific Suggestion",
         });
         break;
       }

@@ -137,6 +137,7 @@ async function manualAdd(
                 path: "channelCreated",
                 values: {
                   createdChannel: createdChannel.id,
+                  projectName: projectName,
                 },
               });
 
@@ -213,7 +214,8 @@ async function manualAdd(
       path: "addRequest",
       values: {
         user: interaction.user.id,
-        projectName: foundChannel ? `<#${foundChannel.id}>` : projectName,
+        projectChannel: foundChannel ? `<#${foundChannel.id}>` : projectName,
+        projectName: projectName,
         additionalInfo: additionalInfo,
       },
       components: [
@@ -252,6 +254,8 @@ async function manualAdd(
                 user: interaction.user.id,
                 project: foundChannel.id,
                 approved: i.user.id,
+                additionalInfo: additionalInfo,
+                projectName: projectName,
               },
             });
             sendEmbed(interaction.user, {
@@ -293,6 +297,7 @@ async function manualAdd(
                   path: "channelCreated",
                   values: {
                     createdChannel: createdChannel.id,
+                    projectName: projectName,
                   },
                 });
 
@@ -303,6 +308,7 @@ async function manualAdd(
                     project: createdChannel.id,
                     approved: i.user.id,
                     additionalInfo: additionalInfo,
+                    projectName: projectName,
                   },
                 });
 
