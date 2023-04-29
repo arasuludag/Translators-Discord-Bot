@@ -259,11 +259,6 @@ async function manualAdd(
       });
 
       collector.on("collect", async (i) => {
-        // await i.update({
-        //   components: [],
-        // });
-        // replyMessage.react("🍻");
-
         if (i.customId === acceptButtonID) {
           // I'm double checking because if the channel didn't exist when the request was made,
           // it doesn't mean that it still doesn't exist when someone approves the request.

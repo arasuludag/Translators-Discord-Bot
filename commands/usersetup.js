@@ -84,20 +84,18 @@ module.exports = {
       });
 
       collector.on("collect", async (i) => {
-        // await i.update({
-        //   components: [],
-        // });
-        // replyMessage.react("🍻");
         if (i.customId === acceptButtonCustomID) {
           interaction.member.setNickname(nickName).catch(() => {
             sendEmbed(interaction.user, "setup.error");
           });
           interaction.member.roles.add(role);
 
-          const roleDTT = interaction.guild.roles.cache.find(
-            (r) => r.name === process.env.DTTROLENAME
-          );
-          interaction.member.roles.add(roleDTT);
+          if (role.name !== "Plint") {
+            const roleDTT = interaction.guild.roles.cache.find(
+              (r) => r.name === process.env.DTTROLENAME
+            );
+            interaction.member.roles.add(roleDTT);
+          }
 
           sendEmbed(logsChannel, {
             path: "setup.accepted",

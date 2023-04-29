@@ -87,10 +87,6 @@ module.exports = {
       });
 
       collector.on("collect", async (i) => {
-        await i.update({
-          components: [],
-        });
-        replyMessage.react("🍻");
         if (i.customId === acceptButtonCustomID) {
           if (interaction.channel.isThread()) {
             await sendEmbed(i.user, "setParentError");
@@ -140,6 +136,8 @@ module.exports = {
             },
           });
         }
+
+        await i.message.delete();
       });
     });
   },
