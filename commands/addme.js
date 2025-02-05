@@ -182,6 +182,15 @@ async function manualAdd(
                   projectName: projectName,
                 },
               });
+            }).catch((error) => {
+              interaction.user.send(`There was an error creating the channel ${projectName} that you asked for.
+                You may need to send the request again.`);
+
+              logsChannel.send(
+                `Error: There was an error while creating the channel ${projectName}
+                You may have exceeded the channel limit.
+                ${error}`
+              );
             });
         }
       });
@@ -342,7 +351,14 @@ async function manualAdd(
                 });
               })
               .catch((error) => {
-                logsChannel.send("Error. ", error);
+                interaction.user.send(`There was an error creating the channel ${projectName} that you asked for.
+                You may need to send the request again.`);
+
+                logsChannel.send(
+                  `Error: There was an error while creating the channel ${projectName}
+                You may have exceeded the channel limit.
+                ${error}`
+                );
               });
           }
         } else {

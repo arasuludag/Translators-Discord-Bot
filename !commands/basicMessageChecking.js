@@ -89,7 +89,7 @@ async function basicMessageChecking(message, client) {
         );
         break;
 
-      case lowerCaseMessage.includes("man ass"):
+      case message.content.includes("Man Ass"):
         message.react("🍑");
         break;
 
@@ -111,7 +111,7 @@ async function basicMessageChecking(message, client) {
         );
         break;
 
-      case lowerCaseMessage.includes("vaco"):
+      case message.content.includes("VACO"):
         message.react("💩");
         break;
 

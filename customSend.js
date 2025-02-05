@@ -15,7 +15,8 @@ function getEmbed(params) {
   const description = i18next.t(path, values);
 
   const randomDescription =
-    description[Math.floor(Math.random() * description.length)];
+    description[Math.floor(Math.random() * description.length)] ||
+    `${path} is problematic. Contact Admins.`;
 
   return {
     embeds: [
