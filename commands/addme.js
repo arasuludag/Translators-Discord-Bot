@@ -10,7 +10,9 @@ const {
   findCategoryByName,
 } = require("../functions.js");
 const { PermissionFlagsBits } = require("discord.js");
-const { replyEmbed, sendEmbed, updateEmbed } = require("../customSend.js");
+const { replyEmbed, sendEmbed } = require("../customSend.js");
+const AddmeRequest = require("../models/AddmeRequest");
+const ProjectCredential = require("../models/ProjectCredential");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -31,7 +33,7 @@ module.exports = {
         .addStringOption((option) =>
           option
             .setName("additional_info")
-            .setDescription("Why?")
+            .setDescription("Additional information or verification code")
             .setRequired(true)
         )
     )
@@ -50,7 +52,7 @@ module.exports = {
   async execute(interaction) {
     const logsChannel = findChannelByID(interaction, process.env.LOGSCHANNELID);
     const channelName = interaction.options.getString("project_name");
-    const additionalInfo = interaction.options.getString("additional_info");
+    const additionalInfo = interaction.options.getString("additional_info") || "";
 
     let projectName;
     try {
@@ -63,10 +65,9 @@ module.exports = {
       return;
     }
 
-    // Confirm button.
     const button = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(interaction.user + interaction.id)
+        .setCustomId(`translators-addme-confirm-${interaction.user.id}-${interaction.id}`)
         .setLabel("Confirm")
         .setStyle("Success")
     );
@@ -80,7 +81,7 @@ module.exports = {
         additionalInfo
       );
     } else {
-      await sassAdd(interaction, projectName, button, logsChannel);
+      await sassAdd(interaction, projectName, button);
     }
   },
 };
@@ -93,10 +94,27 @@ async function manualAdd(
   additionalInfo
 ) {
   const isPlint = await interaction.member.roles.cache.some(
-    (role) => role.name === "Plint"
+    (role) => role.name === process.env.PROJECTMANAGERROLENAME
   );
 
   if (isPlint) {
+    // For Plint users who can self-approve
+    try {
+      await AddmeRequest.create({
+        userId: interaction.user.id,
+        username: interaction.user.tag,
+        projectName: projectName,
+        additionalInfo: additionalInfo || "",
+        requestType: "manual",
+        messageId: "pending",
+        interactionId: interaction.id,
+        status: "pending",
+      });
+    } catch (error) {
+      console.error("Error saving Plint request to MongoDB:", error);
+      logsChannel.send(`Error saving Plint request to MongoDB: ${error.message}`);
+    }
+
     await replyEmbed(interaction, {
       path: "addMePrompt",
       values: {
@@ -104,98 +122,40 @@ async function manualAdd(
       },
       components: [button],
       ephemeral: true,
-    }).then(() => {
-      const filter = (i) =>
-        i.customId === interaction.user + interaction.id &&
-        i.user.id === interaction.user.id;
-
-      const collector = interaction.channel.createMessageComponentCollector({
-        filter,
-        max: 1,
-        time: 300000,
-      });
-
-      collector.on("collect", async (i) => {
-        updateEmbed(i, {
-          path: "requestAcquired",
-          ephemeral: true,
-          components: [],
-        });
-
-        const foundChannel = await findChannel(interaction, projectName);
-        if (foundChannel) {
-          foundChannel.permissionOverwrites.edit(interaction.user.id, {
-            ViewChannel: true,
-          });
-
-          sendEmbed(logsChannel, {
-            path: "channelExisted",
-            values: {
-              user: interaction.user.id,
-              project: foundChannel.id,
-            },
-          });
-        } else {
-          await interaction.guild.channels
-            .create({
-              name: projectName,
-              type: 0,
-              permissionOverwrites: [
-                {
-                  id: interaction.guild.id,
-                  deny: [PermissionFlagsBits.ViewChannel],
-                },
-                {
-                  id: interaction.user.id,
-                  allow: [PermissionFlagsBits.ViewChannel],
-                },
-              ],
-            })
-            .then(async (createdChannel) => {
-              const category = await findCategoryByName(
-                interaction,
-                process.env.PROJECTSCATEGORY
-              );
-              await createdChannel
-                .setParent(category.id, { lockPermissions: false })
-                .catch((error) => {
-                  logsChannel.send(
-                    "Error: Setting the category of channel. \n " + error
-                  );
-                });
-
-              sendEmbed(logsChannel, {
-                path: "channelCreated",
-                values: {
-                  createdChannel: createdChannel.id,
-                  projectName: projectName,
-                },
-              });
-
-              sendEmbed(logsChannel, {
-                path: "channelExisted_RA",
-                values: {
-                  user: interaction.user.id,
-                  project: createdChannel.id,
-                  approved: i.user.id,
-                  additionalInfo: additionalInfo,
-                  projectName: projectName,
-                },
-              });
-            }).catch((error) => {
-              interaction.user.send(`There was an error creating the channel ${projectName} that you asked for.
-                You may need to send the request again.`);
-
-              logsChannel.send(
-                `Error: There was an error while creating the channel ${projectName}
-                You may have exceeded the channel limit.
-                ${error}`
-              );
-            });
-        }
-      });
     });
   } else {
+    if (additionalInfo) {
+      const verificationResult = await verifyProjectCredentials(
+        projectName,
+        additionalInfo,
+        interaction.user.id,
+        interaction.user.tag
+      );
+
+      if (verificationResult.success) {
+        await handleAutomaticApproval(
+          interaction,
+          projectName,
+          additionalInfo,
+          logsChannel,
+          verificationResult.credential
+        );
+        return;
+      } else if (verificationResult.reason === "invalid_code") {
+        // Credentials found but code doesn't match - continue with manual approval
+        // Don't show an error message, as the additional info might be intended for admins
+      } else if (verificationResult.reason === "expired") {
+        // Credentials found but expired
+        await replyEmbed(interaction, {
+          path: "credentials.expiredCredentials",
+          ephemeral: true,
+        });
+        return;
+      } else if (verificationResult.reason === "not_ready") {
+        // Channel doesn't exist and no credentials found - continue with manual approval
+      }
+    }
+
     const approvalChannel = findChannel(
       interaction,
       process.env.AWAITINGAPPROVALSCHANNELNAME
@@ -213,37 +173,49 @@ async function manualAdd(
       ephemeral: true,
     });
 
-    const acceptButtonID = "Accept " + interaction.id;
-    const rejectPNButtonID = "RejectPN " + interaction.id;
-    const rejectAIButtonID = "RejectAI " + interaction.id;
-    const rejectNWPButtonID = "RejectNWP " + interaction.id;
-
     const acceptButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(acceptButtonID)
+        .setCustomId(`translators-addme-accept-${interaction.id}`)
         .setLabel("Approve")
         .setStyle("Success")
     );
     const rejectPNButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(rejectPNButtonID)
+        .setCustomId(`translators-addme-rejectPN-${interaction.id}`)
         .setLabel("Reject - Project Name")
         .setStyle("Danger")
     );
     const rejectAIButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(rejectAIButtonID)
+        .setCustomId(`translators-addme-rejectAI-${interaction.id}`)
         .setLabel("Reject - Additional Info")
         .setStyle("Danger")
     );
     const rejectNWPButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(rejectNWPButtonID)
+        .setCustomId(`translators-addme-rejectNWP-${interaction.id}`)
         .setLabel("Reject - Not Working on the Project")
         .setStyle("Danger")
     );
 
     let foundChannel = await findChannel(interaction, projectName);
+
+    let requestDoc;
+    try {
+      requestDoc = await AddmeRequest.create({
+        userId: interaction.user.id,
+        username: interaction.user.tag,
+        projectName: projectName,
+        additionalInfo: additionalInfo || "",
+        requestType: "manual",
+        messageId: "pending",
+        interactionId: interaction.id,
+        status: "pending",
+      });
+    } catch (error) {
+      console.error("Error saving request to MongoDB:", error);
+      logsChannel.send(`Error saving request to MongoDB: ${error.message}`);
+    }
 
     await sendEmbed(approvalChannel, {
       path: "addRequest",
@@ -259,156 +231,40 @@ async function manualAdd(
         rejectAIButton,
         rejectNWPButton,
       ],
-    }).then((replyMessage) => {
-      const filter = (i) => interaction.id === i.customId.split(" ")[1];
-
-      const collector = replyMessage.channel.createMessageComponentCollector({
-        filter,
-        max: 1,
-      });
-
-      collector.on("collect", async (i) => {
-        if (i.customId === acceptButtonID) {
-          // I'm double checking because if the channel didn't exist when the request was made,
-          // it doesn't mean that it still doesn't exist when someone approves the request.
-          foundChannel = await findChannel(interaction, projectName);
-
-          if (foundChannel) {
-            foundChannel.permissionOverwrites.edit(interaction.user.id, {
-              ViewChannel: true,
-            });
-
-            sendEmbed(logsChannel, {
-              path: "channelExisted_RA",
-              values: {
-                user: interaction.user.id,
-                project: foundChannel.id,
-                approved: i.user.id,
-                additionalInfo: additionalInfo,
-                projectName: projectName,
-              },
-            });
-            sendEmbed(interaction.user, {
-              path: "userAddNotify",
-              values: {
-                project: foundChannel.id,
-              },
-            });
-          } else {
-            interaction.guild.channels
-              .create({
-                name: projectName,
-                type: 0,
-                permissionOverwrites: [
-                  {
-                    id: interaction.guild.id,
-                    deny: [PermissionFlagsBits.ViewChannel],
-                  },
-                  {
-                    id: interaction.user.id,
-                    allow: [PermissionFlagsBits.ViewChannel],
-                  },
-                ],
-              })
-              .then(async (createdChannel) => {
-                const category = await findCategoryByName(
-                  interaction,
-                  process.env.PROJECTSCATEGORY
-                );
-                await createdChannel
-                  .setParent(category.id, { lockPermissions: false })
-                  .catch((error) => {
-                    logsChannel.send(
-                      "Error: Setting the category of channel. \n " + error
-                    );
-                  });
-
-                sendEmbed(logsChannel, {
-                  path: "channelCreated",
-                  values: {
-                    createdChannel: createdChannel.id,
-                    projectName: projectName,
-                  },
-                });
-
-                sendEmbed(logsChannel, {
-                  path: "channelExisted_RA",
-                  values: {
-                    user: interaction.user.id,
-                    project: createdChannel.id,
-                    approved: i.user.id,
-                    additionalInfo: additionalInfo,
-                    projectName: projectName,
-                  },
-                });
-
-                sendEmbed(interaction.user, {
-                  path: "userAddNotify",
-                  values: {
-                    user: interaction.user.id,
-                    project: createdChannel,
-                  },
-                });
-              })
-              .catch((error) => {
-                interaction.user.send(`There was an error creating the channel ${projectName} that you asked for.
-                You may need to send the request again.`);
-
-                logsChannel.send(
-                  `Error: There was an error while creating the channel ${projectName}
-                You may have exceeded the channel limit.
-                ${error}`
-                );
-              });
-          }
-        } else {
-          let reason = "";
-
-          switch (i.customId) {
-            case rejectPNButtonID:
-              reason =
-                "Please make sure you've entered the correct **project name** and try again.";
-              break;
-
-            case rejectAIButtonID:
-              reason =
-                "Please make sure you've entered the correct **additional info** and try again.";
-              break;
-
-            case rejectNWPButtonID:
-              reason =
-                "We were unable to confirm your name on this project. If you are assigned to the project and think this is an error, please contact /help so it can be fixed.";
-              break;
-
-            default:
-              break;
-          }
-
-          sendEmbed(logsChannel, {
-            path: "requestAddRejected",
-            values: {
-              channel: projectName,
-              user: interaction.user.id,
-              approved: i.user.id,
-              reason: reason,
-            },
-          });
-          sendEmbed(interaction.user, {
-            path: "requestAddRejectedDM",
-            values: {
-              channel: projectName,
-              reason: reason,
-            },
-          });
+    }).then(async (replyMessage) => {
+      if (requestDoc) {
+        try {
+          requestDoc.messageId = replyMessage.id;
+          await requestDoc.save();
+        } catch (error) {
+          console.error("Error updating message ID in MongoDB:", error);
+          logsChannel.send(`Error updating message ID in MongoDB: ${error.message}`);
         }
-
-        await i.message.delete();
-      });
+      }
     });
   }
 }
 
-async function sassAdd(interaction, projectName, button, logsChannel) {
+async function sassAdd(interaction, projectName, button) {
+  try {
+    await AddmeRequest.create({
+      userId: interaction.user.id,
+      username: interaction.user.tag,
+      projectName: projectName,
+      additionalInfo: "",
+      requestType: "sass",
+      messageId: "pending",
+      interactionId: interaction.id,
+      status: "pending",
+    });
+  } catch (error) {
+    console.error("Error saving SASS request to MongoDB:", error);
+    const logsChannel = interaction.guild.channels.cache.get(process.env.LOGSCHANNELID);
+    if (logsChannel) {
+      logsChannel.send(`Error saving SASS request to MongoDB: ${error.message}`);
+    }
+  }
+
   await replyEmbed(interaction, {
     path: "addMePromptThread",
     values: {
@@ -417,95 +273,186 @@ async function sassAdd(interaction, projectName, button, logsChannel) {
     ephemeral: true,
     components: [button],
   });
+}
 
-  const filter = (i) => i.customId === interaction.user + interaction.id;
+/**
+ * Verify project credentials
+ * @param {String} projectName - The project name
+ * @param {String} verificationCode - The verification code
+ * @param {String} userId - The user ID
+ * @param {String} username - The username
+ * @returns {Object} Verification result
+ */
+async function verifyProjectCredentials(projectName, verificationCode, userId, username) {
+  try {
+    const result = await ProjectCredential.verifyCredentials(projectName, verificationCode);
 
-  const collector = interaction.channel.createMessageComponentCollector({
-    filter,
-    max: 1,
-    time: 300000,
-  });
-
-  collector.on("collect", async (i) => {
-    // Changes the message to acknowledge button press.
-    await updateEmbed(i, { path: "requestAcquired", components: [] });
-
-    const channel = await findChannelByID(
-      interaction,
-      process.env.PROJECTCHANNELREQUESTSCHANNELID
-    );
-
-    // Find thread.
-    let thread = await channel.threads.cache.find(
-      (x) => x.name === projectName
-    );
-
-    // If thread cannot be found, look at the archived ones.
-    if (!thread) {
-      let archivedThreads = await interaction.channel.threads?.fetchArchived();
-      thread = await archivedThreads?.threads.find(
-        (x) => x.name === projectName
-      );
+    if (result.success) {
+      result.credential.logUsage(userId, username, true);
+      await result.credential.save();
+      return result;
     }
 
-    // If thread exists, add the person.
-    if (thread) {
-      await thread.setArchived(false); // unarchive if archived.
+    if (result.reason === "invalid_code" || result.reason === "expired") {
+      const credential = await ProjectCredential.findOne({ projectName });
+      if (credential) {
+        credential.logUsage(userId, username, false, result.reason);
+        await credential.save();
+      }
+      return result;
+    }
 
-      await thread.members.add(interaction.user.id);
+    if (result.reason === "project_not_found") {
+      return {
+        success: false,
+        reason: "not_ready",
+        message: "Channel not ready"
+      };
+    }
 
-      await sendEmbed(interaction.user, {
+    return result;
+  } catch (error) {
+    console.error("Error verifying project credentials:", error);
+    return {
+      success: false,
+      reason: "error",
+      message: "An error occurred while verifying credentials"
+    };
+  }
+}
+
+/**
+ * Handle automatic approval when credentials match
+ */
+async function handleAutomaticApproval(interaction, projectName, additionalInfo, logsChannel, credential) {
+  let foundChannel = await findChannel(interaction, projectName);
+
+  if (foundChannel) {
+    foundChannel.permissionOverwrites.edit(interaction.user.id, {
+      ViewChannel: true,
+    });
+
+    await replyEmbed(interaction, {
+      path: "userAddNotify",
+      values: {
+        project: foundChannel.id,
+      },
+      ephemeral: true,
+    });
+
+    sendEmbed(logsChannel, {
+      path: "credentials.autoApprovalLog",
+      values: {
+        user: interaction.user.id,
+        project: foundChannel.id,
+        projectName: projectName,
+        additionalInfo: additionalInfo,
+      },
+    });
+
+    try {
+      await AddmeRequest.create({
+        userId: interaction.user.id,
+        username: interaction.user.tag,
+        projectName: projectName,
+        additionalInfo: additionalInfo || "",
+        requestType: "manual",
+        messageId: "auto-approved",
+        interactionId: interaction.id,
+        status: "approved",
+        reviewedBy: "auto",
+      });
+    } catch (error) {
+      console.error("Error saving auto-approved request to MongoDB:", error);
+      logsChannel.send(`Error saving auto-approved request to MongoDB: ${error.message}`);
+    }
+  } else {
+    try {
+      const createdChannel = await interaction.guild.channels.create({
+        name: projectName,
+        type: 0,
+        permissionOverwrites: [
+          {
+            id: interaction.guild.id,
+            deny: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: interaction.user.id,
+            allow: [PermissionFlagsBits.ViewChannel],
+          },
+          {
+            id: credential.createdBy,
+            allow: [PermissionFlagsBits.ViewChannel],
+          },
+        ],
+      });
+      
+      const category = await findCategoryByName(
+        interaction,
+        process.env.PROJECTSCATEGORY
+      );
+      
+      await createdChannel
+        .setParent(category.id, { lockPermissions: false })
+        .catch((error) => {
+          logsChannel.send(
+            "Error: Setting the category of channel. \n " + error
+          );
+        });
+      
+      await replyEmbed(interaction, {
         path: "userAddNotify",
         values: {
-          project: thread.id,
+          project: createdChannel.id,
         },
+        ephemeral: true,
       });
-
-      await sendEmbed(logsChannel, {
-        path: "buddyUpLog",
+      
+      sendEmbed(logsChannel, {
+        path: "channelCreated",
         values: {
-          thread: thread.id,
-          user: interaction.user.id,
+          createdChannel: createdChannel.id,
+          projectName: projectName,
         },
       });
-
-      return;
-    }
-
-    // If thread doesn't exists, create and add the person.
-    await channel.threads
-      .create({
-        name: projectName,
-        autoArchiveDuration: 10080,
-        type: process.env.THREADTYPE,
-        reason: "For " + interaction.options.getString("project_name"),
-      })
-      .then(async (thread) => {
-        if (thread.joinable) await thread.join();
-        await thread.members.add(interaction.user.id);
-
-        await sendEmbed(interaction.user, {
-          path: "userAddNotify",
-          values: {
-            project: thread.id,
-          },
-        });
-
-        await sendEmbed(logsChannel, {
-          path: "buddyUpLog",
-          values: {
-            thread: thread.id,
-            user: interaction.user.id,
-          },
-        });
-
-        await sendEmbed(channel, {
-          path: "threadCreated",
-          values: {
-            thread: interaction.options.getString("project_name"),
-            user: interaction.user.id,
-          },
-        });
+      
+      sendEmbed(logsChannel, {
+        path: "credentials.autoApprovalLog",
+        values: {
+          user: interaction.user.id,
+          project: createdChannel.id,
+          projectName: projectName,
+          additionalInfo: additionalInfo,
+        },
       });
-  });
+      
+      try {
+        await AddmeRequest.create({
+          userId: interaction.user.id,
+          username: interaction.user.tag,
+          projectName: projectName,
+          additionalInfo: additionalInfo || "",
+          requestType: "manual",
+          messageId: "auto-approved",
+          interactionId: interaction.id,
+          status: "approved",
+          reviewedBy: "auto",
+        });
+      } catch (error) {
+        console.error("Error saving auto-approved request to MongoDB:", error);
+        logsChannel.send(`Error saving auto-approved request to MongoDB: ${error.message}`);
+      }
+    } catch (error) {
+      interaction.reply({
+        content: `There was an error creating the channel ${projectName}. Please try again later or contact an admin.`,
+        ephemeral: true,
+      });
+      
+      logsChannel.send(
+        `Error: There was an error while creating the channel ${projectName}
+        You may have exceeded the channel limit.
+        ${error}`
+      );
+    }
+  }
 }

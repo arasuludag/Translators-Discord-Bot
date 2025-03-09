@@ -12,6 +12,7 @@ const { commands } = require("./!commands/exclamationCommands");
 const { findChannelByID } = require("./functions");
 const { deploy } = require("./deploy-commands");
 const { sendEmbed } = require("./customSend");
+const connectDB = require("./models/db");
 
 const client = new Client({
   intents: [
@@ -24,6 +25,9 @@ const client = new Client({
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
+
+// Connect to MongoDB
+connectDB();
 
 client.commands = new Collection();
 const commandFiles = readdirSync("./commands").filter((file) =>
@@ -119,21 +123,43 @@ client.on("error", function (error) {
 
 // For commands.
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
+  if (interaction.isCommand()) {
+    const command = client.commands.get(interaction.commandName);
 
-  const command = client.commands.get(interaction.commandName);
+    if (!command) return;
 
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    return interaction.reply({
-      content:
-        "There was an error while executing this command! Contact admins if it persists.",
-      ephemeral: true,
-    });
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      return interaction.reply({
+        content:
+          "There was an error while executing this command! Contact admins if it persists.",
+        ephemeral: true,
+      });
+    }
+  } else if (interaction.isButton()) {
+    try {
+      const customId = interaction.customId;
+      
+      if (customId.startsWith("translators-addme-")) {
+        const { handleAddmeButtons } = require("./buttonHandlers/addmeButtons");
+        await handleAddmeButtons(interaction);
+      }
+      
+    } catch (error) {
+      console.error("Error handling button interaction:", error);
+      try {
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.reply({
+            content: "An error occurred processing this button. Please try again or contact an admin.",
+            ephemeral: true,
+          });
+        }
+      } catch (replyError) {
+        console.error("Error replying to button interaction:", replyError);
+      }
+    }
   }
 });
 

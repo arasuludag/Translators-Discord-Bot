@@ -20,6 +20,7 @@
     "discord.js": "^14.0.2",
     "dotenv": "^11.0.0",
     "i18next": "^21.6.7",
+    "mongoose": "^8.12.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9"
   },

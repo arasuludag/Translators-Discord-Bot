@@ -16,6 +16,9 @@
     "I'm on it.",
     "Affirmative."
   ],
+  "notAuthorized": [
+    "You don't have permission to use this command. This command is available to {{role}}."
+  ],
   "waitApproval": [
     "Please wait for approval to access the channel for {{project}}."
   ],
@@ -250,6 +253,29 @@
     ],
     "processing": [
       "Processing revamp..."
+    ]
+  },
+  "credentials": {
+    "channelNotReady": [
+      "This channel doesn't seem to be ready yet. Please check again later or contact the project manager for more information about the project \"{{projectName}}\"."
+    ],
+    "invalidCredentials": [
+      "The project name and/or additional info you've provided doesn't match our records.\n\nIf you entered information from a PM's email:\n- Please double-check both the project name and additional info carefully\n- Make sure to copy them exactly as they appear in the email\n- Try the command again with the verified information\n\nIf you haven't received an email from a PM:\n- Please wait for an email with project access instructions\n- The email will contain the exact project name and additional info you'll need\n\nIf you continue to have issues after verifying the information from your PM's email, you can use /help to contact an admin."
+    ],
+    "expiredCredentials": [
+      "The access credentials for this project have expired. Please contact the project manager for updated credentials."
+    ],
+    "autoApproved": [
+      "You now have access to <#{{channelId}}>! Your request was automatically approved based on the project credentials."
+    ],
+    "credentialAdded": [
+      "<@{{user}}> has {{action}} access credentials for project \"{{projectName}}\"."
+    ],
+    "credentialRemoved": [
+      "<@{{user}}> has removed access credentials for project \"{{projectName}}\"."
+    ],
+    "autoApprovalLog": [
+      "<@{{user}}> has been automatically added to <#{{project}}> using verification code.\n\n**Project Name:** {{projectName}} \n**Additional Info:** {{additionalInfo}}"
     ]
   }
 }
