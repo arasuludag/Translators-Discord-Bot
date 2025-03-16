@@ -262,7 +262,7 @@ async function handleListCredentials(interaction) {
 
         const embed = new EmbedBuilder()
             .setTitle("Your Project Credentials")
-            .setColor(process.env.EMBEDCOLOR)
+            .setColor(parseInt(process.env.EMBEDCOLOR))
             .setDescription(`You have created ${credentials.length} project credential(s).`)
             .setTimestamp();
 
@@ -322,19 +322,18 @@ async function handleCredentialInfo(interaction) {
         // Find credential
         const credential = await ProjectCredential.findOne({
             projectName: formattedProjectName,
-            createdBy: interaction.user.id, // Only show own credentials
         });
 
         if (!credential) {
             return await interaction.editReply({
-                content: `No credentials found for project "${formattedProjectName}" or you don't have permission to view them.`,
+                content: `No credentials found for project "${formattedProjectName}"`,
                 ephemeral: true,
             });
         }
 
         const embed = new EmbedBuilder()
             .setTitle(`Project Credential: ${credential.projectName}`)
-            .setColor(process.env.EMBEDCOLOR)
+            .setColor(parseInt(process.env.EMBEDCOLOR))
             .setDescription("Detailed information about this project credential.")
             .addFields(
                 {

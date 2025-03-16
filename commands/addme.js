@@ -32,8 +32,8 @@ module.exports = {
         )
         .addStringOption((option) =>
           option
-            .setName("additional_info")
-            .setDescription("Additional information or verification code")
+            .setName("verification_code")
+            .setDescription("Verification code.")
             .setRequired(true)
         )
     )
@@ -52,7 +52,7 @@ module.exports = {
   async execute(interaction) {
     const logsChannel = findChannelByID(interaction, process.env.LOGSCHANNELID);
     const channelName = interaction.options.getString("project_name");
-    const additionalInfo = interaction.options.getString("additional_info") || "";
+    const verificationCode = interaction.options.getString("verification_code") || "";
 
     let projectName;
     try {
@@ -78,7 +78,7 @@ module.exports = {
         projectName,
         button,
         logsChannel,
-        additionalInfo
+        verificationCode
       );
     } else {
       await sassAdd(interaction, projectName, button);
@@ -91,7 +91,7 @@ async function manualAdd(
   projectName,
   button,
   logsChannel,
-  additionalInfo
+  verificationCode
 ) {
   const isPlint = await interaction.member.roles.cache.some(
     (role) => role.name === process.env.PROJECTMANAGERROLENAME
@@ -104,9 +104,8 @@ async function manualAdd(
         userId: interaction.user.id,
         username: interaction.user.tag,
         projectName: projectName,
-        additionalInfo: additionalInfo || "",
+        verificationCode: verificationCode || "",
         requestType: "manual",
-        messageId: "pending",
         interactionId: interaction.id,
         status: "pending",
       });
@@ -124,10 +123,10 @@ async function manualAdd(
       ephemeral: true,
     });
   } else {
-    if (additionalInfo) {
+    if (verificationCode) {
       const verificationResult = await verifyProjectCredentials(
         projectName,
-        additionalInfo,
+        verificationCode,
         interaction.user.id,
         interaction.user.tag
       );
@@ -136,7 +135,7 @@ async function manualAdd(
         await handleAutomaticApproval(
           interaction,
           projectName,
-          additionalInfo,
+          verificationCode,
           logsChannel,
           verificationResult.credential
         );
@@ -200,15 +199,13 @@ async function manualAdd(
 
     let foundChannel = await findChannel(interaction, projectName);
 
-    let requestDoc;
     try {
-      requestDoc = await AddmeRequest.create({
+      await AddmeRequest.create({
         userId: interaction.user.id,
         username: interaction.user.tag,
         projectName: projectName,
-        additionalInfo: additionalInfo || "",
+        verificationCode: verificationCode || "",
         requestType: "manual",
-        messageId: "pending",
         interactionId: interaction.id,
         status: "pending",
       });
@@ -223,7 +220,7 @@ async function manualAdd(
         user: interaction.user.id,
         projectChannel: foundChannel ? `<#${foundChannel.id}>` : projectName,
         projectName: projectName,
-        additionalInfo: additionalInfo,
+        verificationCode: verificationCode,
       },
       components: [
         acceptButton,
@@ -231,16 +228,6 @@ async function manualAdd(
         rejectAIButton,
         rejectNWPButton,
       ],
-    }).then(async (replyMessage) => {
-      if (requestDoc) {
-        try {
-          requestDoc.messageId = replyMessage.id;
-          await requestDoc.save();
-        } catch (error) {
-          console.error("Error updating message ID in MongoDB:", error);
-          logsChannel.send(`Error updating message ID in MongoDB: ${error.message}`);
-        }
-      }
     });
   }
 }
@@ -253,7 +240,6 @@ async function sassAdd(interaction, projectName, button) {
       projectName: projectName,
       additionalInfo: "",
       requestType: "sass",
-      messageId: "pending",
       interactionId: interaction.id,
       status: "pending",
     });
@@ -324,7 +310,7 @@ async function verifyProjectCredentials(projectName, verificationCode, userId, u
 /**
  * Handle automatic approval when credentials match
  */
-async function handleAutomaticApproval(interaction, projectName, additionalInfo, logsChannel, credential) {
+async function handleAutomaticApproval(interaction, projectName, verificationCode, logsChannel, credential) {
   let foundChannel = await findChannel(interaction, projectName);
 
   if (foundChannel) {
@@ -346,7 +332,7 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
         user: interaction.user.id,
         project: foundChannel.id,
         projectName: projectName,
-        additionalInfo: additionalInfo,
+        verificationCode,
       },
     });
 
@@ -355,9 +341,8 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
         userId: interaction.user.id,
         username: interaction.user.tag,
         projectName: projectName,
-        additionalInfo: additionalInfo || "",
+        verificationCode,
         requestType: "manual",
-        messageId: "auto-approved",
         interactionId: interaction.id,
         status: "approved",
         reviewedBy: "auto",
@@ -386,12 +371,12 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
           },
         ],
       });
-      
+
       const category = await findCategoryByName(
         interaction,
         process.env.PROJECTSCATEGORY
       );
-      
+
       await createdChannel
         .setParent(category.id, { lockPermissions: false })
         .catch((error) => {
@@ -399,7 +384,7 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
             "Error: Setting the category of channel. \n " + error
           );
         });
-      
+
       await replyEmbed(interaction, {
         path: "userAddNotify",
         values: {
@@ -407,7 +392,7 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
         },
         ephemeral: true,
       });
-      
+
       sendEmbed(logsChannel, {
         path: "channelCreated",
         values: {
@@ -415,25 +400,24 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
           projectName: projectName,
         },
       });
-      
+
       sendEmbed(logsChannel, {
         path: "credentials.autoApprovalLog",
         values: {
           user: interaction.user.id,
           project: createdChannel.id,
           projectName: projectName,
-          additionalInfo: additionalInfo,
+          verificationCode,
         },
       });
-      
+
       try {
         await AddmeRequest.create({
           userId: interaction.user.id,
           username: interaction.user.tag,
           projectName: projectName,
-          additionalInfo: additionalInfo || "",
+          verificationCode,
           requestType: "manual",
-          messageId: "auto-approved",
           interactionId: interaction.id,
           status: "approved",
           reviewedBy: "auto",
@@ -447,7 +431,7 @@ async function handleAutomaticApproval(interaction, projectName, additionalInfo,
         content: `There was an error creating the channel ${projectName}. Please try again later or contact an admin.`,
         ephemeral: true,
       });
-      
+
       logsChannel.send(
         `Error: There was an error while creating the channel ${projectName}
         You may have exceeded the channel limit.

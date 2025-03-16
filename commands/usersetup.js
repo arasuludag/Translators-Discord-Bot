@@ -128,6 +128,7 @@ module.exports = {
                     sassalert: process.env.SASSALERTCHANNELID,
                     supplementalalert: process.env.SUPPALERTCHANNELID,
                     botcommands: process.env.BOTCOMMANDSCHANNELID,
+                    globallingsupport: process.env.GLOBALLINGSUPPORTCHANNELID
                   }),
                 },
               ],

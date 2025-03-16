@@ -86,7 +86,7 @@ async function handleAccept(interaction, interactionId) {
         user: request.userId,
         project: foundChannel.id,
         approved: interaction.user.id,
-        additionalInfo: request.additionalInfo,
+        verificationCode: request.verificationCode,
         projectName: request.projectName,
       },
     });
@@ -138,7 +138,7 @@ async function handleAccept(interaction, interactionId) {
         user: request.userId,
         project: createdChannel.id,
         approved: interaction.user.id,
-        additionalInfo: request.additionalInfo,
+        verificationCode: request.verificationCode,
         projectName: request.projectName,
       },
     });
@@ -185,7 +185,7 @@ async function handleReject(interaction, interactionId, rejectType) {
       reason = "Please make sure you've entered the correct **project name** and try again.";
       break;
     case "AI":
-      reason = "Please make sure you've entered the correct **additional info** and try again.";
+      reason = "Please make sure you've entered the correct **verification code** and try again.";
       break;
     case "NWP":
       reason = "We were unable to confirm your name on this project. If you are assigned to the project and think this is an error, please contact /help so it can be fixed.";
@@ -324,7 +324,7 @@ async function handleManualConfirm(interaction, request, logsChannel) {
         user: interaction.user.id,
         project: createdChannel.id,
         approved: interaction.user.id,
-        additionalInfo: request.additionalInfo,
+        verificationCode: request.verificationCode,
         projectName: request.projectName,
       },
     });

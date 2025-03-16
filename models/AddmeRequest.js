@@ -16,8 +16,8 @@ const AddmeRequestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // Additional information provided by the user
-  additionalInfo: {
+  // Verification code provided by the user
+  verificationCode: {
     type: String,
     default: "",
   },
@@ -25,11 +25,6 @@ const AddmeRequestSchema = new mongoose.Schema({
   requestType: {
     type: String,
     enum: ["manual", "sass"],
-    required: true,
-  },
-  // Discord message ID that contains the request
-  messageId: {
-    type: String,
     required: true,
   },
   // Discord interaction ID
