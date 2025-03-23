@@ -1,5 +1,6 @@
 const {
   SlashCommandBuilder,
+  EmbedBuilder
 } = require("discord.js");
 const { findChannelByID } = require("../functions.js");
 
@@ -98,49 +99,86 @@ module.exports = {
         });
       }
       
-      // If too many results
-      if (matchingThreads.length > 20) {
-        return await interaction.editReply({
-          content: `**📚 Found too many matches (${matchingThreads.length}+)**\n\nPlease try a more specific search term.\n\nExample: Instead of "${projectName}", try a more specific name.`,
-        });
-      }
-      
-      // Format the results
-      let resultContent = "";
-      
+      // Format the results into embeds
       if (matchingThreads.length === 1) {
-        // Single result format
+        // Single result format - simple embed
         const thread = matchingThreads[0];
         const createdAt = Math.floor(thread.createdTimestamp / 1000);
         const memberCount = (await thread.members.fetch()).size;
         const status = thread.archived ? "Archived" : "Active";
         
-        resultContent = `**✨ Found 1 matching thread:**\n\n📂 "${thread.name}"\n📅 Created: <t:${createdAt}:R>\n👥 Current participants: ${memberCount}\n📍 Status: ${status}\n\n➡️ Click to join: <#${thread.id}>\n\nNeed to create a new thread instead? Use \`/join project thread\``;
-      } else {
-        // Multiple results format
-        resultContent = `**✨ Found ${matchingThreads.length} matching threads for "${projectName}":**\n\n`;
+        const embed = new EmbedBuilder()
+          .setTitle(`🔍 Found 1 matching thread for "${projectName}"`)
+          .setColor(parseInt(process.env.EMBEDCOLOR))
+          .setDescription(`📂 **"${thread.name}"**\n📅 Created: <t:${createdAt}:R>\n👥 Current participants: ${memberCount}\n📍 Status: ${status}\n\n➡️ Click to join: <#${thread.id}>\n\nNeed to create a new thread instead? Use \`/join project thread\``)
+          .setTimestamp();
         
-        let counter = 1;
+        return await interaction.editReply({
+          embeds: [embed],
+        });
+      } else {
+        // Sort threads by creation timestamp (newest first)
         const sortedThreads = matchingThreads.sort((a, b) => 
           b.createdTimestamp - a.createdTimestamp
         );
         
-        for (const thread of sortedThreads) {
-          const createdAt = Math.floor(thread.createdTimestamp / 1000);
-          const memberCount = (await thread.members.fetch()).size;
-          const status = thread.archived ? "Archived" : "Active";
+        // Create a main embed
+        const mainEmbed = new EmbedBuilder()
+          .setTitle(`🔍 Search Results for "${projectName}"`)
+          .setColor(parseInt(process.env.EMBEDCOLOR)) 
+          .setDescription(`Found ${matchingThreads.length} matching threads.\n\nNeed a new thread? Use \`/join project thread\`\nWant to join multiple threads? Click the links below!`)
+          .setTimestamp();
+        
+        // Calculate how many embeds we'll need (each embed can have up to 25 fields)
+        const totalEmbeds = Math.ceil(sortedThreads.length / 25);
+        const embedsToSend = [];
+        
+        for (let embedIndex = 0; embedIndex < totalEmbeds; embedIndex++) {
+          const startIdx = embedIndex * 25;
+          const endIdx = Math.min(startIdx + 25, sortedThreads.length);
           
-          resultContent += `${counter}️⃣ "${thread.name}"\n   📅 Created: <t:${createdAt}:R>\n   👥 Participants: ${memberCount}\n   📍 Status: ${status}\n   ➡️ Join: <#${thread.id}>\n\n`;
-          counter++;
+          // For first embed, use the main embed we created
+          const currentEmbed = embedIndex === 0 ? mainEmbed : new EmbedBuilder()
+            .setTitle(`🔍 Search Results for "${projectName}" (continued)`)
+            .setColor(parseInt(process.env.EMBEDCOLOR));
+          
+          // Add thread info as fields
+          for (let i = startIdx; i < endIdx; i++) {
+            const thread = sortedThreads[i];
+            const createdAt = Math.floor(thread.createdTimestamp / 1000);
+            const memberCount = (await thread.members.fetch()).size;
+            const status = thread.archived ? "🔴 Archived" : "🟢 Active";
+            
+            currentEmbed.addFields({
+              name: `🧵 "${thread.name}"`,
+              value: `📅 Created: <t:${createdAt}:R>\n👥 Participants: ${memberCount}\n📍 Status: ${status}\n➡️ Join: <#${thread.id}>`
+            });
+          }
+          
+          if (embedIndex === totalEmbeds - 1) {
+            currentEmbed.setFooter({ text: `Page ${embedIndex + 1}/${totalEmbeds}` });
+          } else {
+            currentEmbed.setFooter({ text: `Page ${embedIndex + 1}/${totalEmbeds} - See next message for more results` });
+          }
+          
+          embedsToSend.push(currentEmbed);
         }
         
-        resultContent += "Need a new thread? Use `/join project thread`\nWant to join multiple threads? Click each link above!";
+        // Send the first embed as edit reply
+        await interaction.editReply({
+          embeds: [embedsToSend[0]],
+        });
+        
+        // Send any additional embeds as follow-ups
+        for (let i = 1; i < embedsToSend.length; i++) {
+          await interaction.followUp({
+            embeds: [embedsToSend[i]],
+            ephemeral: true
+          });
+        }
+        
+        return;
       }
-      
-      // Send the results
-      return await interaction.editReply({
-        content: `**🔍 Search Results for "${projectName}"**\n\n${resultContent}`,
-      });
       
     } catch (error) {
       console.error("Error in projectsearch command:", error);
