@@ -2,10 +2,13 @@ const {
     SlashCommandBuilder,
     PermissionFlagsBits,
     EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
 } = require("discord.js");
 const { replyEmbed, sendEmbed } = require("../customSend.js");
 const ProjectCredential = require("../models/ProjectCredential");
 const { discordStyleProjectName } = require("../functions.js");
+const Request = require("../models/ProjectRequest");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -141,11 +144,6 @@ async function handleAddCredential(interaction) {
             existingCredential.expirationDate = expirationDate;
             existingCredential.updatedAt = new Date();
             await existingCredential.save();
-
-            await interaction.editReply({
-                content: `Updated access credentials for project "${formattedProjectName}".`,
-                ephemeral: true,
-            });
         } else {
             // Create new credential
             const newCredential = new ProjectCredential({
@@ -157,11 +155,6 @@ async function handleAddCredential(interaction) {
             });
 
             await newCredential.save();
-
-            await interaction.editReply({
-                content: `Added access credentials for project "${formattedProjectName}".`,
-                ephemeral: true,
-            });
         }
 
         // Log the action
@@ -178,6 +171,37 @@ async function handleAddCredential(interaction) {
                 },
             });
         }
+
+        // Create request in database
+        try {
+            await Request.create({
+                userId: interaction.user.id,
+                username: interaction.user.tag,
+                projectName: formattedProjectName,
+                verificationCode: verificationCode || "",
+                requestType: "manual",
+                interactionId: interaction.id,
+                status: "pending",
+            });
+        } catch (error) {
+            console.error("Error saving request to MongoDB:", error);
+            logsChannel.send(`Error saving request to MongoDB: ${error.message}`);
+        }
+
+        // Send confirmation button
+        const button = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`translators-requestaccess-confirm-${interaction.user.id}-${interaction.id}`)
+                .setLabel("Confirm")
+                .setStyle("Success")
+        );
+
+        await interaction.editReply({
+            content: `Credentials ${existingCredential ? "updated" : "added"} for project "${formattedProjectName}".\nVerification Code: ${verificationCode}${expirationDate ? `\nExpiration Date: ${expirationDate.toLocaleDateString()}` : ""}\n\nPlease confirm your access request.`,
+            components: [button],
+            ephemeral: true,
+        });
+
     } catch (error) {
         console.error("Error adding project credential:", error);
         await interaction.editReply({

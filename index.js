@@ -13,6 +13,8 @@ const { findChannelByID } = require("./functions");
 const { deploy } = require("./deploy-commands");
 const { sendEmbed } = require("./customSend");
 const connectDB = require("./models/db");
+const { handleRequestAccessButtons } = require("./buttonHandlers/requestAccessButtons");
+const { handleJoinThreadButtons } = require("./buttonHandlers/joinThreadButtons");
 
 const client = new Client({
   intents: [
@@ -142,9 +144,10 @@ client.on("interactionCreate", async (interaction) => {
     try {
       const customId = interaction.customId;
       
-      if (customId.startsWith("translators-addme-")) {
-        const { handleAddmeButtons } = require("./buttonHandlers/addmeButtons");
-        await handleAddmeButtons(interaction);
+      if (customId.startsWith("translators-requestaccess-")) {
+        await handleRequestAccessButtons(interaction);
+      } else if (customId.startsWith("translators-jointhread-")) {
+        await handleJoinThreadButtons(interaction);
       }
       
     } catch (error) {

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const AddmeRequestSchema = new mongoose.Schema({
+const ProjectRequestSchema = new mongoose.Schema({
   // Discord user ID who made the request
   userId: {
     type: String,
@@ -60,9 +60,9 @@ const AddmeRequestSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt field before saving
-AddmeRequestSchema.pre("save", function(next) {
+ProjectRequestSchema.pre("save", function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-module.exports = mongoose.model("AddmeRequest", AddmeRequestSchema); 
+module.exports = mongoose.model("ProjectRequest", ProjectRequestSchema); 

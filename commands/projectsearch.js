@@ -1,6 +1,7 @@
 const {
   SlashCommandBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  PermissionFlagsBits
 } = require("discord.js");
 const { findChannelByID } = require("../functions.js");
 
@@ -13,7 +14,8 @@ module.exports = {
         .setName("project_name")
         .setDescription("Name of the project to search for")
         .setRequired(true)
-    ),
+  )
+  .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
     
