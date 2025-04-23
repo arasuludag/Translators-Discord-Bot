@@ -21,6 +21,17 @@ module.exports = {
   async execute(interaction) {
     const reasonText = interaction.options.getString("reason");
 
+    // Check if channel is in ARCHIVECATEGORY
+    if (!interaction.channel.parent || !interaction.channel.parent.name.includes(process.env.ARCHIVECATEGORY)) {
+      return await replyEmbed(interaction, {
+        path: "archive.invalidChannel",
+        values: {
+          category: process.env.ARCHIVECATEGORY
+        },
+        ephemeral: true,
+      });
+    }
+
     if (
       !interaction.channel.type === ChannelType.GuildText ||
       interaction.channel.isThread()
@@ -36,15 +47,6 @@ module.exports = {
       interaction,
       process.env.LOGSCHANNELID
     );
-
-    await sendEmbed(logsChannel, {
-      path: "requestedUnArchive",
-      values: {
-        user: interaction.user.id,
-        channel: interaction.channel.id,
-        reason: reasonText,
-      },
-    });
 
     const yesButtonCustomID = "UnarchiveYes " + interaction.id;
     const noButtonCustomID = "UnarchiveNo " + interaction.id;
@@ -69,7 +71,7 @@ module.exports = {
 
     // Send initial message with vote count
     const questionMessage = await sendEmbed(interaction.channel, {
-      path: "unarchiveQuestion",
+      path: "archive.unarchiveQuestion",
       values: {
         reason: reasonText,
         votes: 0,
@@ -148,24 +150,23 @@ module.exports = {
 
         if (unarchiveSuccess) {
           await sendEmbed(interaction.channel, {
-            path: "movedFromWO_User",
+            path: "archive.movedFromWO_User",
             values: {
               channel: interaction.channel.id,
             },
           });
 
           await sendEmbed(logsChannel, {
-            path: "movedFromArchive",
+            path: "archive.movedFromArchive",
             values: {
               user: interaction.user.id,
               channel: interaction.channel.id,
-              votes: yesVotes.size,
             },
           });
         }
       } else {
         await sendEmbed(interaction.channel, {
-          path: "unarchiveRejected",
+          path: "archive.unarchiveRejected",
           values: {
             votes: yesVotes.size,
             required: requiredVotes,
@@ -173,12 +174,10 @@ module.exports = {
         });
 
         await sendEmbed(logsChannel, {
-          path: "notMovedFromArchive",
+          path: "archive.notMovedFromArchive",
           values: {
             user: interaction.user.id,
             channel: interaction.channel.id,
-            requestedUser: interaction.user.id,
-            votes: yesVotes.size,
           },
         });
       }

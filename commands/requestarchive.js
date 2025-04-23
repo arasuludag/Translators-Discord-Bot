@@ -21,6 +21,17 @@ module.exports = {
   async execute(interaction) {
     const reasonText = interaction.options.getString("reason");
 
+    // Check if channel is in PROJECTSCATEGORY
+    if (!interaction.channel.parent || interaction.channel.parent.name !== process.env.PROJECTSCATEGORY) {
+      return await replyEmbed(interaction, {
+        path: "archive.invalidChannel",
+        values: {
+          category: process.env.PROJECTSCATEGORY
+        },
+        ephemeral: true,
+      });
+    }
+
     if (
       !interaction.channel.type === ChannelType.GuildText ||
       interaction.channel.isThread()
@@ -39,15 +50,6 @@ module.exports = {
       interaction,
       process.env.LOGSCHANNELID
     );
-
-    await sendEmbed(logsChannel, {
-      path: "requestedArchive",
-      values: {
-        user: interaction.user.id,
-        channel: interaction.channel.id,
-        reason: reasonText,
-      },
-    });
 
     const yesButtonCustomID = "ArchiveYes " + interaction.id;
     const noButtonCustomID = "ArchiveNo " + interaction.id;
@@ -72,7 +74,7 @@ module.exports = {
 
     // Send initial message with vote count
     const questionMessage = await sendEmbed(interaction.channel, {
-      path: "archiveQuestion",
+      path: "archive.question",
       values: {
         reason: reasonText,
         votes: 0,
@@ -158,24 +160,23 @@ module.exports = {
 
         if (archiveSuccess) {
           await sendEmbed(interaction.channel, {
-            path: "movedToWO_User",
+            path: "archive.movedToWO_User",
             values: {
               channel: interaction.channel.id,
             },
           });
 
           await sendEmbed(logsChannel, {
-            path: "movedToArchive",
+            path: "archive.movedToArchive",
             values: {
               user: interaction.user.id,
               channel: interaction.channel.id,
-              votes: yesVotes.size,
             },
           });
         }
       } else {
         await sendEmbed(interaction.channel, {
-          path: "archiveRejected",
+          path: "archive.rejected",
           values: {
             votes: yesVotes.size,
             required: requiredVotes,
@@ -183,11 +184,10 @@ module.exports = {
         });
 
         await sendEmbed(logsChannel, {
-          path: "notMovedToArchive",
+          path: "archive.notMovedToArchive",
           values: {
             user: interaction.user.id,
             channel: interaction.channel.id,
-            votes: yesVotes.size,
           },
         });
       }

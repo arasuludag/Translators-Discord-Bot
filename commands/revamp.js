@@ -9,6 +9,8 @@ const {
     findCategoryByName,
 } = require("../functions.js");
 const { replyEmbed, sendEmbed, updateEmbed, getEmbed } = require("../customSend.js");
+const ProjectCredential = require("../models/ProjectCredential");
+const { discordStyleProjectName } = require("../functions.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,6 +20,24 @@ module.exports = {
             option
                 .setName("reason")
                 .setDescription("Optional reason for the revamp")
+                .setRequired(false)
+        )
+        .addStringOption((option) =>
+            option
+                .setName("rename")
+                .setDescription("[PM] Optional new name for the project channel")
+                .setRequired(false)
+        )
+        .addStringOption((option) =>
+            option
+                .setName("verification_code")
+                .setDescription("[PM] Optional new verification code for the project")
+                .setRequired(false)
+        )
+        .addStringOption((option) =>
+            option
+                .setName("expiration_date")
+                .setDescription("[PM] Optional: Expiration date (YYYY-MM-DD)")
                 .setRequired(false)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
@@ -178,6 +198,126 @@ module.exports = {
                         }
                     })
             );
+
+            // Check if user is a project manager for optional fields
+            const isPM = interaction.member.roles.cache.some(
+                (role) => role.name === process.env.PROJECTMANAGERROLENAME
+            );
+
+            // If rename option is provided, check PM role
+            const newName = interaction.options.getString("rename");
+            if (newName) {
+                if (!isPM) {
+                    await replyEmbed(interaction, {
+                        path: "notAuthorized",
+                        values: {
+                            role: process.env.PROJECTMANAGERROLENAME,
+                        },
+                        ephemeral: true,
+                    });
+                    return;
+                }
+
+                try {
+                    const formattedName = discordStyleProjectName(newName);
+                    await interaction.channel.setName(formattedName);
+                    
+                    // Log the rename
+                    await sendEmbed(logsChannel, {
+                        path: "channelRenamed",
+                        values: {
+                            user: interaction.user.id,
+                            oldName: interaction.channel.name,
+                            newName: formattedName
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error renaming channel:", error);
+                    await sendEmbed(logsChannel, {
+                        path: "error",
+                        values: {
+                            error: "Failed to rename channel: " + error.message
+                        }
+                    });
+                }
+            }
+
+            // If verification code is provided, check PM role
+            const verificationCode = interaction.options.getString("verification_code");
+            const expirationDateStr = interaction.options.getString("expiration_date");
+            
+            if (verificationCode || expirationDateStr) {
+                if (!isPM) {
+                    await replyEmbed(interaction, {
+                        path: "notAuthorized",
+                        values: {
+                            role: process.env.PROJECTMANAGERROLENAME,
+                        },
+                        ephemeral: true,
+                    });
+                    return;
+                }
+
+                try {
+                    const projectName = interaction.channel.name;
+                    const existingCredential = await ProjectCredential.findOne({
+                        projectName: projectName
+                    });
+
+                    // Parse expiration date if provided
+                    let expirationDate = null;
+                    if (expirationDateStr) {
+                        const date = new Date(expirationDateStr);
+                        if (isNaN(date.getTime())) {
+                            throw new Error("Invalid expiration date format. Please use YYYY-MM-DD.");
+                        }
+                        expirationDate = date;
+                    }
+
+                    if (existingCredential) {
+                        // Update existing credential
+                        if (verificationCode) {
+                            existingCredential.verificationCode = verificationCode;
+                        }
+                        if (expirationDateStr) {
+                            existingCredential.expirationDate = expirationDate;
+                        }
+                        existingCredential.updatedAt = new Date();
+                        await existingCredential.save();
+                    } else if (verificationCode) {
+                        // Create new credential only if verification code is provided
+                        const newCredential = new ProjectCredential({
+                            projectName: projectName,
+                            verificationCode: verificationCode,
+                            expirationDate: expirationDate,
+                            createdBy: interaction.user.id,
+                            createdByUsername: interaction.user.tag
+                        });
+                        await newCredential.save();
+                    }
+
+                    // Log the credential update
+                    if (verificationCode || expirationDateStr) {
+                        await sendEmbed(logsChannel, {
+                            path: "credentials.credentialAdded",
+                            values: {
+                                user: interaction.user.id,
+                                projectName: projectName,
+                                action: existingCredential ? "updated" : "added",
+                                expirationDate: expirationDate ? expirationDate.toLocaleDateString() : "No expiration"
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error updating project credential:", error);
+                    await sendEmbed(logsChannel, {
+                        path: "error",
+                        values: {
+                            error: "Failed to update project credential: " + error.message
+                        }
+                    });
+                }
+            }
 
             // Log the action
             await sendEmbed(logsChannel, {

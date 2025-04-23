@@ -32,12 +32,6 @@
   "channelCreated": [
     "<#{{createdChannel}}> channel has been created upon request. \n \n**Project Name:** {{projectName}}"
   ],
-  "requestAddRejected": [
-    "<@{{user}}>'s request to join {{channel}} has been rejected by <@{{approved}}>. \n \n {{reason}}"
-  ],
-  "requestAddRejectedDM": [
-    "Your request to access the channel for {{channel}} has been rejected. \n \n {{reason}}"
-  ],
   "channelCreatedWOAdd": [
     "A channel for <#{{createdChannel}}> has been created!"
   ],
@@ -100,42 +94,41 @@
     "message": "👋 Welcome to Plint DTT!\n\nI'm Sassy, and I'll help you join our Discord server. Right now, you can only see the #reception channel - this is normal! Let's get you set up.\n\n⚠️ IMPORTANT: These steps must be done in the <#{{reception}}> channel (not here in DMs):\n\n1️⃣ Go back to the <#{{reception}}> channel\n2️⃣ Type this command: /usersetup\n3️⃣ Enter your full name when prompted\n   • Use the same name registered with Plint\n   • For nicknames, use format: \"Jonathan (Jon) Smith\"\n   • Maximum 32 characters\n4️⃣ Select your language from the dropdown list\n5️⃣ Wait for admin approval\n\n🔍 Can't find your language? Select @new language and an admin will help you.\n\n❌ If you try these commands here in DMs, they won't work!\n\n⏳ After completing these steps, please wait for admin verification. You'll receive another message from me when you're approved!\n\nNeed help? Just wait in the <#{{reception}}> channel and an admin will assist you.",
     "title": "Welcome!"
   },
-  "movedToArchive": [
-    "📦 Channel #{{channel}} has been archived\n\n• All messages are preserved\n• You can find it in the Archives category\n• Need it back? Use /requestunarchive"
-  ],
-  "notMovedToArchive": [
-    "<@{{user}}> rejected <@{{requestedUser}}>'s request to archive <#{{channel}}>."
-  ],
-  "movedToWO_User": [
-    "<#{{channel}}> has been archived."
-  ],
-  "movedFromArchive": [
-    "<@{{user}}> has unarchived <#{{channel}}>."
-  ],
-  "notMovedFromArchive": [
-    "<@{{user}}> rejected <@{{requestedUser}}>'s request to unarchive <#{{channel}}>."
-  ],
-  "movedFromWO_User": [
-    "<#{{channel}}> has been unarchived."
-  ],
-  "requestedArchive": [
-    "<@{{user}}> requested <#{{channel}}> to be archived. \n \n**Reason:** {{reason}}"
-  ],
-  "archiveQuestion": [
-    "📦 **Archive Request**\n\n**Reason:** {{reason}}\n\nIf at least {{required}} users vote 'Yes', this channel will be archived.\n\nCurrent votes: {{votes}}/{{required}}\n\nPlease vote below."
-  ],
-  "archiveRejected": [
-    "❌ **Archive Request Failed**\n\nThe request to archive this channel did not receive enough votes ({{votes}}/{{required}}).\n\nThe channel will remain active."
-  ],
-  "requestedUnArchive": [
-    "<@{{user}}> requested <#{{channel}}> to be unarchived. \n \n**Reason:** {{reason}}"
-  ],
-  "unarchiveQuestion": [
-    "📂 **Unarchive Request**\n\n**Reason:** {{reason}}\n\nIf at least {{required}} users vote 'Yes', this channel will be unarchived.\n\nCurrent votes: {{votes}}/{{required}}\n\nPlease vote below."
-  ],
-  "unarchiveRejected": [
-    "❌ **Unarchive Request Failed**\n\nThe request to unarchive this channel did not receive enough votes ({{votes}}/{{required}}).\n\nThe channel will remain archived."
-  ],
+  "archive": {
+    "movedToArchive": [
+      "📦 Channel <#{{channel}}> has been archived by <@{{user}}>."
+    ],
+    "notMovedToArchive": [
+      "❌ Archive request for <#{{channel}}> was rejected by <@{{user}}>."
+    ],
+    "movedToWO_User": [
+      "<#{{channel}}> has been archived."
+    ],
+    "movedFromArchive": [
+      "📂 Channel <#{{channel}}> has been unarchived by <@{{user}}>."
+    ],
+    "notMovedFromArchive": [
+      "❌ Unarchive request for <#{{channel}}> was rejected by <@{{user}}>."
+    ],
+    "movedFromWO_User": [
+      "<#{{channel}}> has been unarchived."
+    ],
+    "question": [
+      "📦 **Archive Request**\n\n**Reason:** {{reason}}\n\nIf at least {{required}} users vote 'Yes', this channel will be archived.\n\nCurrent votes: {{votes}}/{{required}}\n\nPlease vote below."
+    ],
+    "rejected": [
+      "❌ **Archive Request Failed**\n\nThe request to archive this channel did not receive enough votes ({{votes}}/{{required}}).\n\nThe channel will remain active."
+    ],
+    "unarchiveQuestion": [
+      "📂 **Unarchive Request**\n\n**Reason:** {{reason}}\n\nIf at least {{required}} users vote 'Yes', this channel will be unarchived.\n\nCurrent votes: {{votes}}/{{required}}\n\nPlease vote below."
+    ],
+    "unarchiveRejected": [
+      "❌ **Unarchive Request Failed**\n\nThe request to unarchive this channel did not receive enough votes ({{votes}}/{{required}}).\n\nThe channel will remain archived."
+    ],
+    "invalidChannel": [
+      "❌ This command can only be used in {{category}} channels."
+    ]
+  },
   "deletedMessages": [
     "<@{{user}}> deleted {{howMany}} messages from <#{{channel}}>."
   ],
@@ -266,8 +259,14 @@
     "channelNotReady": [
       "This channel doesn't seem to be ready yet. Please check again later or contact the project manager for more information about the project \"{{projectName}}\"."
     ],
-    "invalidCredentials": [
-      "The project name and/or additional info you've provided doesn't match our records.\n\nIf you entered information from a PM's email:\n- Please double-check both the project name and additional info carefully\n- Make sure to copy them exactly as they appear in the email\n- Try the command again with the verified information\n\nIf you haven't received an email from a PM:\n- Please wait for an email with project access instructions\n- The email will contain the exact project name and additional info you'll need\n\nIf you continue to have issues after verifying the information from your PM's email, you can use /help to contact an admin."
+    "invalidCode": [
+      "The verification code you provided is incorrect. Please check the code and try again."
+    ],
+    "missingCode": [
+      "Please provide a verification code to access this project."
+    ],
+    "projectNotReady": [
+      "This project is not ready for access yet. Please check again later or contact the project manager."
     ],
     "expiredCredentials": [
       "The access credentials for this project have expired. Please contact the project manager for updated credentials."

@@ -91,13 +91,13 @@ module.exports = {
           });
           
           return await interaction.editReply({
-            content: `**❌ No exact matches for "${projectName}"**\n\nDid you mean:\n${suggestionsText}\n\nTry searching again with one of these terms, or:\n- Create new thread: \`/join project thread\`\n- Join manual project: \`/request project access\``,
+            content: `**❌ No exact matches for "${projectName}"**\n\nDid you mean:\n${suggestionsText}\n\nTry searching again with one of these terms, or:\n- Create new thread: \`/jointhread\`\n- Join manual project: \`/request project access\``,
           });
         }
         
         // No similar threads found
         return await interaction.editReply({
-          content: `**❌ No threads found for "${projectName}"**\n\nOptions:\n1️⃣ Try a different search term\n2️⃣ Create new thread with \`/join project thread\`\n3️⃣ For manual projects, use \`/request project access\``,
+          content: `**❌ No threads found for "${projectName}"**\n\nOptions:\n1️⃣ Try a different search term\n2️⃣ Create new thread with \`/jointhread\`\n3️⃣ For manual projects, use \`/request project access\``,
         });
       }
       
@@ -112,7 +112,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setTitle(`🔍 Found 1 matching thread for "${projectName}"`)
           .setColor(parseInt(process.env.EMBEDCOLOR))
-          .setDescription(`📂 **"${thread.name}"**\n📅 Created: <t:${createdAt}:R>\n👥 Current participants: ${memberCount}\n📍 Status: ${status}\n\n➡️ Click to join: <#${thread.id}>\n\nNeed to create a new thread instead? Use \`/join project thread\``)
+          .setDescription(`📂 **"${thread.name}"**\n📅 Created: <t:${createdAt}:R>\n👥 Current participants: ${memberCount}\n📍 Status: ${status}\n\n➡️ Click to view: <#${thread.id}>\nTo join this thread, use:\n\`/jointhread ${thread.name}\`\n\nNeed to create a new thread instead? Use \`/jointhread\``)
           .setTimestamp();
         
         return await interaction.editReply({
@@ -128,7 +128,7 @@ module.exports = {
         const mainEmbed = new EmbedBuilder()
           .setTitle(`🔍 Search Results for "${projectName}"`)
           .setColor(parseInt(process.env.EMBEDCOLOR)) 
-          .setDescription(`Found ${matchingThreads.length} matching threads.\n\nNeed a new thread? Use \`/join project thread\`\nWant to join multiple threads? Click the links below!`)
+          .setDescription(`Found ${matchingThreads.length} matching threads.\n\nTo join a thread, use \`/jointhread threadname\`\nNeed a new thread? Use \`/jointhread\``)
           .setTimestamp();
         
         // Calculate how many embeds we'll need (each embed can have up to 25 fields)
@@ -153,7 +153,7 @@ module.exports = {
             
             currentEmbed.addFields({
               name: `🧵 "${thread.name}"`,
-              value: `📅 Created: <t:${createdAt}:R>\n👥 Participants: ${memberCount}\n📍 Status: ${status}\n➡️ Join: <#${thread.id}>`
+              value: `📅 Created: <t:${createdAt}:R>\n👥 Participants: ${memberCount}\n📍 Status: ${status}\n➡️ View: <#${thread.id}>\nJoin with: \`/jointhread ${thread.name}\``
             });
           }
           

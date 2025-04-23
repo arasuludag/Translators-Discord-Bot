@@ -1,15 +1,16 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require("discord.js");
 const { findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("listprojectthreads")
-    .setDescription("List the threads on this channel")
+    .setDescription("[ADMIN] List the threads on this channel")
     .addBooleanOption((option) =>
       option
         .setName("include_archived")
         .setDescription("Include archived threads.")
-    ),
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
 

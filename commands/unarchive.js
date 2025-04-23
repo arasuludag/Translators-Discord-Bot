@@ -30,14 +30,14 @@ module.exports = {
       });
 
     await sendEmbed(interaction.channel, {
-      path: "movedFromWO_User",
+      path: "archive.movedFromWO_User",
       values: {
         channel: interaction.channel.id,
       },
     });
 
     await sendEmbed(logsChannel, {
-      path: "movedFromArchive",
+      path: "archive.movedFromArchive",
       values: {
         user: interaction.user.id,
         channel: interaction.channel.id,

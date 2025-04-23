@@ -13,7 +13,7 @@ const Request = require("../models/ProjectRequest");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("projectcredential")
-        .setDescription("Manage project access credentials")
+        .setDescription("[PM] Manage project access credentials")
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("add")
@@ -272,7 +272,6 @@ async function handleListCredentials(interaction) {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-        // Find all credentials created by this user
         const credentials = await ProjectCredential.find({
             createdBy: interaction.user.id,
         }).sort({ createdAt: -1 });
@@ -290,22 +289,37 @@ async function handleListCredentials(interaction) {
             .setDescription(`You have created ${credentials.length} project credential(s).`)
             .setTimestamp();
 
-        // Add fields for each credential (limit to 25 for readability)
         const displayCredentials = credentials.slice(0, 25);
 
-        displayCredentials.forEach((credential, index) => {
-            const expirationText = credential.expirationDate
+        for (const credential of displayCredentials) {
+            const channel = interaction.guild.channels.cache.find(
+                ch => ch.name === credential.projectName
+            );
+
+            const status = credential.isExpired() ? "🔴 Expired" : "🟢 Active";
+            const expiration = credential.expirationDate
                 ? `Expires: ${credential.expirationDate.toLocaleDateString()}`
                 : "No expiration";
 
-            const isExpired = credential.isExpired();
-            const status = isExpired ? "🔴 Expired" : "🟢 Active";
+            let displayText = `Status: ${status}\nCode: ${credential.verificationCode}\n`;
+
+            if (channel?.parent) {
+                displayText += `Category: ${channel.parent.name}\n`;
+            }
+
+            displayText += `${expiration}\nUsage Count: ${credential.usageCount}`;
+
+            if (channel) {
+                displayText += `\n**Channel: **<#${channel.id}>`;
+            } else {
+                displayText += "\n**No channel found**";
+            }
 
             embed.addFields({
-                name: `${index + 1}. ${credential.projectName}`,
-                value: `**Status:** ${status}\n**Code:** ${credential.verificationCode}\n**${expirationText}**\n**Usage Count:** ${credential.usageCount}`,
+                name: credential.projectName,
+                value: displayText
             });
-        });
+        }
 
         if (credentials.length > 25) {
             embed.setFooter({
@@ -355,6 +369,21 @@ async function handleCredentialInfo(interaction) {
             });
         }
 
+        // Find channel information
+        const channel = interaction.guild.channels.cache.find(
+            ch => ch.name === credential.projectName
+        );
+
+        let channelField = { name: "Channel", value: "No channel found", inline: true };
+        let categoryField = { name: "Category", value: "None", inline: true };
+
+        if (channel) {
+            channelField.value = `<#${channel.id}>`;
+            if (channel.parent) {
+                categoryField.value = channel.parent.name;
+            }
+        }
+
         const embed = new EmbedBuilder()
             .setTitle(`Project Credential: ${credential.projectName}`)
             .setColor(parseInt(process.env.EMBEDCOLOR))
@@ -375,6 +404,8 @@ async function handleCredentialInfo(interaction) {
                     value: credential.isExpired() ? "🔴 Expired" : "🟢 Active",
                     inline: true,
                 },
+                channelField,
+                categoryField,
                 {
                     name: "Expiration Date",
                     value: credential.expirationDate
@@ -405,10 +436,10 @@ async function handleCredentialInfo(interaction) {
             )
             .setTimestamp();
 
-        // Add recent usage log (up to 10 entries)
+        // Add recent usage log (up to 25 entries)
         if (credential.usageLog.length > 0) {
             const recentUsage = credential.usageLog
-                .slice(-10)
+                .slice(-25)
                 .reverse()
                 .map((log, index) => {
                     const date = new Date(log.timestamp).toLocaleString();
@@ -418,10 +449,12 @@ async function handleCredentialInfo(interaction) {
                 })
                 .join("\n");
 
-            embed.addFields({
-                name: "Recent Usage",
-                value: recentUsage || "No usage recorded",
-            });
+            if (recentUsage) {
+                embed.addFields({
+                    name: "Recent Usage",
+                    value: recentUsage || "No usage recorded",
+                });
+            }
         }
 
         await interaction.editReply({

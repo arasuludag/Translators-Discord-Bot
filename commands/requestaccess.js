@@ -120,94 +120,31 @@ async function manualAdd(
         );
         return;
       } else if (verificationResult.reason === "invalid_code") {
-        // Credentials found but code doesn't match - continue with manual approval
-        // Don't show an error message, as the additional info might be intended for admins
+        await replyEmbed(interaction, {
+          path: "credentials.invalidCode",
+          ephemeral: true,
+        });
+        return;
       } else if (verificationResult.reason === "expired") {
-        // Credentials found but expired
         await replyEmbed(interaction, {
           path: "credentials.expiredCredentials",
           ephemeral: true,
         });
         return;
       } else if (verificationResult.reason === "not_ready") {
-        // Channel doesn't exist and no credentials found - continue with manual approval
+        await replyEmbed(interaction, {
+          path: "credentials.projectNotReady",
+          ephemeral: true,
+        });
+        return;
       }
-    }
-
-    const approvalChannel = findChannel(
-      interaction,
-      process.env.AWAITINGAPPROVALSCHANNELNAME
-    );
-
-    await sendEmbed(interaction.user, {
-      path: "waitApproval",
-      values: {
-        project: projectName,
-      },
-    });
-
-    await replyEmbed(interaction, {
-      path: "requestAcquired",
-      ephemeral: true,
-    });
-
-    const acceptButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`translators-requestaccess-accept-${interaction.id}`)
-        .setLabel("Approve")
-        .setStyle("Success")
-    );
-    const rejectPNButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`translators-requestaccess-rejectPN-${interaction.id}`)
-        .setLabel("Reject - Project Name")
-        .setStyle("Danger")
-    );
-    const rejectAIButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`translators-requestaccess-rejectAI-${interaction.id}`)
-        .setLabel("Reject - Additional Info")
-        .setStyle("Danger")
-    );
-    const rejectNWPButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`translators-requestaccess-rejectNWP-${interaction.id}`)
-        .setLabel("Reject - Not Working on the Project")
-        .setStyle("Danger")
-    );
-
-    let foundChannel = await findChannel(interaction, projectName);
-
-    try {
-      await Request.create({
-        userId: interaction.user.id,
-        username: interaction.user.tag,
-        projectName: projectName,
-        verificationCode: verificationCode || "",
-        requestType: "manual",
-        interactionId: interaction.id,
-        status: "pending",
+    } else {
+      await replyEmbed(interaction, {
+        path: "credentials.missingCode",
+        ephemeral: true,
       });
-    } catch (error) {
-      console.error("Error saving request to MongoDB:", error);
-      logsChannel.send(`Error saving request to MongoDB: ${error.message}`);
+      return;
     }
-
-    await sendEmbed(approvalChannel, {
-      path: "addRequest",
-      values: {
-        user: interaction.user.id,
-        projectChannel: foundChannel ? `<#${foundChannel.id}>` : projectName,
-        projectName: projectName,
-        verificationCode: verificationCode,
-      },
-      components: [
-        acceptButton,
-        rejectPNButton,
-        rejectAIButton,
-        rejectNWPButton,
-      ],
-    });
   }
 }
 
