@@ -17,7 +17,7 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("add")
-                .setDescription("Add or update project access credentials")
+                .setDescription("[PM] Add or update project access credentials")
                 .addStringOption((option) =>
                     option
                         .setName("project_name")
@@ -40,7 +40,7 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("remove")
-                .setDescription("Remove project access credentials")
+                .setDescription("[PM] Remove project access credentials")
                 .addStringOption((option) =>
                     option
                         .setName("project_name")
@@ -51,12 +51,12 @@ module.exports = {
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("list")
-                .setDescription("List all project credentials you've created")
+                .setDescription("[PM] List all project credentials you've created")
         )
         .addSubcommand((subcommand) =>
             subcommand
                 .setName("info")
-                .setDescription("Get detailed information about a project credential")
+                .setDescription("[PM] Get detailed information about a project credential")
                 .addStringOption((option) =>
                     option
                         .setName("project_name")

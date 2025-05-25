@@ -145,7 +145,7 @@ module.exports = {
                     });
 
                 await sendEmbed(logsChannel, {
-                    path: "movedFromArchive",
+                    path: "archive.movedFromArchive",
                     values: {
                         user: interaction.user.id,
                         channel: interaction.channel.id,
@@ -233,12 +233,7 @@ module.exports = {
                     });
                 } catch (error) {
                     console.error("Error renaming channel:", error);
-                    await sendEmbed(logsChannel, {
-                        path: "error",
-                        values: {
-                            error: "Failed to rename channel: " + error.message
-                        }
-                    });
+                    await logsChannel.send(`Error renaming channel: ${error.message}`);
                 }
             }
 
@@ -310,12 +305,7 @@ module.exports = {
                     }
                 } catch (error) {
                     console.error("Error updating project credential:", error);
-                    await sendEmbed(logsChannel, {
-                        path: "error",
-                        values: {
-                            error: "Failed to update project credential: " + error.message
-                        }
-                    });
+                    await logsChannel.send(`Error updating project credential: ${error.message}`);
                 }
             }
 

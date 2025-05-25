@@ -35,14 +35,6 @@
   "channelCreatedWOAdd": [
     "A channel for <#{{createdChannel}}> has been created!"
   ],
-  "isThere": {
-    "yes": [
-      "Yes. There is a channel called <#{{foundChannel}}>. Would you like to be added to it?"
-    ],
-    "no": [
-      "No. Would you like me to create that channel for you?"
-    ]
-  },
   "addMePrompt": [
     "Do you confirm that you work on {{projectName}} and want to be added to the channel? If this was a mistake, simply dismiss this message."
   ],
@@ -286,5 +278,8 @@
   },
   "channelInfo": [
     "ℹ️ About #{{channel}}\n\n📋 Purpose: {{purpose}}\n👥 Access: {{access}}\n\nNeed to change settings? Right-click the channel name!"
+  ],
+  "channelRenamed": [
+    "<@{{user}}> has renamed the channel from `{{oldName}}` to `{{newName}}`."
   ]
 }
