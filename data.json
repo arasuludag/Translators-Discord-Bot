@@ -173,14 +173,6 @@
   "buddyUpLog": [
     "<@{{user}}> joined <#{{thread}}>."
   ],
-  "userPronounNotify": {
-    "registered": [
-      "Thank you! Your pronouns have been registered as {{pronoun}}."
-    ],
-    "removed": [
-      "Thank you! {{pronoun}} has been removed from your profile."
-    ]
-  },
   "enterProperName": [
     "The name you entered is somehow problematic."
   ],

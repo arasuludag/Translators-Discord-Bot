@@ -219,15 +219,15 @@ module.exports = {
                 }
 
                 try {
+                    const originalName = interaction.channel.name;
                     const formattedName = discordStyleProjectName(newName);
                     await interaction.channel.setName(formattedName);
                     
-                    // Log the rename
                     await sendEmbed(logsChannel, {
                         path: "channelRenamed",
                         values: {
                             user: interaction.user.id,
-                            oldName: interaction.channel.name,
+                            oldName: originalName,
                             newName: formattedName
                         }
                     });

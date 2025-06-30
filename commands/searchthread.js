@@ -7,7 +7,7 @@ const { findChannelByID } = require("../functions.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("projectsearch")
+    .setName("searchthread")
     .setDescription("Search through existing threads by project name")
     .addStringOption((option) =>
       option

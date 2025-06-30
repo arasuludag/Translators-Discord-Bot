@@ -14,7 +14,7 @@ const {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("isthere")
+    .setName("searchchannel")
     .setDescription("[ADMIN] Search for channels by keyword and join them")
     .addStringOption((option) =>
       option
