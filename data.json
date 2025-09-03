@@ -214,9 +214,6 @@
     "revampLog": [
       "<@{{user}}> has revamped <#{{channel}}>.\n\n**Reason:** {{reason}}\n**Removed Members:** {{removedCount}}"
     ],
-    "revampDM": [
-      "📝 Project Channel Update\n\nThe channel <#{{channel}}> has been closed and you have been removed from it.\n\nIf you receive any future project assignments that require access to a private channel, your project manager will provide specific instructions on how to join the appropriate channel.\n\n⚠️ Please remember: For confidential projects, always use private channels to discuss access issues.\n⚠️ Having issues with channel access? Use /help to get assistance privately."
-    ],
     "confirmRevamp": [
       "Are you sure you want to revamp <#{{channel}}>? This will remove all members except admins and PMs."
     ],

@@ -185,14 +185,6 @@ module.exports = {
 
                             // Remove the member from the channel
                             await interaction.channel.permissionOverwrites.delete(member.id);
-
-                            // Send DM to the removed member
-                            await sendEmbed(member.user, {
-                                path: "revamp.revampDM",
-                                values: {
-                                    channel: interaction.channel.id
-                                }
-                            });
                         } catch (error) {
                             console.error(`Error processing member ${overwrite.id}:`, error);
                         }
